@@ -31,16 +31,14 @@ public class GlobalExceptionHandler(
                     ?? validationException.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,
-                ValidationResource.Exception_InternalServerError)
+                environment.IsDevelopment()
+                    ? exception.GetBaseException().Message
+                    : ValidationResource.Exception_InternalServerError)
         };
 
         if (statusCode >= StatusCodes.Status500InternalServerError)
         {
             logger.LogError(exception, "Unhandled exception");
-            if (environment.IsDevelopment())
-            {
-                logger.LogDebug(exception, "Development exception details: {Message}", exception.Message);
-            }
         }
         else
         {

@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Sportner.Domain.Abstractions;
 
@@ -9,13 +10,24 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
     {
         get
         {
-            var value = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var principal = httpContextAccessor.HttpContext?.User;
+            if (principal is null)
+            {
+                return null;
+            }
+
+            var value =
+                principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? principal.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? principal.FindFirstValue("sub");
+
             return Guid.TryParse(value, out var userId) ? userId : null;
         }
     }
 
     public string? Email =>
-        httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email)
+        ?? httpContextAccessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Email);
 
     public bool IsAuthenticated =>
         httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;

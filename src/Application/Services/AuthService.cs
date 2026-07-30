@@ -105,11 +105,16 @@ public class AuthService(
         var userId = currentUser.UserId
             ?? throw new ApiException(HttpStatusCode.Unauthorized, ValidationResource.Exception_Unauthorized);
 
+        if (string.IsNullOrWhiteSpace(dto.PushToken))
+        {
+            throw new ApiException(HttpStatusCode.BadRequest, ValidationResource.Validation_PushToken_Required);
+        }
+
         var profile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Auth_UserNotFound);
 
         profile.PushToken = dto.PushToken.Trim();
-        unitOfWork.Profiles.UpdateOne(profile);
+        profile.UpdatedAt = DateTime.UtcNow;
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new MessageResponseDto(ValidationResource.Exception_Auth_PushTokenUpdated);
