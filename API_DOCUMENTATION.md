@@ -4,19 +4,23 @@
 
 - Lokal base URL: `http://localhost:5139`
 - Swagger: `http://localhost:5139/swagger`
+- Health: `GET /health/live`, `GET /health/ready`
 - Content-Type: `application/json`
 - Tarihler ISO 8601 formatındadır: `2026-08-15T18:30:00Z`
 - UUID alanları string olarak gönderilir.
+- Localization: `Accept-Language: tr-TR` veya `en-US` (varsayılan `en-US`, TMS ile aynı)
+- Auth login/register rate limit: dakikada 20 istek
 - Korumalı endpoint'lerde JWT şu header ile gönderilmelidir:
 
 ```http
 Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
+Accept-Language: tr-TR
 ```
 
 `🔒` işaretli endpoint'ler JWT gerektirir.
 
-Genel hata yanıtı:
+Genel hata yanıtı (GlobalExceptionHandler):
 
 ```json
 {
@@ -32,6 +36,8 @@ Olası HTTP durumları:
 - `401 Unauthorized`: Token yok, geçersiz veya süresi dolmuş
 - `403 Forbidden`: Kullanıcının işlem yetkisi yok
 - `404 Not Found`: Kayıt bulunamadı
+- `429 Too Many Requests`: Auth rate limit
+- `500 Internal Server Error`: Beklenmeyen hata
 
 ---
 
@@ -281,6 +287,8 @@ GET /api/Profiles/8f5ca5ee-b8c0-4e3a-bd72-4ea88bc71f83
 ```
 
 Response — `200 OK`: `GET /api/Profiles/me` ile aynı `UserProfileDto` yapısı.
+
+> Gizlilik: diğer kullanıcı profillerinde `pushToken` her zaman `null` döner. Push token yalnızca `GET /api/Profiles/me` yanıtında gelir.
 
 ---
 

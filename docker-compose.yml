@@ -1,0 +1,20 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sportner-api:local
+    ports:
+      - "5139:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__SupabaseConnection: ${ConnectionStrings__SupabaseConnection}
+      JwtSettings__Secret: ${JwtSettings__Secret}
+      JwtSettings__Issuer: ${JwtSettings__Issuer:-SportnerApi}
+      JwtSettings__Audience: ${JwtSettings__Audience:-SportnerMobile}
+      JwtSettings__ExpirationDays: ${JwtSettings__ExpirationDays:-7}
+      Supabase__Url: ${Supabase__Url}
+      Supabase__ServiceRoleKey: ${Supabase__ServiceRoleKey}
+      Supabase__AvatarsBucket: ${Supabase__AvatarsBucket:-avatars}
+    restart: unless-stopped

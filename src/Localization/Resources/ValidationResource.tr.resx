@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Exception_Auth_EmailAlreadyRegistered" xml:space="preserve">
+    <value>Bu e-posta adresi zaten kayÄ±tlÄ±.</value>
+  </data>
+  <data name="Exception_Auth_InvalidCredentials" xml:space="preserve">
+    <value>E-posta veya ÅŸifre hatalÄ±</value>
+  </data>
+  <data name="Exception_Auth_PasswordNotSet" xml:space="preserve">
+    <value>Bu hesap iÃ§in API ÅŸifresi henÃ¼z ayarlanmamÄ±ÅŸ. Ã–nce /api/auth/register ile aynÄ± e-posta ve ÅŸifreyi gÃ¶nderin.</value>
+  </data>
+  <data name="Exception_Auth_PushTokenUpdated" xml:space="preserve">
+    <value>Push token gÃ¼ncellendi.</value>
+  </data>
+  <data name="Exception_Auth_UserNotFound" xml:space="preserve">
+    <value>KullanÄ±cÄ± bulunamadÄ±.</value>
+  </data>
+  <data name="Exception_Event_AlreadyJoined" xml:space="preserve">
+    <value>Bu etkinlik iÃ§in zaten bir katÄ±lÄ±m kaydÄ±nÄ±z var.</value>
+  </data>
+  <data name="Exception_Event_CannotJoinOwn" xml:space="preserve">
+    <value>Kendi etkinliÄŸinize katÄ±lÄ±m isteÄŸi gÃ¶nderemezsiniz.</value>
+  </data>
+  <data name="Exception_Event_Deleted" xml:space="preserve">
+    <value>Etkinlik silindi.</value>
+  </data>
+  <data name="Exception_Event_Forbidden" xml:space="preserve">
+    <value>Bu iÅŸlemi yapmaya yetkiniz yok.</value>
+  </data>
+  <data name="Exception_Event_Full" xml:space="preserve">
+    <value>Etkinlik kontenjanÄ± dolu.</value>
+  </data>
+  <data name="Exception_Event_InvalidCoordinates" xml:space="preserve">
+    <value>GeÃ§erli latitude ve longitude deÄŸerleri gÃ¶nderilmelidir.</value>
+  </data>
+  <data name="Exception_Event_InvalidParticipantStatus" xml:space="preserve">
+    <value>Status yalnÄ±zca &apos;approved&apos; veya &apos;rejected&apos; olabilir.</value>
+  </data>
+  <data name="Exception_Event_InvalidTimeframe" xml:space="preserve">
+    <value>timeframe yalnÄ±zca &apos;upcoming&apos;, &apos;past&apos; veya &apos;all&apos; olabilir.</value>
+  </data>
+  <data name="Exception_Event_LatLonRequired" xml:space="preserve">
+    <value>latitude ve longitude birlikte gÃ¶nderilmelidir.</value>
+  </data>
+  <data name="Exception_Event_NotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadÄ±.</value>
+  </data>
+  <data name="Exception_Event_ParticipantNotFound" xml:space="preserve">
+    <value>KatÄ±lÄ±m isteÄŸi bulunamadÄ±.</value>
+  </data>
+  <data name="Exception_Event_RadiusNeedsCoordinates" xml:space="preserve">
+    <value>radiusKm filtresi iÃ§in latitude ve longitude gereklidir.</value>
+  </data>
+  <data name="Exception_Event_RadiusPositive" xml:space="preserve">
+    <value>radiusKm sÄ±fÄ±rdan bÃ¼yÃ¼k olmalÄ±dÄ±r.</value>
+  </data>
+  <data name="Exception_InternalServerError" xml:space="preserve">
+    <value>Beklenmeyen bir hata oluÅŸtu.</value>
+  </data>
+  <data name="Exception_Message_Empty" xml:space="preserve">
+    <value>Mesaj iÃ§eriÄŸi boÅŸ olamaz.</value>
+  </data>
+  <data name="Exception_Message_Forbidden" xml:space="preserve">
+    <value>Bu sohbete eriÅŸiminiz yok.</value>
+  </data>
+  <data name="Exception_Profile_AvatarContentType" xml:space="preserve">
+    <value>Content-Type multipart/form-data olmalÄ±. application/json ile dosya yÃ¼klenemez. FormData kullanÄ±n ve Content-Type header&apos;Ä±nÄ± elle set etmeyin.</value>
+  </data>
+  <data name="Exception_Profile_AvatarInvalidType" xml:space="preserve">
+    <value>Sadece JPEG, PNG veya WebP yÃ¼kleyebilirsiniz.</value>
+  </data>
+  <data name="Exception_Profile_AvatarRequired" xml:space="preserve">
+    <value>Avatar dosyasÄ± gerekli. Form field adÄ± &apos;file&apos; olmalÄ±.</value>
+  </data>
+  <data name="Exception_Profile_AvatarTooLarge" xml:space="preserve">
+    <value>Avatar en fazla 5 MB olabilir.</value>
+  </data>
+  <data name="Exception_Profile_AvatarUploadFailed" xml:space="preserve">
+    <value>Avatar yÃ¼klenirken bir hata oluÅŸtu.</value>
+  </data>
+  <data name="Exception_Profile_NotFound" xml:space="preserve">
+    <value>Profil bulunamadÄ±.</value>
+  </data>
+  <data name="Exception_Review_AlreadyExists" xml:space="preserve">
+    <value>Bu kullanÄ±cÄ±yÄ± bu etkinlik iÃ§in zaten deÄŸerlendirdiniz.</value>
+  </data>
+  <data name="Exception_Review_NotParticipants" xml:space="preserve">
+    <value>Sadece etkinlikte yer alan kullanÄ±cÄ±lar birbirini deÄŸerlendirebilir.</value>
+  </data>
+  <data name="Exception_Review_Self" xml:space="preserve">
+    <value>Kendinizi deÄŸerlendiremezsiniz.</value>
+  </data>
+  <data name="Exception_Review_UserNotFound" xml:space="preserve">
+    <value>DeÄŸerlendirilecek kullanÄ±cÄ± bulunamadÄ±.</value>
+  </data>
+  <data name="Exception_Unauthorized" xml:space="preserve">
+    <value>Yetkisiz.</value>
+  </data>
+  <data name="Notification_JoinApproved_Body" xml:space="preserve">
+    <value>&apos;{0}&apos; etkinliÄŸine katÄ±lÄ±mÄ±n onaylandÄ±.</value>
+  </data>
+  <data name="Notification_JoinApproved_Title" xml:space="preserve">
+    <value>Ä°steÄŸin OnaylandÄ±</value>
+  </data>
+  <data name="Notification_JoinRejected_Body" xml:space="preserve">
+    <value>&apos;{0}&apos; etkinliÄŸine katÄ±lÄ±mÄ±n reddedildi.</value>
+  </data>
+  <data name="Notification_JoinRejected_Title" xml:space="preserve">
+    <value>Ä°steÄŸin Reddedildi</value>
+  </data>
+  <data name="Notification_JoinRequest_Body" xml:space="preserve">
+    <value>{0} &apos;{1}&apos; etkinliÄŸinize katÄ±lmak istiyor.</value>
+  </data>
+  <data name="Notification_JoinRequest_Title" xml:space="preserve">
+    <value>Yeni KatÄ±lÄ±m Ä°steÄŸi</value>
+  </data>
+  <data name="Notification_RequesterFallback" xml:space="preserve">
+    <value>Bir kullanÄ±cÄ±</value>
+  </data>
+  <data name="Validation_Content_MaxLength" xml:space="preserve">
+    <value>Ä°Ã§erik en fazla 2000 karakter olabilir.</value>
+  </data>
+  <data name="Validation_Content_Required" xml:space="preserve">
+    <value>Ä°Ã§erik zorunludur.</value>
+  </data>
+  <data name="Validation_Email_Invalid" xml:space="preserve">
+    <value>E-posta geÃ§ersiz.</value>
+  </data>
+  <data name="Validation_Email_Required" xml:space="preserve">
+    <value>E-posta zorunludur.</value>
+  </data>
+  <data name="Validation_EventDate_Required" xml:space="preserve">
+    <value>Etkinlik tarihi zorunludur.</value>
+  </data>
+  <data name="Validation_EventId_Required" xml:space="preserve">
+    <value>Etkinlik id zorunludur.</value>
+  </data>
+  <data name="Validation_FullName_Required" xml:space="preserve">
+    <value>Ad soyad zorunludur.</value>
+  </data>
+  <data name="Validation_Latitude_Required" xml:space="preserve">
+    <value>Latitude zorunludur.</value>
+  </data>
+  <data name="Validation_Longitude_Required" xml:space="preserve">
+    <value>Longitude zorunludur.</value>
+  </data>
+  <data name="Validation_MaxPlayers_Range" xml:space="preserve">
+    <value>Maksimum oyuncu sayÄ±sÄ± 2 ile 100 arasÄ±nda olmalÄ±dÄ±r.</value>
+  </data>
+  <data name="Validation_Password_MinLength" xml:space="preserve">
+    <value>Åifre en az 6 karakter olmalÄ±dÄ±r.</value>
+  </data>
+  <data name="Validation_Password_Required" xml:space="preserve">
+    <value>Åifre zorunludur.</value>
+  </data>
+  <data name="Validation_PushToken_Required" xml:space="preserve">
+    <value>Push token zorunludur.</value>
+  </data>
+  <data name="Validation_Rating_Range" xml:space="preserve">
+    <value>Puan 1 ile 5 arasÄ±nda olmalÄ±dÄ±r.</value>
+  </data>
+  <data name="Validation_ReviewedId_Required" xml:space="preserve">
+    <value>DeÄŸerlendirilen kullanÄ±cÄ± id zorunludur.</value>
+  </data>
+  <data name="Validation_SportType_Required" xml:space="preserve">
+    <value>Spor tÃ¼rÃ¼ zorunludur.</value>
+  </data>
+  <data name="Validation_Status_Required" xml:space="preserve">
+    <value>Status zorunludur.</value>
+  </data>
+  <data name="Validation_Title_Required" xml:space="preserve">
+    <value>BaÅŸlÄ±k zorunludur.</value>
+  </data>
+</root>

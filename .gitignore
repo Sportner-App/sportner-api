@@ -1,0 +1,75 @@
+## Build
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Bb]uild/
+artifacts/
+publish/
+out/
+*.dll
+*.exe
+*.pdb
+*.cache
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.rsuser
+*.swp
+*~
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## Secrets / env
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+secrets.json
+appsettings.*.local.json
+# Keep Development secrets local-only if preferred; Production stays scrubbed in appsettings.json
+**/Properties/launchSettings.local.json
+
+## Test / coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+BenchmarkDotNet.Artifacts/
+
+## OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Misc
+*.log
+*.tmp
+*.temp
+*.bak
+node_modules/
