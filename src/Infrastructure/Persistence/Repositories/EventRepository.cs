@@ -3,5 +3,5 @@ using Sportner.Domain.Entities;
 
 namespace Sportner.Infrastructure.Persistence.Repositories;
 
-public class EventRepository(AppDbContext context)
+public class EventRepository(SportnerDbContext context)
     : BaseRepository<Event>(context), IEventRepository;

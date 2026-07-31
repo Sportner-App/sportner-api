@@ -3,23 +3,23 @@ using Sportner.Infrastructure.Persistence.Repositories;
 
 namespace Sportner.Infrastructure.Persistence;
 
-public class UnitOfWork(AppDbContext context) : IUnitOfWork
+public class UnitOfWork(SportnerDbContext context) : IUnitOfWork
 {
-    private IProfileRepository? _profiles;
+    private IUserRepository? _users;
     private IEventRepository? _events;
-    private IEventParticipantRepository? _eventParticipants;
+    private IUserEventRepository? _userEvents;
     private IMessageRepository? _messages;
     private IReviewRepository? _reviews;
     private ISportRepository? _sports;
 
-    public IProfileRepository Profiles =>
-        _profiles ??= new ProfileRepository(context);
+    public IUserRepository Users =>
+        _users ??= new UserRepository(context);
 
     public IEventRepository Events =>
         _events ??= new EventRepository(context);
 
-    public IEventParticipantRepository EventParticipants =>
-        _eventParticipants ??= new EventParticipantRepository(context);
+    public IUserEventRepository UserEvents =>
+        _userEvents ??= new UserEventRepository(context);
 
     public IMessageRepository Messages =>
         _messages ??= new MessageRepository(context);

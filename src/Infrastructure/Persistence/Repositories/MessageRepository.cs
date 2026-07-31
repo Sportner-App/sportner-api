@@ -3,5 +3,5 @@ using Sportner.Domain.Entities;
 
 namespace Sportner.Infrastructure.Persistence.Repositories;
 
-public class MessageRepository(AppDbContext context)
+public class MessageRepository(SportnerDbContext context)
     : BaseRepository<Message>(context), IMessageRepository;

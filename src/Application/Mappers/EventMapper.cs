@@ -26,9 +26,9 @@ public static class EventMapper
 
     public static EventDetailDto ToDetailDto(this Event eventEntity)
     {
-        var approvedStatus = ParticipantStatus.Approved.ToDbValue();
-        var participants = eventEntity.Participants
-            .Select(p => p.ToParticipantDto(eventEntity.SportType))
+        var approvedStatus = UserEventStatus.Approved.ToDbValue();
+        var participants = eventEntity.UserEvents
+            .Select(p => p.ToUserEventDto(eventEntity.SportType))
             .ToList();
 
         return new EventDetailDto(
@@ -51,11 +51,11 @@ public static class EventMapper
         );
     }
 
-    public static ParticipantDto ToParticipantDto(this EventParticipant participant, string sportType) => new(
-        participant.UserId,
-        participant.User?.FullName,
-        participant.User?.AvatarUrl,
-        SkillLevelHelper.ResolveSkillLevel(participant.User?.SkillLevels, sportType),
-        participant.Status
+    public static UserEventDto ToUserEventDto(this UserEvent userEvent, string sportType) => new(
+        userEvent.UserId,
+        userEvent.User?.FullName,
+        userEvent.User?.AvatarUrl,
+        SkillLevelHelper.ResolveSkillLevel(userEvent.User?.SkillLevels, sportType),
+        userEvent.Status
     );
 }

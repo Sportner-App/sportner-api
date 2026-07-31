@@ -4,5 +4,5 @@ namespace Sportner.Application.Abstractions;
 
 public interface ITokenService
 {
-    string CreateToken(Profile user);
+    string CreateToken(User user);
 }

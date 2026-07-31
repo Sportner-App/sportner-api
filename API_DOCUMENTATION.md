@@ -8,7 +8,7 @@
 - Content-Type: `application/json`
 - Tarihler ISO 8601 formatındadır: `2026-08-15T18:30:00Z`
 - UUID alanları string olarak gönderilir.
-- Localization: `Accept-Language: tr-TR` veya `en-US` (varsayılan `en-US`, TMS ile aynı)
+- Localization: `Accept-Language: tr-TR` veya `en-US` (varsayılan `tr-TR`; header gönderilmezse mesajlar Türkçe döner)
 - Auth login/register rate limit: dakikada 20 istek
 - Korumalı endpoint'lerde JWT şu header ile gönderilmelidir:
 
@@ -45,7 +45,7 @@ Olası HTTP durumları:
 
 ### Kullanıcı Kaydı
 
-`POST /api/Auth/register`
+`POST /api/auth/register`
 
 Request:
 
@@ -76,7 +76,7 @@ Response — `200 OK`:
 
 ### Giriş
 
-`POST /api/Auth/login`
+`POST /api/auth/login`
 
 Request:
 
@@ -108,7 +108,7 @@ Hatalı bilgiler — `400 Bad Request`:
 
 ### Expo Push Token Güncelleme 🔒
 
-`POST /api/Auth/update-push-token`
+`POST /api/auth/update-push-token`
 
 Request:
 
@@ -130,11 +130,11 @@ Bu endpoint login sonrasında ve Expo push token değiştiğinde çağrılmalıd
 
 ---
 
-## 2. Profiles
+## 2. Users
 
 ### Kendi Profilini Getir 🔒
 
-`GET /api/Profiles/me`
+`GET /api/users/me`
 
 Response — `200 OK`:
 
@@ -166,7 +166,7 @@ Frontend login sonrası bu endpoint'i çağırmalı; `isOnboarded` değeri `fals
 
 ### Kendi Profilini Güncelle 🔒
 
-`PUT /api/Profiles/me`
+`PUT /api/users/me`
 
 Tüm alanlar opsiyoneldir. Yalnızca gönderilen alanlar güncellenir.
 
@@ -218,7 +218,7 @@ Response — `200 OK`:
 
 ### Avatar Yukle 🔒
 
-`POST /api/Profiles/me/avatar`
+`POST /api/users/me/avatar`
 
 `multipart/form-data` ile gorsel gonderilir. Dosya Supabase Storage `avatars` bucket'ina yuklenir ve `profiles.avatar_url` guncellenir.
 
@@ -239,7 +239,7 @@ formData.append("file", {
   type: "image/jpeg",
 } as any);
 
-const response = await fetch(`${API_URL}/api/Profiles/me/avatar`, {
+const response = await fetch(`${API_URL}/api/users/me/avatar`, {
   method: "POST",
   headers: {
     Authorization: `Bearer ${token}`,
@@ -260,7 +260,7 @@ Content-Type: application/json
 Dogru curl testi:
 
 ```bash
-curl 'http://localhost:5139/api/Profiles/me/avatar' \
+curl 'http://localhost:5139/api/users/me/avatar' \
   -H "Authorization: Bearer <TOKEN>" \
   -H "Accept: application/json" \
   -F "file=@/path/to/avatar.jpg;type=image/jpeg"
@@ -278,17 +278,17 @@ Not: `appsettings.json` icinde `Supabase:ServiceRoleKey` degeri doldurulmalidir.
 
 ### Kullanıcı Profilini Getir 🔒
 
-`GET /api/Profiles/{userId}`
+`GET /api/users/{userId}`
 
 Örnek:
 
 ```http
-GET /api/Profiles/8f5ca5ee-b8c0-4e3a-bd72-4ea88bc71f83
+GET /api/users/8f5ca5ee-b8c0-4e3a-bd72-4ea88bc71f83
 ```
 
-Response — `200 OK`: `GET /api/Profiles/me` ile aynı `UserProfileDto` yapısı.
+Response — `200 OK`: `GET /api/users/me` ile aynı `UserDto` yapısı.
 
-> Gizlilik: diğer kullanıcı profillerinde `pushToken` her zaman `null` döner. Push token yalnızca `GET /api/Profiles/me` yanıtında gelir.
+> Gizlilik: diğer kullanıcı profillerinde `pushToken` her zaman `null` döner. Push token yalnızca `GET /api/users/me` yanıtında gelir.
 
 ---
 
@@ -296,7 +296,7 @@ Response — `200 OK`: `GET /api/Profiles/me` ile aynı `UserProfileDto` yapıs�
 
 ### Etkinlikleri Listele
 
-`GET /api/Events`
+`GET /api/events`
 
 Opsiyonel query parametreleri:
 
@@ -320,9 +320,9 @@ Geçmiş / gelecek ayrımı ayrı bir kolon veya tablo ile yapılmaz. `event_dat
 Örnekler:
 
 ```http
-GET /api/Events?sportType=football&search=halı%20saha&latitude=41.0082&longitude=28.9784&radiusKm=10
-GET /api/Events?timeframe=past
-GET /api/Events?timeframe=all&sportType=tennis
+GET /api/events?sportType=football&search=halı%20saha&latitude=41.0082&longitude=28.9784&radiusKm=10
+GET /api/events?timeframe=past
+GET /api/events?timeframe=all&sportType=tennis
 ```
 
 Response — `200 OK`:
@@ -350,12 +350,12 @@ Response — `200 OK`:
 
 ### Kullanıcının Geçmiş Etkinlikleri 🔒
 
-`GET /api/Events/me/past`
+`GET /api/events/me/past`
 
 Giriş yapmış kullanıcının **oluşturduğu** veya **approved katılımcısı olduğu** ve `eventDate < şimdi` olan etkinlikleri döner (en yeniden eskiye).
 
 ```http
-GET /api/Events/me/past
+GET /api/events/me/past
 Authorization: Bearer <JWT_TOKEN>
 ```
 
@@ -373,7 +373,7 @@ CREATE INDEX IF NOT EXISTS idx_event_participants_user_status
 
 ### Etkinlik Detayı
 
-`GET /api/Events/{id}`
+`GET /api/events/{id}`
 
 Response — `200 OK`:
 
@@ -408,7 +408,7 @@ Response — `200 OK`:
 
 ### Etkinlik Oluştur 🔒
 
-`POST /api/Events`
+`POST /api/events`
 
 Request:
 
@@ -453,14 +453,14 @@ Response — `201 Created`:
 
 ### Etkinlik Sil 🔒
 
-`DELETE /api/Events/{id}`
+`DELETE /api/events/{id}`
 
 Request body yoktur. Yalnızca etkinliği oluşturan kullanıcı (`createdBy`) silebilir.
 
 Örnek:
 
 ```http
-DELETE /api/Events/24801432-1ae7-4b2c-9f52-852a883df63f
+DELETE /api/events/24801432-1ae7-4b2c-9f52-852a883df63f
 Authorization: Bearer <JWT_TOKEN>
 ```
 
@@ -476,7 +476,7 @@ Başkasının etkinliğini silmeye çalışırsan `403 Forbidden`, bulunamazsa `
 
 ### Etkinliğe Katılım İsteği Gönder 🔒
 
-`POST /api/Events/{id}/join`
+`POST /api/events/{id}/join`
 
 Request body yoktur.
 
@@ -496,7 +496,7 @@ Kullanıcı kendi etkinliğine istek gönderemez. Aynı etkinlik için mevcut `p
 
 ### Katılımcıları Listele
 
-`GET /api/Events/{id}/participants`
+`GET /api/events/{id}/participants`
 
 Response — `200 OK`:
 
@@ -516,7 +516,7 @@ Response — `200 OK`:
 
 ### Katılım İsteğini Onayla/Reddet 🔒
 
-`PATCH /api/Events/{id}/participants/{userId}`
+`PATCH /api/events/{id}/participants/{userId}`
 
 Bu işlemi yalnızca etkinlik sahibi yapabilir.
 
@@ -558,7 +558,7 @@ Chat endpoint'lerini yalnızca etkinlik sahibi ve `approved` katılımcılar kul
 
 ### Mesajları Getir 🔒
 
-`GET /api/Events/{eventId}/messages`
+`GET /api/events/{eventId}/messages`
 
 Response — `200 OK`:
 
@@ -578,7 +578,7 @@ Response — `200 OK`:
 
 ### Mesaj Gönder 🔒
 
-`POST /api/Events/{eventId}/messages`
+`POST /api/events/{eventId}/messages`
 
 Request:
 
@@ -610,7 +610,7 @@ Response — `201 Created`:
 
 ### Değerlendirme Oluştur 🔒
 
-`POST /api/Reviews`
+`POST /api/reviews`
 
 Request:
 
@@ -649,7 +649,7 @@ Response — `201 Created`:
 
 ### Kullanıcının Değerlendirmelerini Getir
 
-`GET /api/Reviews/user/{userId}`
+`GET /api/reviews/user/{userId}`
 
 Response — `200 OK`:
 
@@ -675,7 +675,7 @@ Response — `200 OK`:
 
 ### Spor Branşlarını Listele
 
-`GET /api/Sports`
+`GET /api/sports`
 
 Response — `200 OK`:
 
@@ -700,12 +700,12 @@ Response — `200 OK`:
 
 ## Önerilen Frontend Akışı
 
-1. `POST /api/Auth/login` veya `register`
+1. `POST /api/auth/login` veya `register`
 2. JWT token'ı güvenli storage'da sakla.
-3. `GET /api/Profiles/me` çağır.
+3. `GET /api/users/me` çağır.
 4. `isOnboarded === false` ise onboarding'i göster.
-5. Onboarding bitince `PUT /api/Profiles/me` ile `isOnboarded: true` gönder.
-6. Expo token alındığında `POST /api/Auth/update-push-token` çağır.
+5. Onboarding bitince `PUT /api/users/me` ile `isOnboarded: true` gönder.
+6. Expo token alındığında `POST /api/auth/update-push-token` çağır.
 7. Korumalı tüm isteklerde `Authorization: Bearer <token>` gönder.
 
 ## TypeScript İstek Yardımcısı

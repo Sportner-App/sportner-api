@@ -14,14 +14,14 @@ namespace Sportner.Application.UnitTests;
 public class AuthServiceTests
 {
     private readonly Mock<IUnitOfWork> _uow = new();
-    private readonly Mock<IProfileRepository> _profiles = new();
+    private readonly Mock<IUserRepository> _users = new();
     private readonly Mock<ITokenService> _tokens = new();
     private readonly Mock<ICurrentUser> _currentUser = new();
 
     public AuthServiceTests()
     {
-        _uow.SetupGet(x => x.Profiles).Returns(_profiles.Object);
-        _tokens.Setup(x => x.CreateToken(It.IsAny<Profile>())).Returns("jwt-token");
+        _uow.SetupGet(x => x.Users).Returns(_users.Object);
+        _tokens.Setup(x => x.CreateToken(It.IsAny<User>())).Returns("jwt-token");
     }
 
     private AuthService Sut() => new(_uow.Object, _tokens.Object, _currentUser.Object);
@@ -29,7 +29,7 @@ public class AuthServiceTests
     [Fact]
     public async Task Login_InvalidPassword_ThrowsBadRequest()
     {
-        var profile = new Profile
+        var user = new User
         {
             Id = Guid.NewGuid(),
             Email = "user@example.com",
@@ -37,9 +37,9 @@ public class AuthServiceTests
             FullName = "User"
         };
 
-        _profiles
-            .Setup(p => p.FindOneAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Profile, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(profile);
+        _users
+            .Setup(p => p.FindOneAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(user);
 
         var act = () => Sut().LoginAsync(new LoginDto("user@example.com", "wrong"));
 
@@ -50,7 +50,7 @@ public class AuthServiceTests
     [Fact]
     public async Task Login_ValidCredentials_ReturnsToken()
     {
-        var profile = new Profile
+        var user = new User
         {
             Id = Guid.NewGuid(),
             Email = "user@example.com",
@@ -58,29 +58,29 @@ public class AuthServiceTests
             FullName = "User"
         };
 
-        _profiles
-            .Setup(p => p.FindOneAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Profile, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(profile);
+        _users
+            .Setup(p => p.FindOneAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(user);
 
         var result = await Sut().LoginAsync(new LoginDto("user@example.com", "correct"));
 
         result.Token.Should().Be("jwt-token");
-        result.UserId.Should().Be(profile.Id);
+        result.UserId.Should().Be(user.Id);
         result.Email.Should().Be("user@example.com");
     }
 
     [Fact]
     public async Task Register_ExistingWithPassword_Throws()
     {
-        var existing = new Profile
+        var existing = new User
         {
             Id = Guid.NewGuid(),
             Email = "user@example.com",
             PasswordHash = "hash"
         };
 
-        _profiles
-            .Setup(p => p.FindOneAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Profile, bool>>>(), It.IsAny<CancellationToken>()))
+        _users
+            .Setup(p => p.FindOneAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existing);
 
         var act = () => Sut().RegisterAsync(new RegisterDto("user@example.com", "password1", "Name"));

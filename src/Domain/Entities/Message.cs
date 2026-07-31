@@ -9,5 +9,5 @@ public class Message
     public DateTime CreatedAt { get; set; }
 
     public Event? Event { get; set; }
-    public Profile? User { get; set; }
+    public User? User { get; set; }
 }

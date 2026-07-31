@@ -33,7 +33,7 @@ public record EventDetailDto(
     string? OrganizerAvatarUrl,
     DateTime CreatedAt,
     int ApprovedParticipantsCount,
-    List<ParticipantDto> Participants
+    List<UserEventDto> Participants
 );
 
 public record CreateEventDto(
@@ -47,7 +47,7 @@ public record CreateEventDto(
     double Longitude
 );
 
-public record ParticipantDto(
+public record UserEventDto(
     Guid UserId,
     string? FullName,
     string? AvatarUrl,
@@ -55,7 +55,7 @@ public record ParticipantDto(
     string Status
 );
 
-public record UpdateParticipantStatusDto(
+public record UpdateUserEventStatusDto(
     string Status
 );
 

@@ -1,6 +1,6 @@
 using System.Net;
 using Sportner.Application.Abstractions;
-using Sportner.Application.DTOs.Profiles;
+using Sportner.Application.DTOs.Users;
 using Sportner.Application.Helpers;
 using Sportner.Application.Mappers;
 using Sportner.Domain.Abstractions;
@@ -10,10 +10,10 @@ using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Services;
 
-public class ProfileService(
+public class UserService(
     IUnitOfWork unitOfWork,
     IStorageService storageService,
-    ICurrentUser currentUser) : IProfileService
+    ICurrentUser currentUser) : IUserService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -25,76 +25,76 @@ public class ProfileService(
 
     private const long MaxAvatarBytes = 5 * 1024 * 1024; // 5 MB
 
-    public async Task<UserProfileDto> GetMeAsync(CancellationToken cancellationToken = default)
+    public async Task<UserDto> GetMeAsync(CancellationToken cancellationToken = default)
     {
         var userId = RequireUserId();
 
-        var profile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken)
+        var user = await unitOfWork.Users.FindOneAsync(p => p.Id == userId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Profile_NotFound);
 
-        return profile.ToDto(includePushToken: true);
+        return user.ToDto(includePushToken: true);
     }
 
-    public async Task<UserProfileDto> UpdateMeAsync(
-        UpdateProfileDto dto,
+    public async Task<UserDto> UpdateMeAsync(
+        UpdateUserDto dto,
         CancellationToken cancellationToken = default)
     {
         var userId = RequireUserId();
 
-        var profile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken)
+        var user = await unitOfWork.Users.FindOneAsync(p => p.Id == userId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Profile_NotFound);
 
         if (dto.FullName is not null)
         {
-            profile.FullName = dto.FullName.Trim();
+            user.FullName = dto.FullName.Trim();
         }
 
         if (dto.AvatarUrl is not null)
         {
-            profile.AvatarUrl = string.IsNullOrWhiteSpace(dto.AvatarUrl)
+            user.AvatarUrl = string.IsNullOrWhiteSpace(dto.AvatarUrl)
                 ? null
                 : dto.AvatarUrl.Trim();
         }
 
         if (dto.Bio is not null)
         {
-            profile.Bio = string.IsNullOrWhiteSpace(dto.Bio)
+            user.Bio = string.IsNullOrWhiteSpace(dto.Bio)
                 ? null
                 : dto.Bio.Trim();
         }
 
         if (dto.Sports is not null)
         {
-            profile.Sports = dto.Sports;
+            user.Sports = dto.Sports;
         }
 
         if (dto.IntroVideoUrl is not null)
         {
-            profile.IntroVideoUrl = string.IsNullOrWhiteSpace(dto.IntroVideoUrl)
+            user.IntroVideoUrl = string.IsNullOrWhiteSpace(dto.IntroVideoUrl)
                 ? null
                 : dto.IntroVideoUrl.Trim();
         }
 
         if (dto.BirthDate is not null)
         {
-            profile.BirthDate = SkillLevelHelper.ToUtc(dto.BirthDate.Value);
+            user.BirthDate = SkillLevelHelper.ToUtc(dto.BirthDate.Value);
         }
 
         if (dto.IsOnboarded is not null)
         {
-            profile.IsOnboarded = dto.IsOnboarded.Value;
+            user.IsOnboarded = dto.IsOnboarded.Value;
         }
 
         if (dto.SkillLevels is not null)
         {
-            profile.SkillLevels = SkillLevelHelper.ToJsonbString(dto.SkillLevels.Value);
+            user.SkillLevels = SkillLevelHelper.ToJsonbString(dto.SkillLevels.Value);
         }
 
-        profile.UpdatedAt = DateTime.UtcNow;
-        unitOfWork.Profiles.UpdateOne(profile);
+        user.UpdatedAt = DateTime.UtcNow;
+        unitOfWork.Users.UpdateOne(user);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return profile.ToDto(includePushToken: true);
+        return user.ToDto(includePushToken: true);
     }
 
     public async Task<AvatarUploadResponseDto> UploadAvatarAsync(
@@ -119,7 +119,7 @@ public class ProfileService(
             throw new ApiException(HttpStatusCode.BadRequest, ValidationResource.Exception_Profile_AvatarRequired);
         }
 
-        var profile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken)
+        var user = await unitOfWork.Users.FindOneAsync(p => p.Id == userId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Profile_NotFound);
 
         string avatarUrl;
@@ -137,20 +137,20 @@ public class ProfileService(
             throw new ApiException(HttpStatusCode.BadRequest, ex.Message);
         }
 
-        profile.AvatarUrl = avatarUrl;
-        profile.UpdatedAt = DateTime.UtcNow;
-        unitOfWork.Profiles.UpdateOne(profile);
+        user.AvatarUrl = avatarUrl;
+        user.UpdatedAt = DateTime.UtcNow;
+        unitOfWork.Users.UpdateOne(user);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AvatarUploadResponseDto(avatarUrl);
     }
 
-    public async Task<UserProfileDto> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserDto> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var profile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken)
+        var user = await unitOfWork.Users.FindOneAsync(p => p.Id == userId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Profile_NotFound);
 
-        return profile.ToDto(includePushToken: false);
+        return user.ToDto(includePushToken: false);
     }
 
     private Guid RequireUserId() =>

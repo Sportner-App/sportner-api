@@ -18,7 +18,7 @@ public class ReviewService(
     public async Task<ReviewDto> CreateAsync(CreateReviewDto dto, CancellationToken cancellationToken = default)
     {
         var reviewerId = RequireUserId();
-        var approvedStatus = ParticipantStatus.Approved.ToDbValue();
+        var approvedStatus = UserEventStatus.Approved.ToDbValue();
 
         if (dto.ReviewedId == reviewerId)
         {
@@ -29,14 +29,14 @@ public class ReviewService(
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Event_NotFound);
 
         var reviewerParticipated = eventEntity.CreatedBy == reviewerId ||
-            await unitOfWork.EventParticipants.AnyAsync(
+            await unitOfWork.UserEvents.AnyAsync(
                 p => p.EventId == dto.EventId &&
                      p.UserId == reviewerId &&
                      p.Status == approvedStatus,
                 cancellationToken);
 
         var reviewedParticipated = eventEntity.CreatedBy == dto.ReviewedId ||
-            await unitOfWork.EventParticipants.AnyAsync(
+            await unitOfWork.UserEvents.AnyAsync(
                 p => p.EventId == dto.EventId &&
                      p.UserId == dto.ReviewedId &&
                      p.Status == approvedStatus,
@@ -58,7 +58,7 @@ public class ReviewService(
             throw new ApiException(HttpStatusCode.BadRequest, ValidationResource.Exception_Review_AlreadyExists);
         }
 
-        var reviewedProfile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == dto.ReviewedId, cancellationToken)
+        var reviewedUser = await unitOfWork.Users.FindOneAsync(p => p.Id == dto.ReviewedId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Review_UserNotFound);
 
         var review = new Review
@@ -74,17 +74,17 @@ public class ReviewService(
 
         await unitOfWork.Reviews.InsertOneAsync(review, cancellationToken);
 
-        var previousCount = reviewedProfile.ReviewCount ?? 0;
-        var previousAvg = reviewedProfile.AvgRating ?? 0m;
+        var previousCount = reviewedUser.ReviewCount ?? 0;
+        var previousAvg = reviewedUser.AvgRating ?? 0m;
         var newCount = previousCount + 1;
-        reviewedProfile.ReviewCount = newCount;
-        reviewedProfile.AvgRating = ((previousAvg * previousCount) + dto.Rating) / newCount;
-        reviewedProfile.UpdatedAt = DateTime.UtcNow;
-        unitOfWork.Profiles.UpdateOne(reviewedProfile);
+        reviewedUser.ReviewCount = newCount;
+        reviewedUser.AvgRating = ((previousAvg * previousCount) + dto.Rating) / newCount;
+        reviewedUser.UpdatedAt = DateTime.UtcNow;
+        unitOfWork.Users.UpdateOne(reviewedUser);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        review.Reviewer = await unitOfWork.Profiles.FindByIdAsync(reviewerId, cancellationToken);
+        review.Reviewer = await unitOfWork.Users.FindByIdAsync(reviewerId, cancellationToken);
 
         return review.ToDto();
     }

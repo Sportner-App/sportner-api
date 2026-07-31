@@ -1,6 +1,6 @@
 using Microsoft.OpenApi;
 
-namespace Sportner.API.Extensions;
+namespace Sportner.API.Extensions.Swagger;
 
 public static class SwaggerExtension
 {

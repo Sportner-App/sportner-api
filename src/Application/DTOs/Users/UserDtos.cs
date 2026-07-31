@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-namespace Sportner.Application.DTOs.Profiles;
+namespace Sportner.Application.DTOs.Users;
 
-public record UserProfileDto(
+public record UserDto(
     Guid UserId,
     string Email,
     string? FullName,
@@ -19,7 +19,7 @@ public record UserProfileDto(
     DateTime? UpdatedAt
 );
 
-public record UpdateProfileDto(
+public record UpdateUserDto(
     string? FullName,
     string? AvatarUrl,
     string? Bio,

@@ -4,9 +4,9 @@ namespace Sportner.Domain.Data.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {
-    IProfileRepository Profiles { get; }
+    IUserRepository Users { get; }
     IEventRepository Events { get; }
-    IEventParticipantRepository EventParticipants { get; }
+    IUserEventRepository UserEvents { get; }
     IMessageRepository Messages { get; }
     IReviewRepository Reviews { get; }
     ISportRepository Sports { get; }
@@ -18,7 +18,7 @@ public interface IUnitOfWork : IDisposable
         CancellationToken cancellationToken = default);
 }
 
-public interface IProfileRepository : IBaseRepository<Profile>
+public interface IUserRepository : IBaseRepository<User>
 {
 }
 
@@ -26,7 +26,7 @@ public interface IEventRepository : IBaseRepository<Event>
 {
 }
 
-public interface IEventParticipantRepository : IBaseRepository<EventParticipant>
+public interface IUserEventRepository : IBaseRepository<UserEvent>
 {
 }
 

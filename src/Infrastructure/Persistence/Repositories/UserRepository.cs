@@ -3,5 +3,5 @@ using Sportner.Domain.Entities;
 
 namespace Sportner.Infrastructure.Persistence.Repositories;
 
-public class ReviewRepository(SportnerDbContext context)
-    : BaseRepository<Review>(context), IReviewRepository;
+public class UserRepository(SportnerDbContext context)
+    : BaseRepository<User>(context), IUserRepository;

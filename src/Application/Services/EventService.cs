@@ -132,7 +132,7 @@ public class EventService(
     {
         var userId = RequireUserId();
         var now = DateTime.UtcNow;
-        var approvedStatus = ParticipantStatus.Approved.ToDbValue();
+        var approvedStatus = UserEventStatus.Approved.ToDbValue();
 
         var events = await unitOfWork.Events
             .AsQueryable()
@@ -141,7 +141,7 @@ public class EventService(
             .Where(e => e.EventDate < now)
             .Where(e =>
                 e.CreatedBy == userId ||
-                e.Participants.Any(p => p.UserId == userId && p.Status == approvedStatus))
+                e.UserEvents.Any(p => p.UserId == userId && p.Status == approvedStatus))
             .OrderByDescending(e => e.EventDate)
             .ToListAsync(cancellationToken);
 
@@ -154,7 +154,7 @@ public class EventService(
             .AsQueryable()
             .AsNoTracking()
             .Include(e => e.Organizer)
-            .Include(e => e.Participants)
+            .Include(e => e.UserEvents)
                 .ThenInclude(p => p.User)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Event_NotFound);
@@ -185,7 +185,7 @@ public class EventService(
         await unitOfWork.Events.InsertOneAsync(eventEntity, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        eventEntity.Organizer = await unitOfWork.Profiles.FindByIdAsync(userId, cancellationToken);
+        eventEntity.Organizer = await unitOfWork.Users.FindByIdAsync(userId, cancellationToken);
 
         return eventEntity.ToDto();
     }
@@ -208,15 +208,15 @@ public class EventService(
         return new MessageResponseDto(ValidationResource.Exception_Event_Deleted);
     }
 
-    public async Task<ParticipantDto> JoinAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<UserEventDto> JoinAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var userId = RequireUserId();
-        var pendingStatus = ParticipantStatus.Pending.ToDbValue();
-        var approvedStatus = ParticipantStatus.Approved.ToDbValue();
+        var pendingStatus = UserEventStatus.Pending.ToDbValue();
+        var approvedStatus = UserEventStatus.Approved.ToDbValue();
 
         var eventEntity = await unitOfWork.Events
             .AsQueryable()
-            .Include(e => e.Participants)
+            .Include(e => e.UserEvents)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Event_NotFound);
 
@@ -225,7 +225,7 @@ public class EventService(
             throw new ApiException(HttpStatusCode.BadRequest, ValidationResource.Exception_Event_CannotJoinOwn);
         }
 
-        var existing = eventEntity.Participants.FirstOrDefault(p => p.UserId == userId);
+        var existing = eventEntity.UserEvents.FirstOrDefault(p => p.UserId == userId);
         if (existing is not null)
         {
             if (existing.Status == pendingStatus || existing.Status == approvedStatus)
@@ -234,11 +234,11 @@ public class EventService(
             }
 
             existing.Status = pendingStatus;
-            unitOfWork.EventParticipants.UpdateOne(existing);
+            unitOfWork.UserEvents.UpdateOne(existing);
         }
         else
         {
-            existing = new EventParticipant
+            existing = new UserEvent
             {
                 Id = Guid.NewGuid(),
                 EventId = eventEntity.Id,
@@ -246,13 +246,13 @@ public class EventService(
                 Status = pendingStatus,
                 CreatedAt = DateTime.UtcNow
             };
-            await unitOfWork.EventParticipants.InsertOneAsync(existing, cancellationToken);
+            await unitOfWork.UserEvents.InsertOneAsync(existing, cancellationToken);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var requester = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken);
-        var owner = await unitOfWork.Profiles.FindOneAsync(p => p.Id == eventEntity.CreatedBy, cancellationToken);
+        var requester = await unitOfWork.Users.FindOneAsync(p => p.Id == userId, cancellationToken);
+        var owner = await unitOfWork.Users.FindOneAsync(p => p.Id == eventEntity.CreatedBy, cancellationToken);
 
         var requesterName = string.IsNullOrWhiteSpace(requester?.FullName)
             ? ValidationResource.Notification_RequesterFallback
@@ -265,7 +265,7 @@ public class EventService(
             new { type = "join_request", eventId = eventEntity.Id, userId },
             cancellationToken);
 
-        return new ParticipantDto(
+        return new UserEventDto(
             existing.UserId,
             requester?.FullName,
             requester?.AvatarUrl,
@@ -274,14 +274,14 @@ public class EventService(
         );
     }
 
-    public async Task<IReadOnlyList<ParticipantDto>> GetParticipantsAsync(
+    public async Task<IReadOnlyList<UserEventDto>> GetParticipantsAsync(
         Guid id,
         CancellationToken cancellationToken = default)
     {
         var eventEntity = await unitOfWork.Events.FindOneAsync(e => e.Id == id, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Event_NotFound);
 
-        var participants = await unitOfWork.EventParticipants
+        var participants = await unitOfWork.UserEvents
             .AsQueryable()
             .AsNoTracking()
             .Include(p => p.User)
@@ -289,26 +289,26 @@ public class EventService(
             .OrderBy(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return participants.Select(p => p.ToParticipantDto(eventEntity.SportType)).ToList();
+        return participants.Select(p => p.ToUserEventDto(eventEntity.SportType)).ToList();
     }
 
-    public async Task<ParticipantDto> UpdateParticipantStatusAsync(
+    public async Task<UserEventDto> UpdateParticipantStatusAsync(
         Guid id,
         Guid userId,
-        UpdateParticipantStatusDto dto,
+        UpdateUserEventStatusDto dto,
         CancellationToken cancellationToken = default)
     {
         var currentUserId = RequireUserId();
 
-        if (!ParticipantStatusExtensions.TryParseDbValue(dto.Status, out var parsedStatus) ||
-            parsedStatus is not (ParticipantStatus.Approved or ParticipantStatus.Rejected))
+        if (!UserEventStatusExtensions.TryParseDbValue(dto.Status, out var parsedStatus) ||
+            parsedStatus is not (UserEventStatus.Approved or UserEventStatus.Rejected))
         {
             throw new ApiException(HttpStatusCode.BadRequest, ValidationResource.Exception_Event_InvalidParticipantStatus);
         }
 
         var status = parsedStatus.ToDbValue();
-        var approvedStatus = ParticipantStatus.Approved.ToDbValue();
-        var rejectedStatus = ParticipantStatus.Rejected.ToDbValue();
+        var approvedStatus = UserEventStatus.Approved.ToDbValue();
+        var rejectedStatus = UserEventStatus.Rejected.ToDbValue();
 
         var eventEntity = await unitOfWork.Events.FindOneAsync(e => e.Id == id, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Event_NotFound);
@@ -318,7 +318,7 @@ public class EventService(
             throw new ApiException(HttpStatusCode.Forbidden, ValidationResource.Exception_Event_Forbidden);
         }
 
-        var participant = await unitOfWork.EventParticipants
+        var participant = await unitOfWork.UserEvents
             .AsQueryable()
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.EventId == id && p.UserId == userId, cancellationToken)
@@ -328,7 +328,7 @@ public class EventService(
 
         if (status == approvedStatus)
         {
-            var approvedCount = await unitOfWork.EventParticipants.CountAsync(
+            var approvedCount = await unitOfWork.UserEvents.CountAsync(
                 p => p.EventId == id && p.Status == approvedStatus,
                 cancellationToken);
 
@@ -349,7 +349,7 @@ public class EventService(
             eventEntity.ParticipantsCount = Math.Max(0, eventEntity.ParticipantsCount - 1);
         }
 
-        unitOfWork.EventParticipants.UpdateOne(participant);
+        unitOfWork.UserEvents.UpdateOne(participant);
         unitOfWork.Events.UpdateOne(eventEntity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -372,7 +372,7 @@ public class EventService(
                 cancellationToken);
         }
 
-        return participant.ToParticipantDto(eventEntity.SportType);
+        return participant.ToUserEventDto(eventEntity.SportType);
     }
 
     private Guid RequireUserId() =>

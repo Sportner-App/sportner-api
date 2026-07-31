@@ -73,7 +73,7 @@ public class MessageService(
         await unitOfWork.Messages.InsertOneAsync(message, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        message.User = await unitOfWork.Profiles.FindByIdAsync(userId, cancellationToken);
+        message.User = await unitOfWork.Users.FindByIdAsync(userId, cancellationToken);
 
         return message.ToDto();
     }
@@ -89,8 +89,8 @@ public class MessageService(
             return true;
         }
 
-        var approvedStatus = ParticipantStatus.Approved.ToDbValue();
-        return await unitOfWork.EventParticipants.AnyAsync(
+        var approvedStatus = UserEventStatus.Approved.ToDbValue();
+        return await unitOfWork.UserEvents.AnyAsync(
             p => p.EventId == eventId &&
                  p.UserId == userId &&
                  p.Status == approvedStatus,

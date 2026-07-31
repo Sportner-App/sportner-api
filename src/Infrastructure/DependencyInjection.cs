@@ -17,7 +17,7 @@ public static class DependencyInjection
     {
         services.Configure<SupabaseSettings>(configuration.GetSection(SupabaseSettings.SectionName));
 
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContext<SportnerDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("SupabaseConnection")));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -27,7 +27,7 @@ public static class DependencyInjection
 
         services.AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("SupabaseConnection")!)
-            .AddDbContextCheck<AppDbContext>();
+            .AddDbContextCheck<SportnerDbContext>();
 
         return services;
     }

@@ -14,10 +14,10 @@ This document is the source of truth for how we build and change Sportner API af
 
 ```
 src/
-  Domain/           Entities, enums, ApiException, IUnitOfWork / repo contracts, ICurrentUser
+  Domain/           Entities (User, UserEvent, Event, …), enums, ApiException, IUnitOfWork / repo contracts, ICurrentUser
   Application/      Services, DTOs, validators, mappers, helpers, abstractions (IToken/INotification/IStorage)
-  Infrastructure/   AppDbContext, repositories, UoW, external services, migrations, AddInfrastructure
-  API/              Controllers, Program, GlobalExceptionHandler, Swagger, localization wiring
+  Infrastructure/   SportnerDbContext, Persistence/Configurations, repositories, UoW, transformers, migrations, AddInfrastructure
+  API/              Controllers, Program, GlobalExceptionHandler, Extensions (Collection/Auth/Cors/RateLimiting/Health/Swagger/Localization)
   Localization/     ValidationResource.resx + .en.resx + .tr.resx + Designer.cs
 tests/
   Domain.UnitTests / Application.UnitTests / API.IntegrationTests
@@ -34,12 +34,15 @@ tests/
 | Data access | `IUnitOfWork` + repositories. **SaveChanges only on UoW**. Do not call `UpdateOne` on already-tracked entities after `Find*` — mutate properties then `SaveChangesAsync` |
 | Errors | Throw `ApiException(HttpStatusCode, ValidationResource....)`. `GlobalExceptionHandler` maps to `{ "message": "..." }` |
 | Validation | FluentValidation in Application; filter in API. Messages from `ValidationResource` |
-| Localization | TMS-style `ValidationResource` + `Accept-Language` (`en-US` default, `tr-TR` supported). No hardcoded user-facing strings |
+| Localization | TMS-style `ValidationResource` + `Accept-Language` (`tr-TR` default UI culture, `en-US` supported; data culture `en-US`). No hardcoded user-facing strings |
 | Mapping | Manual static mappers (no AutoMapper) |
 | Auth identity | JWT `sub` + `NameIdentifier`; resolve via `ICurrentUser` only |
+| Routes | Kebab-case via `KebabCaseParameterTransformer` on `[controller]` tokens (e.g. `UsersController` → `/api/users`). Prefer lowercase hardcoded route segments |
+| JSON | camelCase property names (`JsonNamingPolicy.CamelCase` + Newtonsoft `CamelCasePropertyNamesContractResolver`) |
 | API contract | Keep mobile routes/DTO shapes stable unless explicitly versioning. Errors stay `{ "message" }` |
-| Privacy | `pushToken` only on `GET /api/Profiles/me`, never on other users’ profiles |
-| Swagger | Development only; Bearer Authorize via `AddCustomSwagger` |
+| Naming | Domain: `User` / `UserEvent` / `UserEventStatus`. Physical tables stay `profiles` / `event_participants` |
+| Privacy | `pushToken` only on `GET /api/users/me`, never on other users’ profiles |
+| Swagger | Development only; Bearer Authorize via `AddCustomSwagger` (wired from `AddCustomCollection`) |
 | Config | Secrets in `appsettings.Development.json` / user-secrets / env. Production placeholders + env overrides |
 | New endpoints | Controller → service interface/impl → repo/UoW if needed → validator + ValidationResource keys (en+tr) |
 

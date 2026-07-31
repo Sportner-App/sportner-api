@@ -10,7 +10,7 @@ namespace Sportner.Infrastructure.Services;
 
 public class TokenService(IConfiguration configuration) : ITokenService
 {
-    public string CreateToken(Profile user)
+    public string CreateToken(User user)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
         var secret = jwtSettings["Secret"]

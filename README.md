@@ -80,7 +80,7 @@ Against an existing Supabase schema, review the migration before applying (uniqu
 
 ## Localization
 
-Send `Accept-Language: tr-TR` or `en-US`. Default UI culture is `en-US` (TMS-style). Messages come from strongly-typed `ValidationResource` (`.resx` + `.Designer.cs`).
+Send `Accept-Language: tr-TR` or `en-US`. Default UI culture is `tr-TR`; data culture stays `en-US`. Messages come from strongly-typed `ValidationResource` (`.resx` + `.Designer.cs`).
 
 ## Tests
 

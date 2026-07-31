@@ -10,11 +10,11 @@ public interface IEventService
     Task<EventDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<EventDto> CreateAsync(CreateEventDto dto, CancellationToken cancellationToken = default);
     Task<MessageResponseDto> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<ParticipantDto> JoinAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<ParticipantDto>> GetParticipantsAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<ParticipantDto> UpdateParticipantStatusAsync(
+    Task<UserEventDto> JoinAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<UserEventDto>> GetParticipantsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<UserEventDto> UpdateParticipantStatusAsync(
         Guid id,
         Guid userId,
-        UpdateParticipantStatusDto dto,
+        UpdateUserEventStatusDto dto,
         CancellationToken cancellationToken = default);
 }

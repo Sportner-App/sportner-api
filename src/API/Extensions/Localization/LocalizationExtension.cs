@@ -2,7 +2,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 
-namespace Sportner.API.Extensions;
+namespace Sportner.API.Extensions.Localization;
 
 public static class LocalizationExtension
 {
@@ -23,7 +23,7 @@ public static class LocalizationExtension
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+            options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "tr-TR");
             options.SupportedCultures = SupportedDataCultures;
             options.SupportedUICultures = SupportedCultures;
             options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];

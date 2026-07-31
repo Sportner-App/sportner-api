@@ -6,10 +6,10 @@ namespace Sportner.Infrastructure.Persistence.Repositories;
 
 public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
-    protected readonly AppDbContext Context;
+    protected readonly SportnerDbContext Context;
     protected readonly DbSet<TEntity> DbSet;
 
-    public BaseRepository(AppDbContext context)
+    public BaseRepository(SportnerDbContext context)
     {
         Context = context;
         DbSet = context.Set<TEntity>();

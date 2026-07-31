@@ -7,7 +7,7 @@ namespace Sportner.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/Events/{eventId:guid}/messages")]
+[Route("api/events/{eventId:guid}/messages")]
 public class MessagesController(IMessageService messageService) : ControllerBase
 {
     [HttpGet]

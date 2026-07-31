@@ -11,6 +11,6 @@ public class Review
     public DateTime CreatedAt { get; set; }
 
     public Event? Event { get; set; }
-    public Profile? Reviewer { get; set; }
-    public Profile? Reviewed { get; set; }
+    public User? Reviewer { get; set; }
+    public User? Reviewed { get; set; }
 }

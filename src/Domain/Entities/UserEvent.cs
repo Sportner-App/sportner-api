@@ -1,6 +1,6 @@
 namespace Sportner.Domain.Entities;
 
-public class EventParticipant
+public class UserEvent
 {
     public Guid Id { get; set; }
     public Guid EventId { get; set; }
@@ -9,5 +9,5 @@ public class EventParticipant
     public DateTime CreatedAt { get; set; }
 
     public Event? Event { get; set; }
-    public Profile? User { get; set; }
+    public User? User { get; set; }
 }

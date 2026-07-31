@@ -1,89 +1,22 @@
-using System.Text;
-using System.Threading.RateLimiting;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
-using Sportner.API.Extensions;
-using Sportner.API.Filters;
-using Sportner.API.Middleware;
-using Sportner.API.Services;
+using Sportner.API.Extensions.Authentication;
+using Sportner.API.Extensions.Collection;
+using Sportner.API.Extensions.Cors;
+using Sportner.API.Extensions.HealthCheck;
+using Sportner.API.Extensions.Localization;
+using Sportner.API.Extensions.RateLimiting;
+using Sportner.API.Extensions.Swagger;
 using Sportner.Application;
-using Sportner.Domain.Abstractions;
 using Sportner.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<FluentValidationFilter>();
-});
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUser, CurrentUser>();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
+builder.Services.AddCustomCollection(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCustomLocalization();
-builder.Services.AddCustomSwagger();
-
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secret = jwtSettings["Secret"]
-    ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-            ClockSkew = TimeSpan.FromMinutes(1),
-            NameClaimType = JwtRegisteredClaimNames.Sub
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        if (builder.Environment.IsDevelopment())
-        {
-            policy.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        }
-        else
-        {
-            var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-            policy.WithOrigins(origins)
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        }
-    });
-});
-
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("auth", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 20;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueLimit = 0;
-        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
-});
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
+builder.Services.AddCustomRateLimiting();
 
 var app = builder.Build();
 
@@ -104,14 +37,8 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-app.MapHealthChecks("/health/live", new HealthCheckOptions
-{
-    Predicate = _ => false
-});
-app.MapHealthChecks("/health/ready");
+app.UseAppHealthChecks();
 
 app.Run();
 
 public partial class Program;
-

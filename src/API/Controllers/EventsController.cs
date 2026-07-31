@@ -72,11 +72,11 @@ public class EventsController(IEventService eventService) : ControllerBase
 
     [Authorize]
     [HttpPost("{id:guid}/join")]
-    [ProducesResponseType(typeof(ParticipantDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserEventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ParticipantDto>> Join(
+    public async Task<ActionResult<UserEventDto>> Join(
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -85,9 +85,9 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpGet("{id:guid}/participants")]
-    [ProducesResponseType(typeof(IReadOnlyList<ParticipantDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IReadOnlyList<UserEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IReadOnlyList<ParticipantDto>>> GetParticipants(
+    public async Task<ActionResult<IReadOnlyList<UserEventDto>>> GetParticipants(
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -97,15 +97,15 @@ public class EventsController(IEventService eventService) : ControllerBase
 
     [Authorize]
     [HttpPatch("{id:guid}/participants/{userId:guid}")]
-    [ProducesResponseType(typeof(ParticipantDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserEventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ParticipantDto>> UpdateParticipantStatus(
+    public async Task<ActionResult<UserEventDto>> UpdateParticipantStatus(
         Guid id,
         Guid userId,
-        [FromBody] UpdateParticipantStatusDto dto,
+        [FromBody] UpdateUserEventStatusDto dto,
         CancellationToken cancellationToken)
     {
         var result = await eventService.UpdateParticipantStatusAsync(

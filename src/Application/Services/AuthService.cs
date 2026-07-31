@@ -18,9 +18,9 @@ public class AuthService(
     {
         var email = dto.Email.Trim().ToLowerInvariant();
 
-        var existing = await unitOfWork.Profiles.FindOneAsync(p => p.Email == email, cancellationToken);
+        var existing = await unitOfWork.Users.FindOneAsync(p => p.Email == email, cancellationToken);
 
-        // Existing Supabase profile without API password: allow setting password once.
+        // Existing Supabase user without API password: allow setting password once.
         if (existing is not null)
         {
             if (!string.IsNullOrWhiteSpace(existing.PasswordHash))
@@ -34,7 +34,7 @@ public class AuthService(
                 existing.FullName = dto.FullName.Trim();
             }
 
-            unitOfWork.Profiles.UpdateOne(existing);
+            unitOfWork.Users.UpdateOne(existing);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             var upgradedToken = tokenService.CreateToken(existing);
@@ -46,7 +46,7 @@ public class AuthService(
             );
         }
 
-        var profile = new Profile
+        var user = new User
         {
             Id = Guid.NewGuid(),
             Email = email,
@@ -54,16 +54,16 @@ public class AuthService(
             FullName = dto.FullName.Trim()
         };
 
-        await unitOfWork.Profiles.InsertOneAsync(profile, cancellationToken);
+        await unitOfWork.Users.InsertOneAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var token = tokenService.CreateToken(profile);
+        var token = tokenService.CreateToken(user);
 
         return new AuthResponseDto(
             token,
-            profile.Id,
+            user.Id,
             email,
-            profile.FullName
+            user.FullName
         );
     }
 
@@ -71,7 +71,7 @@ public class AuthService(
     {
         var email = dto.Email.Trim().ToLowerInvariant();
 
-        var user = await unitOfWork.Profiles.FindOneAsync(p => p.Email == email, cancellationToken);
+        var user = await unitOfWork.Users.FindOneAsync(p => p.Email == email, cancellationToken);
 
         if (user is null)
         {
@@ -110,11 +110,11 @@ public class AuthService(
             throw new ApiException(HttpStatusCode.BadRequest, ValidationResource.Validation_PushToken_Required);
         }
 
-        var profile = await unitOfWork.Profiles.FindOneAsync(p => p.Id == userId, cancellationToken)
+        var user = await unitOfWork.Users.FindOneAsync(p => p.Id == userId, cancellationToken)
             ?? throw new ApiException(HttpStatusCode.NotFound, ValidationResource.Exception_Auth_UserNotFound);
 
-        profile.PushToken = dto.PushToken.Trim();
-        profile.UpdatedAt = DateTime.UtcNow;
+        user.PushToken = dto.PushToken.Trim();
+        user.UpdatedAt = DateTime.UtcNow;
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new MessageResponseDto(ValidationResource.Exception_Auth_PushTokenUpdated);

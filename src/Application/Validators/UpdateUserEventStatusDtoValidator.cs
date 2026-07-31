@@ -4,9 +4,9 @@ using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Validators;
 
-public class UpdateParticipantStatusDtoValidator : AbstractValidator<UpdateParticipantStatusDto>
+public class UpdateUserEventStatusDtoValidator : AbstractValidator<UpdateUserEventStatusDto>
 {
-    public UpdateParticipantStatusDtoValidator()
+    public UpdateUserEventStatusDtoValidator()
     {
         RuleFor(x => x.Status)
             .NotEmpty().WithMessage(_ => ValidationResource.Validation_Status_Required);

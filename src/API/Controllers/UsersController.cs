@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sportner.Application.DTOs.Profiles;
+using Sportner.Application.DTOs.Users;
 using Sportner.Application.Services;
 using Sportner.Domain.Abstractions;
 using Sportner.Domain.Exceptions;
@@ -12,31 +12,31 @@ namespace Sportner.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class ProfilesController(
-    IProfileService profileService,
+public class UsersController(
+    IUserService userService,
     ICurrentUser currentUser) : ControllerBase
 {
     private const long MaxAvatarBytes = 5 * 1024 * 1024;
 
     [HttpGet("me")]
-    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserProfileDto>> GetMe(CancellationToken cancellationToken)
+    public async Task<ActionResult<UserDto>> GetMe(CancellationToken cancellationToken)
     {
-        var result = await profileService.GetMeAsync(cancellationToken);
+        var result = await userService.GetMeAsync(cancellationToken);
         return Ok(result);
     }
 
     [HttpPut("me")]
-    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserProfileDto>> UpdateMe(
-        [FromBody] UpdateProfileDto dto,
+    public async Task<ActionResult<UserDto>> UpdateMe(
+        [FromBody] UpdateUserDto dto,
         CancellationToken cancellationToken)
     {
-        var result = await profileService.UpdateMeAsync(dto, cancellationToken);
+        var result = await userService.UpdateMeAsync(dto, cancellationToken);
         return Ok(result);
     }
 
@@ -75,7 +75,7 @@ public class ProfilesController(
         };
 
         await using var stream = file.OpenReadStream();
-        var result = await profileService.UploadAvatarAsync(
+        var result = await userService.UploadAvatarAsync(
             currentUser.UserId!.Value,
             stream,
             contentType,
@@ -86,13 +86,13 @@ public class ProfilesController(
     }
 
     [HttpGet("{userId:guid}")]
-    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserProfileDto>> GetById(
+    public async Task<ActionResult<UserDto>> GetById(
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var result = await profileService.GetByIdAsync(userId, cancellationToken);
+        var result = await userService.GetByIdAsync(userId, cancellationToken);
         return Ok(result);
     }
 }

@@ -3,7 +3,7 @@ using Sportner.Domain.Entities;
 
 namespace Sportner.Infrastructure.Persistence.Repositories;
 
-public class SportRepository(AppDbContext context)
+public class SportRepository(SportnerDbContext context)
     : BaseRepository<Sport>(context), ISportRepository
 {
     public async Task<Sport?> FindByStringIdAsync(string id, CancellationToken cancellationToken = default) =>

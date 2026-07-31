@@ -1,6 +1,6 @@
 namespace Sportner.Domain.Entities;
 
-public class Profile
+public class User
 {
     public Guid Id { get; set; }
 
@@ -22,7 +22,7 @@ public class Profile
     public DateTime? UpdatedAt { get; set; }
 
     public ICollection<Event> OrganizedEvents { get; set; } = [];
-    public ICollection<EventParticipant> Participations { get; set; } = [];
+    public ICollection<UserEvent> UserEvents { get; set; } = [];
     public ICollection<Message> Messages { get; set; } = [];
     public ICollection<Review> ReviewsGiven { get; set; } = [];
     public ICollection<Review> ReviewsReceived { get; set; } = [];

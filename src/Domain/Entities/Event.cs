@@ -15,8 +15,8 @@ public class Event
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 
-    public Profile? Organizer { get; set; }
-    public ICollection<EventParticipant> Participants { get; set; } = [];
+    public User? Organizer { get; set; }
+    public ICollection<UserEvent> UserEvents { get; set; } = [];
     public ICollection<Message> Messages { get; set; } = [];
     public ICollection<Review> Reviews { get; set; } = [];
 }

@@ -12,7 +12,7 @@ using Sportner.Infrastructure.Persistence;
 
 namespace Sportner.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(SportnerDbContext))]
     [Migration("20260730093037_InitialCreate")]
     partial class InitialCreate
     {
