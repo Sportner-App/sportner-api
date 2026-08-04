@@ -2,10 +2,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Newtonsoft.Json.Serialization;
 using Sportner.API.Extensions.Swagger;
-using Sportner.API.Filters;
-using Sportner.API.Middleware;
-using Sportner.API.Services;
-using Sportner.Domain.Abstractions;
 using Sportner.Infrastructure.Transformers;
 
 namespace Sportner.API.Extensions.Collection;
@@ -24,8 +20,6 @@ public static class CustomServiceCollectionExtensions
                 options.Conventions.Add(
                     new RouteTokenTransformerConvention(
                         new KebabCaseParameterTransformer()));
-
-                options.Filters.Add<FluentValidationFilter>();
             })
             .AddJsonOptions(options =>
             {
@@ -38,9 +32,7 @@ public static class CustomServiceCollectionExtensions
             });
 
         services.AddHttpContextAccessor();
-        services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
-        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddCustomSwagger();
 
         return services;

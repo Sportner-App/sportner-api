@@ -10,17 +10,7 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
     public HealthEndpointTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.WithWebHostBuilder(builder =>
-        {
-            builder.UseSetting("JwtSettings:Secret", "integration-test-secret-key-32chars!!");
-            builder.UseSetting("JwtSettings:Issuer", "SportnerApi");
-            builder.UseSetting("JwtSettings:Audience", "SportnerMobile");
-            builder.UseSetting(
-                "ConnectionStrings:SupabaseConnection",
-                "Host=127.0.0.1;Port=5432;Database=sportner_test;Username=postgres;Password=postgres");
-            builder.UseSetting("Supabase:Url", "https://example.supabase.co");
-            builder.UseSetting("Supabase:ServiceRoleKey", "test-key");
-        }).CreateClient();
+        _client = factory.CreateClient();
     }
 
     [Fact]

@@ -1,7 +1,9 @@
 using FluentValidation;
+using Mapster;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Sportner.Application.Services;
-using Sportner.Application.Validators;
+using Sportner.Application.Behaviors;
+using Sportner.Application.Common.Mapping;
 
 namespace Sportner.Application;
 
@@ -9,14 +11,17 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IEventService, EventService>();
-        services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<IReviewService, ReviewService>();
-        services.AddScoped<ISportService, SportService>();
+        var assembly = typeof(DependencyInjection).Assembly;
 
-        services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+        services.AddMediatR(configuration =>
+            configuration.RegisterServicesFromAssembly(assembly));
+
+        services.AddValidatorsFromAssembly(assembly);
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+        MappingConfig.Configure();
+        services.AddMapster();
 
         return services;
     }

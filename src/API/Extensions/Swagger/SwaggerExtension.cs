@@ -16,21 +16,6 @@ public static class SwaggerExtension
                 Description = "Sportner mobile backend API"
             });
 
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme. Paste only the token (Swagger adds 'Bearer ' automatically).",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT"
-            });
-
-            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-            });
-
             options.DescribeAllParametersInCamelCase();
         });
 
