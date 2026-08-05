@@ -8,13 +8,30 @@ Messaging
 
 Conversation
 
+Child entities:
+
+- ConversationMember
+
+Domain aggregate boundary:
+
+```text
+Conversation
+└── ConversationMember
+```
+
+`Message` is a separate aggregate root that references `Conversation` by id.
+
+Database relationships are unchanged. Messages remain in the `messages` table and continue to reference `conversations(id)`.
+
 ---
 
 # Purpose
 
 The `conversations` table represents chat rooms within the application.
 
-A conversation serves as a container for messages and participants.
+A conversation serves as a container for participants and conversation metadata.
+
+Messages belong to a separate Message aggregate and are stored in the `messages` table.
 
 Initially, conversations are created automatically for events. The same infrastructure is designed to support direct messaging and group chats in future versions.
 
@@ -165,11 +182,11 @@ Possible future additions:
 
 # Notes
 
-A conversation contains only metadata.
+A conversation contains only metadata and membership.
 
 Participants are managed in `conversation_members`.
 
-Messages are stored in the `messages` table.
+Messages are a separate aggregate root stored in the `messages` table and reference the conversation by id.
 
 Closing a conversation does not delete its messages.
 

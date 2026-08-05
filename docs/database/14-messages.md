@@ -6,7 +6,19 @@ Messaging
 
 ## Aggregate Root
 
-Conversation
+Message
+
+Domain aggregate boundary:
+
+```text
+Message  →  references Conversation by ConversationId
+```
+
+`Message` is not a child entity of the Conversation aggregate.
+
+Conversation membership and message authorization are coordinated by the Application layer.
+
+Database columns and foreign keys are unchanged.
 
 ---
 

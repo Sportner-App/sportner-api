@@ -12,67 +12,98 @@ Post
 
 # Purpose
 
-The `post_media` table stores media files attached to social posts.
+The `post_media` table stores media metadata owned by the Post aggregate.
 
-Each post may contain multiple media items such as images or videos.
+Each media record represents a single image or video attached to a post.
 
-Binary files are stored in Supabase Storage, while PostgreSQL stores only media metadata.
+Binary files are stored exclusively in Supabase Storage, while PostgreSQL stores only media metadata required by the application.
 
-The order of media items is preserved to ensure a consistent user experience.
+`PostMedia` is not an independent aggregate. Its lifecycle is fully controlled by the owning `Post` aggregate.
 
 ---
 
 # Responsibilities
 
-- Store post media
-- Support multiple images
-- Support multiple videos
-- Preserve media ordering
 - Store media metadata
+- Preserve media ordering
+- Support images and videos
+- Maintain media lifecycle together with the owning Post
+- Support efficient feed rendering
+
+---
+
+# Aggregate Boundary
+
+```text
+Post
+└── PostMedia
+```
+
+`PostMedia` cannot exist without a `Post`.
+
+All creation, update and deletion operations must occur through Post aggregate behavior.
+
+The Application layer must never manipulate `PostMedia` independently.
 
 ---
 
 # Columns
 
 | Column             | Type         | Nullable | Description                   |
-| ------------------ | ------------ | -------- | ----------------------------- |
-| id                 | UUID         | No       | Primary Key                   |
-| post_id            | UUID         | No       | References posts(id)          |
-| media_type         | SMALLINT     | No       | Media type                    |
-| storage_path       | TEXT         | No       | Supabase Storage file path    |
-| file_name          | VARCHAR(255) | No       | Original file name            |
-| mime_type          | VARCHAR(100) | No       | MIME type                     |
-| file_size          | BIGINT       | No       | File size in bytes            |
-| width              | INTEGER      | Yes      | Media width                   |
-| height             | INTEGER      | Yes      | Media height                  |
-| duration_seconds   | INTEGER      | Yes      | Video duration                |
-| display_order      | SMALLINT     | No       | Display order inside the post |
-| created_at         | TIMESTAMPTZ  | No       | Created date                  |
-| updated_at         | TIMESTAMPTZ  | Yes      | Updated date                  |
-| created_by_user_id | UUID         | Yes      | Audit                         |
-| updated_by_user_id | UUID         | Yes      | Audit                         |
+| ------------------ | ------------ | -------: | ----------------------------- |
+| id                 | UUID         |       No | Primary key                   |
+| post_id            | UUID         |       No | References `posts(id)`        |
+| media_type         | SMALLINT     |       No | Image or Video                |
+| storage_path       | TEXT         |       No | Supabase Storage path         |
+| file_name          | VARCHAR(255) |       No | Original uploaded filename    |
+| mime_type          | VARCHAR(100) |       No | MIME type                     |
+| file_size          | BIGINT       |       No | File size in bytes            |
+| width              | INTEGER      |      Yes | Image or video width          |
+| height             | INTEGER      |      Yes | Image or video height         |
+| duration_seconds   | INTEGER      |      Yes | Video duration                |
+| display_order      | SMALLINT     |       No | Display order inside the post |
+| created_at         | TIMESTAMPTZ  |       No | Creation timestamp            |
+| updated_at         | TIMESTAMPTZ  |      Yes | Last update timestamp         |
+| created_by_user_id | UUID         |      Yes | Audit                         |
+| updated_by_user_id | UUID         |      Yes | Audit                         |
+
+---
+
+# Default Values
+
+No database defaults are required.
+
+All values are assigned through domain behavior.
 
 ---
 
 # Indexes
 
-- PK(id)
-- INDEX(post_id)
-- INDEX(display_order)
+- `PK(id)`
+- `INDEX(post_id)`
+- `INDEX(post_id, display_order)`
 
 ---
 
 # Unique Constraints
 
-- UNIQUE(post_id, display_order)
+```text
+UNIQUE(post_id, display_order)
+```
+
+Only one media item may occupy a display position inside a post.
 
 ---
 
 # Foreign Keys
 
-| Column  | References |
-| ------- | ---------- |
-| post_id | posts(id)  |
+| Column  | References | Delete Behavior |
+| ------- | ---------- | --------------- |
+| post_id | posts(id)  | Cascade         |
+
+Cascade deletion removes media metadata together with the owning post.
+
+Actual storage cleanup remains an Application responsibility.
 
 ---
 
@@ -80,88 +111,177 @@ The order of media items is preserved to ensure a consistent user experience.
 
 ## Belongs To
 
-- posts
+- `posts`
 
 ---
 
 # Media Types
 
 | Value | Name  |
-| ----- | ----- |
-| 0     | Image |
-| 1     | Video |
+| ----: | ----- |
+|     0 | Image |
+|     1 | Video |
+
+Only documented media types are allowed.
+
+Future media types must be introduced through explicit enum changes.
 
 ---
 
 # Business Rules
 
 - Every media item belongs to exactly one post.
-- A post may contain one or more media items.
-- Media order is determined by `display_order`.
-- Files are uploaded to Supabase Storage before the database record is created.
-- Only media metadata is stored in PostgreSQL.
-- Deleting a post removes all associated media.
-- Images and videos may coexist within the same post.
+- A media item cannot exist without its owning post.
+- Images and videos may coexist.
+- A post may contain a maximum of **10** media items.
+- `display_order` starts at **1**.
+- Display order must always remain sequential.
+- Gaps are not allowed.
+- Duplicate display positions are not allowed.
+- `storage_path` cannot be empty.
+- `storage_path` is immutable after creation.
+- Replacing a file requires creating a new PostMedia entity.
+- `file_size` must be greater than zero.
+- `mime_type` must not be blank.
+- Width and height should exist whenever known.
+- Video duration applies only to video media.
+- Image media must not contain duration metadata.
+- Binary content must never be stored in PostgreSQL.
+
+---
+
+# Aggregate Rules
+
+The Post aggregate controls:
+
+- Add media
+- Remove media
+- Reorder media
+- Validate media limits
+- Maintain `media_count`
+
+`PostMedia` must never update `media_count` directly.
 
 ---
 
 # Lifecycle
 
-### Create Post
+## Create Post
 
-- Upload all media files.
-- Store metadata for each media item.
-- Assign display order.
-- Associate media with the post.
+Application flow:
 
-### Update Post
+1. Upload media to Supabase Storage.
+2. Collect media metadata.
+3. Create Post aggregate.
+4. Add PostMedia entities.
+5. Persist aggregate.
 
-- Add new media.
-- Remove existing media.
-- Reorder media.
-- Synchronize display order.
+The Domain layer never uploads files.
 
-### Delete Post
+---
 
-- Remove all files from Supabase Storage.
-- Delete related media records.
-- Delete the post.
+## Edit Post
+
+Allowed operations:
+
+- Add media
+- Remove media
+- Reorder media
+
+Rules:
+
+- Reordering must produce sequential `display_order` values.
+- Media count must remain synchronized.
+- Replacing an existing file creates a new PostMedia entity.
+- Storage cleanup is performed after successful persistence.
+
+---
+
+## Delete Post
+
+Application flow:
+
+1. Delete media files from Supabase Storage.
+2. Delete Post aggregate.
+3. Cascade removes PostMedia metadata.
+
+The Domain layer manages metadata only.
+
+---
+
+# Ordering Rules
+
+Media must always be returned using:
+
+```text
+display_order ASC
+```
+
+The ordering must be deterministic.
+
+Duplicate positions are invalid.
 
 ---
 
 # Performance Notes
 
-Media is almost always loaded together with its parent post.
+Media is typically loaded together with its parent Post.
 
-Queries should retrieve media ordered by:
+No independent pagination is required.
 
-- display_order ASC
+Projection queries should retrieve only metadata required by the client.
 
-No additional pagination is required.
+Binary files must always be loaded from Supabase Storage.
+
+---
+
+# Storage Rules
+
+PostgreSQL stores only:
+
+- metadata
+- storage path
+
+Supabase Storage stores:
+
+- binary image files
+- binary video files
+
+The database is never the source of binary media.
 
 ---
 
 # Future Extensions
 
-Possible future additions:
+Possible additions:
 
+- BlurHash
 - Image thumbnails
 - Video thumbnails
-- BlurHash
 - Compression metadata
 - EXIF metadata
 - AI-generated captions
-- AI content detection
-- Media visibility
+- AI moderation
+- HDR support
+- Original upload metadata
+
+These additions should not change the aggregate boundary.
 
 ---
 
 # Notes
 
-This table stores only metadata.
+`PostMedia` is a child entity owned by the `Post` aggregate.
 
-Binary media files must never be stored inside PostgreSQL.
+It has no independent lifecycle.
 
-Supabase Storage is the single source of truth for uploaded media.
+The Application layer is responsible for:
 
-The client should always display media according to `display_order`.
+- Uploading files
+- Deleting files
+- Storage retries
+- Virus scanning
+- Image optimization
+- Video transcoding
+
+The Domain layer manages only media metadata and ordering.

@@ -97,6 +97,8 @@ users
 
 ├── friendships (Addressee)
 
+├── friendships (BlockedBy)
+
 ├── posts (1 : N)
 
 ├── post_likes (1 : N)
@@ -143,9 +145,7 @@ events
 
 conversations
 
-├── conversation_members
-
-└── messages
+└── conversation_members
 
 ---
 
@@ -176,6 +176,8 @@ post_comments
 ## Messages
 
 messages
+
+├── conversations (reference by conversation_id)
 
 ├── messages (Reply)
 
@@ -261,9 +263,15 @@ Conversation
 
 conversation_members
 
+Message (separate aggregate root)
+
 ↓
 
-messages
+references Conversation
+
+↓
+
+messages (self-reply)
 
 ---
 
@@ -331,7 +339,17 @@ contains
 
 ↓
 
-Messages
+ConversationMember
+
+Message
+
+↓
+
+references
+
+↓
+
+Conversation
 
 ---
 
@@ -468,6 +486,7 @@ post_comments 1 ---- N post_comments (Replies)
 users 1 ---- N notifications
 
 users 1 ---- N friendships
+users 1 ---- N friendships (blocked_by_user_id)
 
 badges 1 ---- N user_badges
 

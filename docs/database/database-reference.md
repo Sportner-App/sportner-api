@@ -188,6 +188,17 @@ Unless explicitly stated otherwise, all enum values are stored as `SMALLINT` in 
 
 ---
 
+# Friendship Status
+
+| Value | Name     |
+| ----: | -------- |
+|     0 | Pending  |
+|     1 | Accepted |
+|     2 | Rejected |
+|     3 | Blocked  |
+
+---
+
 # Report Reason Codes
 
 | Code                  | Description                    |
