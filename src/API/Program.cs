@@ -1,3 +1,4 @@
+using Serilog;
 using Sportner.API.Extensions.Collection;
 using Sportner.API.Extensions.Cors;
 using Sportner.API.Extensions.HealthCheck;
@@ -8,6 +9,13 @@ using Sportner.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console());
+
 builder.Services.AddCustomCollection(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -15,6 +23,10 @@ builder.Services.AddCustomLocalization();
 builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+
+app.UseCustomLocalization();
+app.UseExceptionHandler();
+app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
@@ -26,7 +38,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseCustomLocalization();
 app.UseCors();
 app.MapControllers();
 app.UseAppHealthChecks();

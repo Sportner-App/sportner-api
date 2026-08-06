@@ -33,10 +33,6 @@ public class Event : AggregateRoot
 
     public int? MaxParticipants { get; private set; }
 
-    public bool IsRecurring { get; private set; }
-
-    public string? RecurrenceRule { get; private set; }
-
     public EventStatus Status { get; private set; }
 
     public IReadOnlyCollection<EventParticipant> Participants => _participants.AsReadOnly();
@@ -54,9 +50,7 @@ public class Event : AggregateRoot
         string address,
         DateTimeOffset utcNow,
         string? description = null,
-        int? maxParticipants = null,
-        bool isRecurring = false,
-        string? recurrenceRule = null)
+        int? maxParticipants = null)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -67,8 +61,6 @@ public class Event : AggregateRoot
         {
             throw new DomainException("Sport id is required.");
         }
-
-        ValidateRecurrence(isRecurring, recurrenceRule);
 
         var @event = new Event
         {
@@ -83,8 +75,6 @@ public class Event : AggregateRoot
             Longitude = NormalizeLongitude(longitude),
             Address = NormalizeAddress(address),
             MaxParticipants = NormalizeMaxParticipants(maxParticipants),
-            IsRecurring = isRecurring,
-            RecurrenceRule = NormalizeRecurrenceRule(isRecurring, recurrenceRule),
             Status = EventStatus.Draft,
             CreatedAt = utcNow
         };
@@ -140,17 +130,6 @@ public class Event : AggregateRoot
 
         MaxParticipants = normalized;
         RefreshCapacityStatus(utcNow);
-        Touch(utcNow);
-    }
-
-    public void UpdateRecurrence(bool isRecurring, string? recurrenceRule, DateTimeOffset utcNow)
-    {
-        EnsureEditable();
-
-        ValidateRecurrence(isRecurring, recurrenceRule);
-
-        IsRecurring = isRecurring;
-        RecurrenceRule = NormalizeRecurrenceRule(isRecurring, recurrenceRule);
         Touch(utcNow);
     }
 
@@ -595,26 +574,4 @@ public class Event : AggregateRoot
         return maxParticipants;
     }
 
-    private static void ValidateRecurrence(bool isRecurring, string? recurrenceRule)
-    {
-        if (isRecurring && string.IsNullOrWhiteSpace(recurrenceRule))
-        {
-            throw new DomainException("Recurrence rule is required when the event is recurring.");
-        }
-
-        if (!isRecurring && !string.IsNullOrWhiteSpace(recurrenceRule))
-        {
-            throw new DomainException("Recurrence rule must be null when the event is not recurring.");
-        }
-    }
-
-    private static string? NormalizeRecurrenceRule(bool isRecurring, string? recurrenceRule)
-    {
-        if (!isRecurring)
-        {
-            return null;
-        }
-
-        return recurrenceRule!.Trim();
-    }
 }

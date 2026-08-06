@@ -41,7 +41,7 @@ The Post aggregate is not responsible for storing or loading complete like, comm
 | ------------------ | ----------- | -------: | ---------------------------------- |
 | id                 | UUID        |       No | Primary key                        |
 | user_id            | UUID        |       No | References `users(id)`             |
-| content            | TEXT        |      Yes | Post caption or description        |
+| content            | VARCHAR(2200) |    Yes | Post caption or description        |
 | like_count         | INTEGER     |       No | Cached total number of likes       |
 | comment_count      | INTEGER     |       No | Cached total number of comments    |
 | media_count        | SMALLINT    |       No | Cached total number of media items |

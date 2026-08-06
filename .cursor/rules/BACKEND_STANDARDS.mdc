@@ -128,25 +128,23 @@ eventParticipants
 
 ## Database
 
-Tables
-
-snake_case (plural)
+Tables use plural `DbSet` names and EF Core conventions.
 
 ```
-users
-profiles
-events
-event_messages
+Users
+Profiles
+Events
+Messages
 ```
 
 Columns
 
-snake_case
+Use entity property names through EF Core conventions.
 
 ```
-created_at
-updated_at
-user_id
+CreatedAt
+UpdatedAt
+UserId
 ```
 
 Foreign Keys
@@ -318,13 +316,11 @@ Enum
 
 Configuration
 
-Never use DataAnnotations.
+Use EF Core conventions by default, matching the TMS API persistence style.
 
-Always use Fluent API.
-
-```
-IEntityTypeConfiguration<T>
-```
+Do not create per-entity configuration classes merely to repeat conventions.
+Use minimal Fluent API only where a documented constraint, relationship, index,
+precision, conversion, or delete behavior cannot be represented correctly by conventions.
 
 ---
 
@@ -333,6 +329,12 @@ IEntityTypeConfiguration<T>
 Do NOT use Generic Repository.
 
 Entity Framework already provides repository behavior.
+`DbContext` already implements the Unit of Work pattern.
+
+Application handlers access persistence through `IApplicationDbContext`.
+Infrastructure implements that contract with `AppDbContext`.
+
+Do NOT introduce a separate `IUnitOfWork` or mandatory repository per entity.
 
 Repositories should only contain domain-specific queries.
 
@@ -592,7 +594,7 @@ The following architectural decisions are fixed for this project.
 - CQRS
 - MediatR
 - Entity Framework Core
-- Fluent API
+- Convention-first EF Core persistence
 - Mapster
 - PostgreSQL
 - Supabase

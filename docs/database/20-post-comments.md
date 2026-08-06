@@ -67,7 +67,7 @@ This prevents loading an unbounded reply tree into memory.
 | post_id            | UUID        |       No | References `posts(id)`         |
 | user_id            | UUID        |       No | References `users(id)`         |
 | parent_comment_id  | UUID        |      Yes | References `post_comments(id)` |
-| content            | TEXT        |       No | Comment text                   |
+| content            | VARCHAR(1000) |     No | Comment text                   |
 | like_count         | INTEGER     |       No | Cached comment likes           |
 | reply_count        | INTEGER     |       No | Cached direct replies          |
 | created_at         | TIMESTAMPTZ |       No | Creation timestamp             |

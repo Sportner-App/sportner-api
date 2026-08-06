@@ -5,13 +5,13 @@ namespace Sportner.Domain.Users;
 
 public class Profile : AuditableEntity
 {
-    private DateTimeOffset? _usernameChangedAt;
-
     private Profile()
     {
     }
 
     public Guid UserId { get; private set; }
+
+    public DateTimeOffset UsernameChangedAt { get; private set; }
 
     public string Username { get; private set; } = null!;
 
@@ -61,7 +61,7 @@ public class Profile : AuditableEntity
             ReviewCount = 0,
             IsProfilePublic = isProfilePublic,
             CreatedAt = utcNow,
-            _usernameChangedAt = utcNow
+            UsernameChangedAt = utcNow
         };
 
         return profile;
@@ -76,14 +76,13 @@ public class Profile : AuditableEntity
             return;
         }
 
-        if (_usernameChangedAt is not null
-            && utcNow - _usernameChangedAt.Value < TimeSpan.FromDays(30))
+        if (utcNow - UsernameChangedAt < TimeSpan.FromDays(30))
         {
             throw new DomainException("Username cannot be changed more than once every 30 days.");
         }
 
         Username = normalized;
-        _usernameChangedAt = utcNow;
+        UsernameChangedAt = utcNow;
         Touch(utcNow);
     }
 

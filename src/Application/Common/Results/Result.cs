@@ -2,7 +2,7 @@ namespace Sportner.Application.Common.Results;
 
 public class Result
 {
-    protected Result(bool isSuccess, IReadOnlyList<string> errors)
+    protected Result(bool isSuccess, IReadOnlyList<Error> errors)
     {
         if (isSuccess && errors.Count > 0)
         {
@@ -22,13 +22,13 @@ public class Result
 
     public bool IsFailure => !IsSuccess;
 
-    public IReadOnlyList<string> Errors { get; }
+    public IReadOnlyList<Error> Errors { get; }
 
-    public static Result Success() => new(true, Array.Empty<string>());
+    public static Result Success() => new(true, Array.Empty<Error>());
 
-    public static Result Failure(params string[] errors) =>
+    public static Result Failure(params Error[] errors) =>
         new(false, errors);
 
-    public static Result Failure(IEnumerable<string> errors) =>
+    public static Result Failure(IEnumerable<Error> errors) =>
         new(false, errors.ToList().AsReadOnly());
 }

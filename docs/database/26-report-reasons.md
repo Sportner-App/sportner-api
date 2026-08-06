@@ -36,7 +36,7 @@ This table acts as a master data table and is managed only by administrators.
 | id                 | UUID         | No       | Primary Key                                   |
 | code               | VARCHAR(100) | No       | Unique internal identifier                    |
 | name               | VARCHAR(100) | No       | Display name                                  |
-| description        | TEXT         | Yes      | Additional explanation shown to users         |
+| description        | VARCHAR(1000) | Yes    | Additional explanation shown to users         |
 | display_order      | SMALLINT     | No       | Display order in the UI                       |
 | is_active          | BOOLEAN      | No       | Determines whether the reason can be selected |
 | created_at         | TIMESTAMPTZ  | No       | Created date                                  |

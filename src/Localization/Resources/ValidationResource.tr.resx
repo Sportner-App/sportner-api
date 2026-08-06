@@ -12,4 +12,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Exception_Base_Conflict" xml:space="preserve">
+    <value>İstek, kaynağın mevcut durumuyla çakışıyor.</value>
+  </data>
+  <data name="Exception_Base_Forbidden" xml:space="preserve">
+    <value>Bu işlemi gerçekleştirme yetkiniz bulunmuyor.</value>
+  </data>
+  <data name="Exception_Base_InvalidOperation" xml:space="preserve">
+    <value>İstenen işlem geçersiz.</value>
+  </data>
+  <data name="Exception_Base_NotFound_ByFilter" xml:space="preserve">
+    <value>Belirtilen kriterlere uygun kayıt bulunamadı.</value>
+  </data>
+  <data name="Exception_Base_Unauthorized" xml:space="preserve">
+    <value>Bu işlemi gerçekleştirmek için kimlik doğrulaması gereklidir.</value>
+  </data>
+  <data name="Exception_Base_Unexpected" xml:space="preserve">
+    <value>Beklenmeyen bir hata oluştu.</value>
+  </data>
+  <data name="Validation_Base_Failed" xml:space="preserve">
+    <value>Bir veya daha fazla doğrulama hatası oluştu.</value>
+  </data>
 </root>

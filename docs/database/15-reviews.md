@@ -39,7 +39,7 @@ Only users who actually attended the same event are allowed to review one anothe
 | reviewer_user_id   | UUID        | No       | User who submitted the review                  |
 | reviewed_user_id   | UUID        | No       | User being reviewed                            |
 | rating             | SMALLINT    | No       | Rating (1-5)                                   |
-| comment            | TEXT        | Yes      | Optional review comment                        |
+| comment            | VARCHAR(1000) | Yes    | Optional review comment                        |
 | is_reported        | BOOLEAN     | No       | Indicates whether the review has been reported |
 | created_at         | TIMESTAMPTZ | No       | Created date                                   |
 | updated_at         | TIMESTAMPTZ | Yes      | Updated date                                   |

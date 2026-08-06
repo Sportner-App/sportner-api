@@ -1,7 +1,10 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Newtonsoft.Json.Serialization;
+using Sportner.API.Middleware;
+using Sportner.API.Services;
 using Sportner.API.Extensions.Swagger;
+using Sportner.Application.Abstractions.Authentication;
 using Sportner.Infrastructure.Transformers;
 
 namespace Sportner.API.Extensions.Collection;
@@ -33,6 +36,8 @@ public static class CustomServiceCollectionExtensions
 
         services.AddHttpContextAccessor();
         services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddCustomSwagger();
 
         return services;

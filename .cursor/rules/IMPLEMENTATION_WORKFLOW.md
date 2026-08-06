@@ -191,7 +191,7 @@ DbContext
 
 ↓
 
-Entity Configurations
+DbSets and convention model review
 
 ↓
 
@@ -229,7 +229,7 @@ Generate database schema.
 
 Order
 
-Entity Configurations
+DbSets and convention model review
 
 ↓
 
@@ -505,19 +505,15 @@ Entity
 
 ↓
 
-Configuration
+DbSet
+
+↓
+
+Convention model review
 
 ↓
 
 Migration
-
-↓
-
-Repository
-
-↓
-
-Service
 
 ↓
 
@@ -533,9 +529,11 @@ Tests
 
 Never implement controllers before business logic.
 
-Never create migrations before entity configurations.
+Never create migrations before the convention model has been reviewed.
 
-Never implement repositories before entities.
+Use `IApplicationDbContext` by default. Add a domain-specific repository only
+when a real query abstraction is justified; never add generic repositories or
+a separate Unit of Work layer.
 
 ---
 
@@ -563,7 +561,7 @@ A task is considered complete only if:
 - No compiler warnings related to the implementation.
 - Follows project architecture.
 - Follows naming conventions.
-- Uses Fluent API.
+- Uses EF Core conventions; Fluent API only for documented exceptions.
 - Uses MediatR.
 - Uses FluentValidation.
 - Uses Result Pattern.

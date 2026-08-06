@@ -88,7 +88,7 @@ This table must never contain profile-related information.
 | 0     | PendingVerification |
 | 1     | Active              |
 | 2     | Suspended           |
-| 3     | Blocked             |
+| 3     | Banned              |
 | 4     | Deleted             |
 
 ---
@@ -100,7 +100,7 @@ This table must never contain profile-related information.
 - A user cannot log in until the phone number is verified.
 - Deleted users cannot authenticate.
 - Suspended users cannot create events or posts.
-- Blocked users cannot use the platform.
+- Banned users cannot use the platform.
 
 ---
 

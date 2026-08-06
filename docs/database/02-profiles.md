@@ -35,11 +35,12 @@ Authentication data must never be stored here.
 | ------------------ | ------------ | -------- | --------------------- |
 | id                 | UUID         | No       | Primary Key           |
 | user_id            | UUID         | No       | References users(id)  |
+| username_changed_at | TIMESTAMPTZ | No       | Last username change  |
 | username           | VARCHAR(30)  | No       | Unique username       |
 | first_name         | VARCHAR(50)  | No       | First name            |
 | last_name          | VARCHAR(50)  | Yes      | Last name             |
 | bio                | VARCHAR(500) | Yes      | User biography        |
-| gender             | SMALLINT     | Yes      | Gender enum           |
+| gender             | SMALLINT     | Yes      | Optional gender code  |
 | birth_date         | DATE         | Yes      | Birth date            |
 | city               | VARCHAR(100) | Yes      | City                  |
 | profile_image_url  | TEXT         | Yes      | Profile image path    |
@@ -81,6 +82,7 @@ Authentication data must never be stored here.
 - Every profile belongs to exactly one user.
 - Username must be unique.
 - Username cannot be changed more than once every 30 days (backend rule).
+- Gender remains a nullable SMALLINT code until product-approved enum values are defined.
 - Intro video is optional.
 - Profile image is optional.
 - AverageRating and ReviewCount are maintained by the backend.

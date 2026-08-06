@@ -268,8 +268,9 @@ The event cannot be completed before:
 
 ```text
 event_date + duration_minutes
+```
 
-Cancelled
+## Cancelled
 
 The event has been cancelled.
 
@@ -282,8 +283,9 @@ Event conversation is closed
 Historical records remain available
 Status cannot return to an earlier value
 
-Application Flow
-Capacity Available
+# Application Flow
+
+## Capacity Available
 User applies
     ↓
 event_participants record created
@@ -292,7 +294,7 @@ status = Pending
     ↓
 Organizer approves or rejects
 
-Capacity Full
+## Capacity Full
 
 User applies
     ↓
@@ -306,7 +308,7 @@ Waitlist entry is removed
     ↓
 Approved participant record is created
 
-Attendance Rules
+# Attendance Rules
 
 Attendance is managed only after the event becomes Completed.
 
@@ -323,7 +325,7 @@ participant.status = Attended
 
 No-show users are not eligible to review.
 
-Conversation Rules
+# Conversation Rules
 
 Every published event has exactly one event conversation.
 
@@ -342,7 +344,7 @@ Includes the organizer as Owner
 Includes approved participants as Members
 Excludes pending and waiting-list users
 Becomes read-only when the event is completed or cancelled
-Deletion Policy
+# Deletion Policy
 
 Events are not physically deleted after publication.
 
@@ -360,7 +362,7 @@ User statistics
 
 Lifecycle changes must be managed through status.
 
-Performance Notes
+# Performance Notes
 
 Common event queries filter by:
 
@@ -381,7 +383,7 @@ Location-based search may initially use latitude and longitude bounding queries.
 
 PostGIS may be introduced later without changing the core event ownership model.
 
-Future Extensions
+# Future Extensions
 
 Possible future additions include:
 
@@ -402,7 +404,7 @@ Event invitations
 
 Recurring events must be implemented through a dedicated event_series model rather than reintroducing recurrence fields directly into this table.
 
-Notes
+# Notes
 
 The events table stores one concrete event occurrence.
 
@@ -420,4 +422,3 @@ Attendance eligibility
 The database protects structural consistency through foreign keys and constraints.
 
 Business workflow and aggregate invariants are enforced by backend domain logic.
-```

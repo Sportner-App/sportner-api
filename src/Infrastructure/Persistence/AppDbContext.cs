@@ -1,47 +1,80 @@
 using Microsoft.EntityFrameworkCore;
+using Sportner.Application.Abstractions.Persistence;
+using Sportner.Domain.Badges;
+using Sportner.Domain.Events;
+using Sportner.Domain.Messaging;
+using Sportner.Domain.Moderation;
+using Sportner.Domain.Notifications;
+using Sportner.Domain.Reviews;
+using Sportner.Domain.Social;
+using Sportner.Domain.Sports;
+using Sportner.Domain.Users;
+using Sportner.Infrastructure.Persistence.Configurations;
 
 namespace Sportner.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IApplicationDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
 
-    public override int SaveChanges()
-    {
-        ApplyAuditing();
-        return base.SaveChanges();
-    }
+    public DbSet<User> Users => Set<User>();
 
-    public override int SaveChanges(bool acceptAllChangesOnSuccess)
-    {
-        ApplyAuditing();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
-    }
+    public DbSet<Profile> Profiles => Set<Profile>();
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        ApplyAuditing();
-        return base.SaveChangesAsync(cancellationToken);
-    }
+    public DbSet<Sport> Sports => Set<Sport>();
 
-    public override Task<int> SaveChangesAsync(
-        bool acceptAllChangesOnSuccess,
-        CancellationToken cancellationToken = default)
-    {
-        ApplyAuditing();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
+    public DbSet<UserSport> UserSports => Set<UserSport>();
+
+    public DbSet<UserStatistics> UserStatistics => Set<UserStatistics>();
+
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
+
+    public DbSet<UserDevice> UserDevices => Set<UserDevice>();
+
+    public DbSet<UserSavedLocation> UserSavedLocations => Set<UserSavedLocation>();
+
+    public DbSet<Event> Events => Set<Event>();
+
+    public DbSet<EventParticipant> EventParticipants => Set<EventParticipant>();
+
+    public DbSet<EventWaitlist> EventWaitlists => Set<EventWaitlist>();
+
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+
+    public DbSet<ConversationMember> ConversationMembers => Set<ConversationMember>();
+
+    public DbSet<Message> Messages => Set<Message>();
+
+    public DbSet<Review> Reviews => Set<Review>();
+
+    public DbSet<Friendship> Friendships => Set<Friendship>();
+
+    public DbSet<Post> Posts => Set<Post>();
+
+    public DbSet<PostMedia> PostMedia => Set<PostMedia>();
+
+    public DbSet<PostLike> PostLikes => Set<PostLike>();
+
+    public DbSet<PostComment> PostComments => Set<PostComment>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<NotificationSetting> NotificationSettings => Set<NotificationSetting>();
+
+    public DbSet<Badge> Badges => Set<Badge>();
+
+    public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+
+    public DbSet<Report> Reports => Set<Report>();
+
+    public DbSet<ReportReason> ReportReasons => Set<ReportReason>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyDocumentedConstraints();
         base.OnModelCreating(modelBuilder);
-    }
-
-    protected virtual void ApplyAuditing()
-    {
     }
 }

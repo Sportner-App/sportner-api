@@ -41,7 +41,7 @@ This table serves as the central notification hub for the application.
 | entity_type        | SMALLINT     | No       | Related entity type                 |
 | entity_id          | UUID         | Yes      | Related entity identifier           |
 | title              | VARCHAR(150) | No       | Notification title                  |
-| body               | TEXT         | No       | Notification message                |
+| body               | VARCHAR(1000) | No     | Notification message                |
 | is_read            | BOOLEAN      | No       | Read status                         |
 | read_at            | TIMESTAMPTZ  | Yes      | Read timestamp                      |
 | created_at         | TIMESTAMPTZ  | No       | Created date                        |

@@ -12,6 +12,21 @@ The database serves as the single source of truth for all business data.
 
 ---
 
+# EF Core Naming Policy
+
+Physical PostgreSQL identifiers follow EF Core conventions, matching the TMS API:
+
+- plural `DbSet` property names become table names (`PostComments`)
+- entity property names become column names (`PostId`, `CreatedAt`)
+- primary keys use `Id`
+- foreign-key properties use `<Entity>Id`
+
+Some per-table documents still use snake_case identifiers as logical/legacy names.
+Their data types, nullability, relationships, constraints, indexes and business rules
+remain authoritative; identifier casing is normalized by this convention-first policy.
+
+---
+
 # Design Principles
 
 The following principles apply to every table in the database.

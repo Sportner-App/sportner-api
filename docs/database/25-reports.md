@@ -39,11 +39,11 @@ The table supports multiple entity types through a polymorphic relationship, eli
 | entity_type         | SMALLINT    | No       | Reported entity type            |
 | entity_id           | UUID        | No       | Reported entity identifier      |
 | report_reason_id    | UUID        | No       | References report_reasons(id)   |
-| description         | TEXT        | Yes      | Optional additional information |
+| description         | VARCHAR(2000) | Yes    | Optional additional information |
 | status              | SMALLINT    | No       | Report status                   |
 | reviewed_by_user_id | UUID        | Yes      | Moderator reviewing the report  |
 | reviewed_at         | TIMESTAMPTZ | Yes      | Review date                     |
-| resolution_note     | TEXT        | Yes      | Moderator decision              |
+| resolution_note     | VARCHAR(2000) | Yes    | Moderator decision              |
 | created_at          | TIMESTAMPTZ | No       | Created date                    |
 | updated_at          | TIMESTAMPTZ | Yes      | Last updated date               |
 | created_by_user_id  | UUID        | Yes      | Audit                           |

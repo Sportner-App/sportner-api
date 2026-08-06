@@ -247,43 +247,43 @@ Unless explicitly stated otherwise, all enum values are stored as `SMALLINT` in 
 
 ## Tables
 
-snake_case (plural)
+EF Core convention using plural `DbSet` names
 
 Example
 
-users
+Users
 
-event_participants
+EventParticipants
 
-post_comments
+PostComments
 
 ---
 
 ## Columns
 
-snake_case
+Entity property names
 
 Example
 
-created_at
+CreatedAt
 
-user_id
+UserId
 
-event_id
+EventId
 
 ---
 
 ## Foreign Keys
 
-<entity>\_id
+<Entity>Id
 
 Example
 
-user_id
+UserId
 
-badge_id
+BadgeId
 
-conversation_id
+ConversationId
 
 ---
 

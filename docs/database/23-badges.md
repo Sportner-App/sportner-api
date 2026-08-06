@@ -36,8 +36,8 @@ This table contains only badge metadata. User ownership is managed separately by
 | id                 | UUID         | No       | Primary Key                           |
 | code               | VARCHAR(100) | No       | Unique badge identifier               |
 | name               | VARCHAR(100) | No       | Badge name                            |
-| description        | TEXT         | No       | Badge description                     |
-| icon_path          | TEXT         | No       | Badge icon stored in Supabase Storage |
+| description        | VARCHAR(1000) | No     | Badge description                     |
+| icon_path          | VARCHAR(500)  | No     | Badge icon stored in Supabase Storage |
 | category           | SMALLINT     | No       | Badge category                        |
 | rarity             | SMALLINT     | No       | Badge rarity                          |
 | experience_points  | INTEGER      | No       | XP awarded when earned                |

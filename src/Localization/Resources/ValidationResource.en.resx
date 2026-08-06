@@ -12,4 +12,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Exception_Base_Conflict" xml:space="preserve">
+    <value>The request conflicts with the current state of the resource.</value>
+  </data>
+  <data name="Exception_Base_Forbidden" xml:space="preserve">
+    <value>You do not have permission to perform this operation.</value>
+  </data>
+  <data name="Exception_Base_InvalidOperation" xml:space="preserve">
+    <value>The requested operation is invalid.</value>
+  </data>
+  <data name="Exception_Base_NotFound_ByFilter" xml:space="preserve">
+    <value>No record was found matching the specified criteria.</value>
+  </data>
+  <data name="Exception_Base_Unauthorized" xml:space="preserve">
+    <value>Authentication is required to perform this operation.</value>
+  </data>
+  <data name="Exception_Base_Unexpected" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="Validation_Base_Failed" xml:space="preserve">
+    <value>One or more validation errors occurred.</value>
+  </data>
 </root>

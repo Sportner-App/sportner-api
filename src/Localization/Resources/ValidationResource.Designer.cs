@@ -55,5 +55,47 @@ namespace Sportner.Localization.Resources {
                 resourceCulture = value;
             }
         }
+
+        public static string Exception_Base_Conflict {
+            get {
+                return ResourceManager.GetString("Exception_Base_Conflict", resourceCulture);
+            }
+        }
+
+        public static string Exception_Base_Forbidden {
+            get {
+                return ResourceManager.GetString("Exception_Base_Forbidden", resourceCulture);
+            }
+        }
+
+        public static string Exception_Base_InvalidOperation {
+            get {
+                return ResourceManager.GetString("Exception_Base_InvalidOperation", resourceCulture);
+            }
+        }
+
+        public static string Exception_Base_NotFound_ByFilter {
+            get {
+                return ResourceManager.GetString("Exception_Base_NotFound_ByFilter", resourceCulture);
+            }
+        }
+
+        public static string Exception_Base_Unauthorized {
+            get {
+                return ResourceManager.GetString("Exception_Base_Unauthorized", resourceCulture);
+            }
+        }
+
+        public static string Exception_Base_Unexpected {
+            get {
+                return ResourceManager.GetString("Exception_Base_Unexpected", resourceCulture);
+            }
+        }
+
+        public static string Validation_Base_Failed {
+            get {
+                return ResourceManager.GetString("Validation_Base_Failed", resourceCulture);
+            }
+        }
     }
 }
