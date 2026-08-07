@@ -20,7 +20,8 @@ If anything here conflicts with those sources, the rules and database specs win.
 | Controllers | Done for 01–09 |
 | Realtime (SignalR) / background jobs | Deferred (see [10-cross-cutting.md](10-cross-cutting.md)) |
 
-MVP feature backlog through Moderation is implemented. Remaining work is [10-cross-cutting.md](10-cross-cutting.md) (jobs, SignalR, policies hardening, etc.).
+MVP feature backlog through Moderation is implemented. Remaining work is tracked in
+[`docs/roadmap/`](../roadmap/) (summary) and [10-cross-cutting.md](10-cross-cutting.md) (jobs, SignalR, hardening).
 
 ---
 
@@ -96,7 +97,7 @@ Finish a module file’s checkboxes before starting the next, unless a dependenc
 | Doc | Controllers (planned) |
 | --- | --------------------- |
 | [00-prerequisites.md](00-prerequisites.md) | — (infra + seed) |
-| [01-identity.md](01-identity.md) | `Auth`, `Profiles`, devices/sessions/locations/sports |
+| [01-identity.md](01-identity.md) | `Auth`, `UserProfiles`, devices/sessions/locations/sports |
 | [02-catalog.md](02-catalog.md) | `Sports` |
 | [03-events.md](03-events.md) | `Events` (+ nested participant/waitlist actions) |
 | [04-messaging.md](04-messaging.md) | `Conversations`, `Messages` |
