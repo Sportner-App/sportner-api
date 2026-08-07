@@ -97,7 +97,7 @@ public sealed class UserProfilesController : ApiControllerBase
 
     [HttpPut("me/location")]
     public async Task<IActionResult> UpdateLocation(
-        [FromBody] UpdateLocationRequest request,
+        [FromBody] UpdateCityRequest request,
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new UpdateLocationCommand(request.City), cancellationToken);
@@ -170,7 +170,7 @@ public sealed class UserProfilesController : ApiControllerBase
 
     public sealed record UpdateBioRequest(string? Bio);
 
-    public sealed record UpdateLocationRequest(string? City);
+    public sealed record UpdateCityRequest(string? City);
 
     public sealed record UpdatePersonalDetailsRequest(short? Gender, DateOnly? BirthDate);
 

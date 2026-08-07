@@ -165,7 +165,7 @@ public sealed class EventsController : ApiControllerBase
     [HttpPut("{eventId:guid}/location")]
     public async Task<IActionResult> UpdateLocation(
         Guid eventId,
-        [FromBody] UpdateLocationRequest request,
+        [FromBody] UpdateEventLocationRequest request,
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
@@ -323,7 +323,7 @@ public sealed class EventsController : ApiControllerBase
 
     public sealed record UpdateScheduleRequest(DateTimeOffset EventDate, int DurationMinutes);
 
-    public sealed record UpdateLocationRequest(decimal Latitude, decimal Longitude, string Address);
+    public sealed record UpdateEventLocationRequest(decimal Latitude, decimal Longitude, string Address);
 
     public sealed record UpdateCapacityRequest(int? MaxParticipants);
 }
