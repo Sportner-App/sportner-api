@@ -40,9 +40,10 @@ Asla: controller’da iş kuralı, generic repository, feature’a özel `SaveCh
 
 ## 5. Config / secret kuralları
 
-- Tracked `appsettings.*.json` içine yeni secret koyma.
-- Local: user-secrets. Prod/CI: env (`ConnectionStrings__SupabaseConnection`, …).
-- Commit edilmiş secret değiştiyse **rotate** şart (history silinmez).
+- **`appsettings.*.json` içindeki connection / JWT / Supabase değerlerini silme / “temizleme”.**
+  Owner açıkça o an istemedikçe dokunma (yerel geliştirme kolaylığı bilinçli tercih).
+- İsteğe bağlı: user-secrets veya env ile **üzerine yazmak** serbest; tracked dosyayı boşaltmak değil.
+- OTP / JWT / refresh **loglanmaz**.
 
 ## 6. Definition of Done (faz)
 

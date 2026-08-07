@@ -14,8 +14,8 @@ Bağımlılık: [00-execution-rules](00-execution-rules.md) · [configuration](.
 
 | # | Soru | Varsayılan (konuşulmazsa) | Bu tur |
 | - | ---- | ------------------------- | ------ |
-| 1 | Secrets’ı şimdi tracked dosyadan çıkarıyor muyuz? | **Evet** — local user-secrets; Production env | Yapıldı |
-| 2 | Commit history’deki secret’ları rotate ediyor muyuz? | **Evet** | **Senin aksiyonun** (dashboard) |
+| 1 | Secrets’ı şimdi tracked dosyadan çıkarıyor muyuz? | **Hayır** — appsettings kalsın (owner kuralı) | Uygulanmadı / geri alındı |
+| 2 | Commit history’deki secret’ları rotate ediyor muyuz? | Owner isterse | Beklemede |
 | 3 | RLS SQL’i repo’ya `docs/ops/` altına mı koyuyoruz? | **Evet** | Yapıldı — SQL Editor’de çalıştırılacak |
 | 4 | Moderator Guid listesini kim verecek? | Sen | Bekleniyor |
 
@@ -47,10 +47,8 @@ SQL runbook: [`docs/ops/supabase-rls.md`](../ops/supabase-rls.md)
 
 ### Exit
 
-- [x] Tracked JSON’da password / service_role / JWT secret yok
-- [x] Local run OK (user-secrets ile dinliyor)
-- [ ] Rotate yapıldı *(sen — Supabase password, JWT secret, service_role)*
-- [x] `docs/configuration.md` güncel
+- [x] **İptal / geri alındı** — appsettings secret’ları yerinde kalır (owner: hiçbir aşamada temizleme)
+- [ ] Rotate — yalnızca owner açıkça isterse
 
 ---
 
@@ -89,16 +87,17 @@ Config yeri: `Authorization:ModeratorUserIds` (appsettings veya user-secrets).
 
 ## Exit criteria (01 tamam)
 
-- [~] Repo işleri bitti; dashboard + Guid + rotate + client senkronu açık
+- [~] Repo: migrate + RLS runbook tamam; secrets temizleme **yok**
 - [x] `docs/roadmap/status.md` güncellendi
-- [ ] Rotate bilinçli tamam / ertelendi notu
+- [ ] RLS SQL dashboard’da çalıştırıldı
+- [ ] Moderator Guid eklendi
 
 ## Sonraki (01 kapandıktan sonra)
 
 → [02-admin-catalog.md](02-admin-catalog.md)
 
-## Senin sıradaki 3 aksiyon
+## Senin sıradaki aksiyonlar
 
 1. Supabase SQL Editor’de [`docs/ops/supabase-rls.md`](../ops/supabase-rls.md) script’ini çalıştır.  
-2. Eski commit’lenen secret’ları **rotate** et (DB password, JWT, service_role) → yeni değerleri `dotnet user-secrets set ...`.  
-3. Moderator olacak kullanıcının `UserId` (Guid) değerini ver → `ModeratorUserIds`’e ekleyelim.
+2. Moderator olacak kullanıcının `UserId` (Guid) değerini ver → `ModeratorUserIds`’e ekleyelim.  
+3. ~~Secrets temizleme / rotate~~ — **yapma**; appsettings olduğu gibi kalır.

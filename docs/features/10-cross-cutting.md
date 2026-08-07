@@ -13,7 +13,7 @@ See also: [IMPLEMENTATION_WORKFLOW.md](../../.cursor/rules/IMPLEMENTATION_WORKFL
 - [x] Storage cleanup on deletes (commit-then-best-effort via `StorageCleanup`)
 - [ ] Background jobs host
 - [ ] SignalR realtime
-- [~] Security hygiene (secrets out of tracked config → user-secrets; **rotate + RLS apply still pending**)
+- [ ] Security hygiene (secrets out of tracked config) — **owner: appsettings temizleme yok**; RLS apply ayrı
 
 ---
 

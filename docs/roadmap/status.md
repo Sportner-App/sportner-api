@@ -19,8 +19,8 @@ Son güncelleme: 2026-08 (01 ops başladı).
 | ----- | ----- |
 | DB migrate verify | Done |
 | RLS SQL runbook (`docs/ops/supabase-rls.md`) | Done (SQL Editor’de çalıştırma bekleniyor) |
-| Secrets → user-secrets; tracked JSON temiz | Done |
-| Secret **rotate** | Pending (sen) |
+| Secrets → user-secrets; tracked JSON temiz | **İptal** — appsettings geri yüklendi; bir daha temizlenmeyecek |
+| Secret **rotate** | Sadece owner isterse |
 | ModeratorUserIds | Pending (Guid bekleniyor) |
 | Client `/api/user-profiles` | Pending (client repo) |
 
