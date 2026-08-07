@@ -23,7 +23,7 @@ public class User : AggregateRoot
 
     public DateTimeOffset? LastSeenAt { get; private set; }
 
-    public Profile? Profile { get; private set; }
+    public UserProfile? UserProfile { get; private set; }
 
     public UserStatistics? Statistics { get; private set; }
 
@@ -130,11 +130,11 @@ public class User : AggregateRoot
         Touch(utcNow);
     }
 
-    public void AttachProfile(Profile profile)
+    public void AttachUserProfile(UserProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
-        if (Profile is not null)
+        if (UserProfile is not null)
         {
             throw new DomainException("User already has a profile.");
         }
@@ -144,7 +144,7 @@ public class User : AggregateRoot
             throw new DomainException("Profile does not belong to this user.");
         }
 
-        Profile = profile;
+        UserProfile = profile;
     }
 
     public void AttachStatistics(UserStatistics statistics)

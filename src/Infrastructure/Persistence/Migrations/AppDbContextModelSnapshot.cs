@@ -1037,89 +1037,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.ToTable("Sports");
                 });
 
-            modelBuilder.Entity("Sportner.Domain.Users.Profile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("AverageRating")
-                        .HasPrecision(3, 2)
-                        .HasColumnType("numeric(3,2)");
-
-                    b.Property<string>("Bio")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateOnly?>("BirthDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("City")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<short?>("Gender")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("IntroVideoUrl")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsProfilePublic")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LastName")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ReviewCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<DateTimeOffset>("UsernameChangedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AverageRating");
-
-                    b.HasIndex("City");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.HasIndex("Username")
-                        .IsUnique();
-
-                    b.ToTable("Profiles");
-                });
-
             modelBuilder.Entity("Sportner.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1221,6 +1138,89 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserDevices");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Users.UserProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AverageRating")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<short?>("Gender")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("IntroVideoUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsProfilePublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTimeOffset>("UsernameChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AverageRating");
+
+                    b.HasIndex("City");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("UserProfiles");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Users.UserSavedLocation", b =>
@@ -1680,20 +1680,20 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sportner.Domain.Users.Profile", b =>
-                {
-                    b.HasOne("Sportner.Domain.Users.User", null)
-                        .WithOne("Profile")
-                        .HasForeignKey("Sportner.Domain.Users.Profile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Sportner.Domain.Users.UserDevice", b =>
                 {
                     b.HasOne("Sportner.Domain.Users.User", null)
                         .WithMany("Devices")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Users.UserProfile", b =>
+                {
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithOne("UserProfile")
+                        .HasForeignKey("Sportner.Domain.Users.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1766,8 +1766,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                 {
                     b.Navigation("Devices");
 
-                    b.Navigation("Profile");
-
                     b.Navigation("SavedLocations");
 
                     b.Navigation("Sessions");
@@ -1775,6 +1773,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Navigation("Sports");
 
                     b.Navigation("Statistics");
+
+                    b.Navigation("UserProfile");
                 });
 #pragma warning restore 612, 618
         }

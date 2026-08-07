@@ -92,7 +92,7 @@ internal sealed class CreateCommentCommandHandler
         PostComment comment,
         CancellationToken cancellationToken)
     {
-        var profile = await dbContext.Profiles.AsNoTracking()
+        var profile = await dbContext.UserProfiles.AsNoTracking()
             .Where(candidate => candidate.UserId == comment.UserId)
             .Select(candidate => new { candidate.Username, candidate.FirstName })
             .FirstOrDefaultAsync(cancellationToken);

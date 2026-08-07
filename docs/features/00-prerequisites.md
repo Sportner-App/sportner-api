@@ -122,7 +122,7 @@ Implementation: Supabase Storage using `Supabase:Url` + service role (server-onl
 ### Routing
 
 - Controllers: kebab-case routes (project already has `KebabCaseParameterTransformer`).
-- Prefer resource-oriented URLs: `/api/auth/...`, `/api/profiles/me`, `/api/events/{id}/...`.
+- Prefer resource-oriented URLs: `/api/auth/...`, `/api/user-profiles/me`, `/api/events/{id}/...`.
 
 ### Pagination
 

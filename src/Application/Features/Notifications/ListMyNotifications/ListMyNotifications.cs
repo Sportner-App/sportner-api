@@ -42,7 +42,7 @@ internal sealed class ListMyNotificationsQueryHandler
 
         var query =
             from notification in _dbContext.Notifications.AsNoTracking()
-            join actor in _dbContext.Profiles.AsNoTracking()
+            join actor in _dbContext.UserProfiles.AsNoTracking()
                 on notification.ActorUserId equals actor.UserId into actors
             from actor in actors.DefaultIfEmpty()
             where notification.RecipientUserId == userId

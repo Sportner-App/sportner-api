@@ -29,7 +29,7 @@ internal static class ReviewRatingSync
             ? 0m
             : decimal.Round(aggregates!.Average, 2, MidpointRounding.AwayFromZero);
 
-        var profile = await dbContext.Profiles
+        var profile = await dbContext.UserProfiles
             .FirstOrDefaultAsync(candidate => candidate.UserId == reviewedUserId, cancellationToken);
 
         profile?.UpdateCachedRating(average, count, utcNow);
@@ -53,10 +53,10 @@ internal static class ReviewQueries
 
         return
             from review in reviews
-            join reviewer in dbContext.Profiles.AsNoTracking()
+            join reviewer in dbContext.UserProfiles.AsNoTracking()
                 on review.ReviewerUserId equals reviewer.UserId into reviewers
             from reviewer in reviewers.DefaultIfEmpty()
-            join reviewed in dbContext.Profiles.AsNoTracking()
+            join reviewed in dbContext.UserProfiles.AsNoTracking()
                 on review.ReviewedUserId equals reviewed.UserId into reviewedProfiles
             from reviewed in reviewedProfiles.DefaultIfEmpty()
             select new ReviewResponse(

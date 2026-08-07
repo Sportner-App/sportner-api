@@ -29,11 +29,11 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => entity.PhoneNumber)
             .IsUnique();
 
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .HasIndex(entity => entity.UserId)
             .IsUnique();
 
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .HasIndex(entity => entity.Username)
             .IsUnique();
 
@@ -133,8 +133,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<User>().HasIndex(entity => entity.Status);
         modelBuilder.Entity<User>().HasIndex(entity => entity.LastSeenAt);
 
-        modelBuilder.Entity<Profile>().HasIndex(entity => entity.City);
-        modelBuilder.Entity<Profile>().HasIndex(entity => entity.AverageRating);
+        modelBuilder.Entity<UserProfile>().HasIndex(entity => entity.City);
+        modelBuilder.Entity<UserProfile>().HasIndex(entity => entity.AverageRating);
 
         modelBuilder.Entity<Sport>().HasIndex(entity => entity.DisplayOrder);
         modelBuilder.Entity<Sport>().HasIndex(entity => entity.IsActive);
@@ -240,22 +240,22 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.PhoneNumber)
             .HasMaxLength(20);
 
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.Username)
             .HasMaxLength(30);
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.FirstName)
             .HasMaxLength(50);
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.LastName)
             .HasMaxLength(50);
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.Bio)
             .HasMaxLength(500);
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.City)
             .HasMaxLength(100);
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.AverageRating)
             .HasPrecision(3, 2);
 
@@ -405,7 +405,7 @@ internal static class ModelBuilderExtensions
     {
         modelBuilder.Entity<User>().Property(entity => entity.Status)
             .HasColumnType("smallint");
-        modelBuilder.Entity<Profile>().Property(entity => entity.Gender)
+        modelBuilder.Entity<UserProfile>().Property(entity => entity.Gender)
             .HasColumnType("smallint");
         modelBuilder.Entity<UserSport>().Property(entity => entity.SkillLevel)
             .HasColumnType("smallint");
@@ -454,10 +454,10 @@ internal static class ModelBuilderExtensions
 
     private static void ConfigureRelationships(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Profile>()
+        modelBuilder.Entity<UserProfile>()
             .HasOne<User>()
-            .WithOne(user => user.Profile)
-            .HasForeignKey<Profile>(entity => entity.UserId)
+            .WithOne(user => user.UserProfile)
+            .HasForeignKey<UserProfile>(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserStatistics>()

@@ -51,7 +51,7 @@ internal static class MessagingAccess
             .Select(member => member.UserId)
             .ToList();
 
-        var profiles = await dbContext.Profiles.AsNoTracking()
+        var profiles = await dbContext.UserProfiles.AsNoTracking()
             .Where(profile => activeMemberIds.Contains(profile.UserId))
             .Select(profile => new
             {

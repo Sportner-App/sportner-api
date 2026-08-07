@@ -38,7 +38,7 @@ internal sealed class ListParticipantsQueryHandler
         // Non-organizers only see approved / attended / no-show participants.
         var query =
             from participant in _dbContext.EventParticipants.AsNoTracking()
-            join profile in _dbContext.Profiles.AsNoTracking()
+            join profile in _dbContext.UserProfiles.AsNoTracking()
                 on participant.UserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
             where participant.EventId == request.EventId

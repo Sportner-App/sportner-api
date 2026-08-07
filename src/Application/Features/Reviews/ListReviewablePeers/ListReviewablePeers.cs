@@ -64,7 +64,7 @@ internal sealed class ListReviewablePeersQueryHandler
 
         var peers = await (
                 from participant in _dbContext.EventParticipants.AsNoTracking()
-                join profile in _dbContext.Profiles.AsNoTracking()
+                join profile in _dbContext.UserProfiles.AsNoTracking()
                     on participant.UserId equals profile.UserId into profiles
                 from profile in profiles.DefaultIfEmpty()
                 where participant.EventId == request.EventId

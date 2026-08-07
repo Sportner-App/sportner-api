@@ -40,7 +40,7 @@ A table should never contain unrelated business data.
 Examples
 
 - users → Authentication and account lifecycle
-- profiles → Public profile information
+- user_profiles → Public profile information
 - user_statistics → User statistics
 - user_sports → Sports and skill levels
 - events → Event information
@@ -194,7 +194,7 @@ Tables
 
 ```text
 users
-profiles
+user_profiles
 user_sessions
 user_devices
 user_statistics

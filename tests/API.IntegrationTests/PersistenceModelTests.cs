@@ -64,8 +64,8 @@ public class PersistenceModelTests
         modelEntityTypes.Should().Contain(registeredDbSetTypes);
 
         var usernameChangedAt = context.Model
-            .FindEntityType(typeof(Profile))!
-            .FindProperty(nameof(Profile.UsernameChangedAt));
+            .FindEntityType(typeof(UserProfile))!
+            .FindProperty(nameof(UserProfile.UsernameChangedAt));
 
         usernameChangedAt.Should().NotBeNull();
         usernameChangedAt!.IsNullable.Should().BeFalse();
@@ -77,8 +77,8 @@ public class PersistenceModelTests
         var expectedIndexes = new (Type EntityType, string[] Properties)[]
         {
             (typeof(User), [nameof(User.PhoneNumber)]),
-            (typeof(Profile), [nameof(Profile.UserId)]),
-            (typeof(Profile), [nameof(Profile.Username)]),
+            (typeof(UserProfile), [nameof(UserProfile.UserId)]),
+            (typeof(UserProfile), [nameof(UserProfile.Username)]),
             (typeof(Sport), [nameof(Sport.Name)]),
             (typeof(Sport), [nameof(Sport.Slug)]),
             (typeof(UserSport), [nameof(UserSport.UserId), nameof(UserSport.SportId)]),
@@ -146,11 +146,11 @@ public class PersistenceModelTests
         var maxLengths = new (Type EntityType, string Property, int Length)[]
         {
             (typeof(User), nameof(User.PhoneNumber), 20),
-            (typeof(Profile), nameof(Profile.Username), 30),
-            (typeof(Profile), nameof(Profile.FirstName), 50),
-            (typeof(Profile), nameof(Profile.LastName), 50),
-            (typeof(Profile), nameof(Profile.Bio), 500),
-            (typeof(Profile), nameof(Profile.City), 100),
+            (typeof(UserProfile), nameof(UserProfile.Username), 30),
+            (typeof(UserProfile), nameof(UserProfile.FirstName), 50),
+            (typeof(UserProfile), nameof(UserProfile.LastName), 50),
+            (typeof(UserProfile), nameof(UserProfile.Bio), 500),
+            (typeof(UserProfile), nameof(UserProfile.City), 100),
             (typeof(Sport), nameof(Sport.Name), 100),
             (typeof(Sport), nameof(Sport.Slug), 100),
             (typeof(UserSession), nameof(UserSession.IpAddress), 45),
@@ -193,7 +193,7 @@ public class PersistenceModelTests
 
         var precisions = new (Type EntityType, string Property, int Precision, int Scale)[]
         {
-            (typeof(Profile), nameof(Profile.AverageRating), 3, 2),
+            (typeof(UserProfile), nameof(UserProfile.AverageRating), 3, 2),
             (typeof(UserStatistics), nameof(UserStatistics.AttendanceRate), 5, 2),
             (typeof(UserStatistics), nameof(UserStatistics.AverageRating), 3, 2),
             (typeof(UserSavedLocation), nameof(UserSavedLocation.Latitude), 9, 6),
@@ -214,7 +214,7 @@ public class PersistenceModelTests
         var smallInts = new (Type EntityType, string Property)[]
         {
             (typeof(User), nameof(User.Status)),
-            (typeof(Profile), nameof(Profile.Gender)),
+            (typeof(UserProfile), nameof(UserProfile.Gender)),
             (typeof(UserSport), nameof(UserSport.SkillLevel)),
             (typeof(UserDevice), nameof(UserDevice.Platform)),
             (typeof(Event), nameof(Event.Status)),

@@ -42,7 +42,7 @@ internal sealed class ListFriendsQueryHandler
             let friendUserId = friendship.RequesterUserId == userId
                 ? friendship.AddresseeUserId
                 : friendship.RequesterUserId
-            join profile in _dbContext.Profiles.AsNoTracking()
+            join profile in _dbContext.UserProfiles.AsNoTracking()
                 on friendUserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
             orderby friendship.RespondedAt descending, friendship.CreatedAt descending

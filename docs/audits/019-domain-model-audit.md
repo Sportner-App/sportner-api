@@ -57,8 +57,8 @@ Types audited: `BaseEntity`, `AuditableEntity`, `AggregateRoot`, `DomainExceptio
 
 ### MJ2 — `Profile` maintains username-change state with no documented column
 
-- File: `src/Domain/Users/Profile.cs`, line 8: `private DateTimeOffset? _usernameChangedAt;` — set in `Create(...)` (line 64) and in `ChangeUsername(...)` (lines 79–86), where it enforces the documented 30-day rule.
-- Documentation: `docs/database/02-profiles.md` Columns table contains **no** `username_changed_at` column, while its Business Rules section requires "Username cannot be changed more than once every 30 days (backend rule)."
+- File: `src/Domain/Users/UserProfile.cs`, line 8: `private DateTimeOffset? _usernameChangedAt;` — set in `Create(...)` (line 64) and in `ChangeUsername(...)` (lines 79–86), where it enforces the documented 30-day rule.
+- Documentation: `docs/database/02-user_profiles.md` Columns table contains **no** `username_changed_at` column, while its Business Rules section requires "Username cannot be changed more than once every 30 days (backend rule)."
 - Impact: the field is plain private state, not a mapped property. After rehydration from the database the field will be `null`, so the 30-day invariant is silently unenforced for loaded entities. Either the schema needs a documented column (with EF field mapping) or the rule must move to the Application layer with its own persistence strategy.
 - Severity rationale: important invariant that will not actually hold at runtime + documentation mismatch → Major.
 
@@ -80,7 +80,7 @@ Within-aggregate consistency (uniqueness, capacity, default-location rules) is e
 
 Several update methods always call `Touch(utcNow)` even when the value is unchanged, unlike `Post.UpdateContent`, `PostMedia`, `Notification`, `NotificationSetting`, `Badge`, and `ReportReason`, which guard against no-op writes:
 
-- `src/Domain/Users/Profile.cs`: `UpdateDisplayName` (line 90), `UpdateBio` (line 97), `UpdateAvatar` (line 108), `UpdateIntroVideo` (line 114), `UpdateLocation` (line 120), `UpdatePersonalDetails` (line 131), `UpdateVisibility` (line 138)
+- `src/Domain/Users/UserProfile.cs`: `UpdateDisplayName` (line 90), `UpdateBio` (line 97), `UpdateAvatar` (line 108), `UpdateIntroVideo` (line 114), `UpdateLocation` (line 120), `UpdatePersonalDetails` (line 131), `UpdateVisibility` (line 138)
 - `src/Domain/Users/UserDevice.cs`: push-token and device-information update methods
 - `src/Domain/Users/UserSavedLocation.cs`: rename/coordinate/address update methods
 - `src/Domain/Sports/Sport.cs`: icon/detail update methods
@@ -104,7 +104,7 @@ The folder is empty (its `.gitkeep` was removed when the social feed was impleme
 
 ### MN5 — `gender` documented as "Gender enum" but no Gender enum is defined
 
-`docs/database/02-profiles.md` Columns table describes `gender SMALLINT` as "Gender enum", but `docs/database/database-reference.md` defines no Gender enum. The implementation uses `short? Gender` (`src/Domain/Users/Profile.cs` line 24), which is the only defensible mapping today. Non-blocking documentation ambiguity; if a Gender enum is intended it must be added to `database-reference.md` first.
+`docs/database/02-user_profiles.md` Columns table describes `gender SMALLINT` as "Gender enum", but `docs/database/database-reference.md` defines no Gender enum. The implementation uses `short? Gender` (`src/Domain/Users/UserProfile.cs` line 24), which is the only defensible mapping today. Non-blocking documentation ambiguity; if a Gender enum is intended it must be added to `database-reference.md` first.
 
 ## Documentation Contradictions
 
@@ -137,7 +137,7 @@ Reported only — none were resolved in this task.
 | AggregateRoot | README | Yes | AuditableEntity | none extra | OK | n/a | n/a | Pass |
 | DomainException | Standards | Yes | Exception | n/a | n/a | n/a | n/a | Pass |
 | User | 01-users.md | Yes | AggregateRoot | Match | Match | Status transitions, phone verification, child management all present | Root of Identity aggregate | Pass |
-| Profile | 02-profiles.md | Yes | AuditableEntity | Match + undocumented `_usernameChangedAt` (MJ2) | Match | 30-day rule broken after rehydration (MJ2); no-op guards missing (MN1) | Child of User | Pass with Notes |
+| Profile | 02-user_profiles.md | Yes | AuditableEntity | Match + undocumented `_usernameChangedAt` (MJ2) | Match | 30-day rule broken after rehydration (MJ2); no-op guards missing (MN1) | Child of User | Pass with Notes |
 | UserStatistics | 05-user-statistics.md | Yes | AuditableEntity | Match | Match | Counter/attendance-rate updates non-negative | Child of User | Pass |
 | UserSport | 04-user-sports.md | Yes | AuditableEntity | Match | Match | Skill/primary handling correct; public `MarkAsPrimary` (MJ3) | Child of User | Pass with Notes |
 | UserSavedLocation | 08-user-saved-locations.md | Yes | AuditableEntity | Match | Match | Default uniqueness enforced by User; public factory (MJ3) | Child of User | Pass with Notes |
@@ -221,7 +221,7 @@ Advisory only — no EF Core code exists or was created.
 - **Polymorphic references without FKs:** `reports.entity_id` and `notifications.entity_id` are plain `Guid`/`Guid?` with entity-type discriminators — configure as scalar columns, no relationships.
 - **Cascade vs Restrict:** owned children (participants, waitlist, members, media) documented as cascade with their parent; historical references (`events.organizer_user_id`, `events.sport_id`, review/report references) documented as Restrict.
 - **Cached counters:** `Post.LikeCount`/`CommentCount`, `PostComment.LikeCount`/`ReplyCount`, `Profile.AverageRating`/`ReviewCount`, `UserStatistics` counters — will need a concurrency strategy (atomic SQL updates or optimistic concurrency) in the Application/Infrastructure layers.
-- **One-to-one relationships:** `users`↔`profiles` and `users`↔`user_statistics` (unique `user_id`), currently modeled as child references inside the `User` aggregate.
+- **One-to-one relationships:** `users`↔`user_profiles` and `users`↔`user_statistics` (unique `user_id`), currently modeled as child references inside the `User` aggregate.
 
 ## Confirmed Correct Areas
 
@@ -237,9 +237,9 @@ Advisory only — no EF Core code exists or was created.
 
 1. **C1** — Remove `IsRecurring`, `RecurrenceRule`, `UpdateRecurrence`, `ValidateRecurrence`, and `NormalizeRecurrenceRule` from `src/Domain/Events/Event.cs` (and the factory parameters) to match `09-events.md`. Highest risk: schema incompatibility.
 2. **MJ1** — Add `ReportReasonCodes` and `BadgeCodes` constant classes under `src/Domain/Common/Constants/` synchronized with `database-reference.md`.
-3. **MJ2** — Decide the persistence strategy for the 30-day username rule (documented column + field mapping, or Application-layer enforcement) and align `02-profiles.md` and `Profile.cs`.
+3. **MJ2** — Decide the persistence strategy for the 30-day username rule (documented column + field mapping, or Application-layer enforcement) and align `02-user_profiles.md` and `UserProfile.cs`.
 4. **MJ3** — Tighten child-entity factory/mutator visibility to `internal` (matching the `PostMedia` pattern), starting with `EventParticipant` and `UserSport` where invariant bypass is most damaging.
-5. **Documentation synchronization** — Fix `README.md` Entity Ownership (Conversation, Message, PostLike, PostComment), `03-sports.md` and `24-user-badges.md` aggregate-root declarations, README "Blocked" vs reference "Banned", `22-notification-settings.md` root name, and the Gender-enum ambiguity in `02-profiles.md`.
+5. **Documentation synchronization** — Fix `README.md` Entity Ownership (Conversation, Message, PostLike, PostComment), `03-sports.md` and `24-user-badges.md` aggregate-root declarations, README "Blocked" vs reference "Banned", `22-notification-settings.md` root name, and the Gender-enum ambiguity in `02-user_profiles.md`.
 6. **Minor cleanup** — Add no-op guards (MN1), delete `src/Domain/Feed/` (MN3), and record a team decision on the Badges/Gamification module name (MN2).
 7. **Persistence mapping considerations** — Address the readiness notes when EF configurations are introduced.
 

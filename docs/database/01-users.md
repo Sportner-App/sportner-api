@@ -16,7 +16,7 @@ The `users` table is the core identity table of the application.
 
 It stores only authentication and account lifecycle information.
 
-Public profile information is intentionally stored in the `profiles` table.
+Public profile information is intentionally stored in the `user_profiles` table.
 
 ---
 
@@ -61,7 +61,7 @@ This table must never contain profile-related information.
 
 ## One To One
 
-- profiles
+- user_profiles
 - user_statistics
 
 ## One To Many

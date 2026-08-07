@@ -13,7 +13,7 @@ Depends on: [00-prerequisites.md](00-prerequisites.md).
 - [x] Auth (OTP + JWT + refresh + logout)
 - [x] Devices
 - [x] Sessions management
-- [x] Profile (create / me / public / updates)
+- [x] UserProfile (create / me / public / updates)
 - [x] User sports
 - [x] Saved locations
 - [x] Notification settings seed on user create
@@ -25,8 +25,8 @@ Depends on: [00-prerequisites.md](00-prerequisites.md).
 | Controller | Base route (suggested) |
 | ---------- | ---------------------- |
 | `AuthController` | `/api/auth` |
-| `ProfilesController` | `/api/profiles` |
-| `UserSportsController` | `/api/me/sports` or `/api/profiles/me/sports` |
+| `UserProfilesController` | `/api/user-profiles` |
+| `UserSportsController` | `/api/me/sports` |
 | `DevicesController` | `/api/me/devices` |
 | `SessionsController` | `/api/me/sessions` |
 | `SavedLocationsController` | `/api/me/saved-locations` |
@@ -65,22 +65,22 @@ Never log OTP, JWT, or refresh token plaintext.
 | [x] | `ListMySessions` | Query | `GET /api/me/sessions` | Active (non-revoked, non-expired) metadata only; never returns the refresh token hash. |
 | [x] | `RevokeSession` | Command | `DELETE /api/me/sessions/{sessionId}` | Scoped to the caller; `UserSession.Revoke` is idempotent. |
 
-### Profile
+### UserProfile
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [x] | `CreateProfile` | Command | `POST /api/profiles/me` | `Profile.Create` + `User.AttachProfile`. Once per user → 409. Username stored lowercase so the unique index is effectively case-insensitive. |
-| [x] | `GetMyProfile` | Query | `GET /api/profiles/me` | Includes sports summary and read-only `UserStatistics`. |
-| [x] | `GetPublicProfile` | Query | `GET /api/profiles/{userId}` | Anonymous allowed. Private profile → 403, banned/deleted owner → 404. Never exposes phone or birth date. |
-| [x] | `GetProfileByUsername` | Query | `GET /api/profiles/by-username/{username}` | Same projection and visibility rules. |
-| [x] | `UpdateUsername` | Command | `PUT /api/profiles/me/username` | 30-day cooldown and uniqueness checked in the handler → 409 instead of a domain exception. |
-| [x] | `UpdateDisplayName` | Command | `PUT /api/profiles/me/display-name` | |
-| [x] | `UpdateBio` | Command | `PUT /api/profiles/me/bio` | ≤500. |
-| [x] | `UpdateAvatar` | Command | `PUT /api/profiles/me/avatar` | Multipart upload to the `avatars` bucket via `IFileStorage`; stores the path. Empty body clears it. |
-| [x] | `UpdateIntroVideo` | Command | `PUT /api/profiles/me/intro-video` | Same pattern against the `intro-videos` bucket. |
-| [x] | `UpdateLocation` | Command | `PUT /api/profiles/me/location` | City on profile. |
-| [x] | `UpdatePersonalDetails` | Command | `PUT /api/profiles/me/personal-details` | Gender code + birth date; 13–120 age range enforced by the validator. |
-| [x] | `UpdateVisibility` | Command | `PUT /api/profiles/me/visibility` | `IsProfilePublic`. |
+| [x] | `CreateProfile` | Command | `POST /api/user-profiles/me` | `UserProfile.Create` + `User.AttachUserProfile`. Once per user → 409. Username stored lowercase so the unique index is effectively case-insensitive. |
+| [x] | `GetMyProfile` | Query | `GET /api/user-profiles/me` | Includes sports summary and read-only `UserStatistics`. |
+| [x] | `GetPublicProfile` | Query | `GET /api/user-profiles/{userId}` | Anonymous allowed. Private profile → 403, banned/deleted owner → 404. Never exposes phone or birth date. |
+| [x] | `GetProfileByUsername` | Query | `GET /api/user-profiles/by-username/{username}` | Same projection and visibility rules. |
+| [x] | `UpdateUsername` | Command | `PUT /api/user-profiles/me/username` | 30-day cooldown and uniqueness checked in the handler → 409 instead of a domain exception. |
+| [x] | `UpdateDisplayName` | Command | `PUT /api/user-profiles/me/display-name` | |
+| [x] | `UpdateBio` | Command | `PUT /api/user-profiles/me/bio` | ≤500. |
+| [x] | `UpdateAvatar` | Command | `PUT /api/user-profiles/me/avatar` | Multipart upload to the `avatars` bucket via `IFileStorage`; stores the path. Empty body clears it. |
+| [x] | `UpdateIntroVideo` | Command | `PUT /api/user-profiles/me/intro-video` | Same pattern against the `intro-videos` bucket. |
+| [x] | `UpdateLocation` | Command | `PUT /api/user-profiles/me/location` | City on profile. |
+| [x] | `UpdatePersonalDetails` | Command | `PUT /api/user-profiles/me/personal-details` | Gender code + birth date; 13–120 age range enforced by the validator. |
+| [x] | `UpdateVisibility` | Command | `PUT /api/user-profiles/me/visibility` | `IsProfilePublic`. |
 
 `UserStatistics` is **read-only** to clients. Created with `User.Create`; mutated by other modules.
 
@@ -126,7 +126,7 @@ Never log OTP, JWT, or refresh token plaintext.
 
 - [x] Phone OTP login issues access + refresh
 - [x] Refresh rotation works; logout revokes
-- [x] Profile CRUD for current user
+- [x] UserProfile CRUD for current user
 - [x] Sports and saved locations CRUD
 - [x] Devices register/remove
 - [x] Default notification settings exist for new users

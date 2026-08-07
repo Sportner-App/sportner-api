@@ -52,7 +52,7 @@ internal static class SocialQueries
         Friendship friendship,
         CancellationToken cancellationToken)
     {
-        var profiles = await dbContext.Profiles.AsNoTracking()
+        var profiles = await dbContext.UserProfiles.AsNoTracking()
             .Where(profile =>
                 profile.UserId == friendship.RequesterUserId
                 || profile.UserId == friendship.AddresseeUserId)
@@ -86,7 +86,7 @@ internal static class SocialQueries
         Guid? viewerUserId,
         CancellationToken cancellationToken)
     {
-        var profile = await dbContext.Profiles.AsNoTracking()
+        var profile = await dbContext.UserProfiles.AsNoTracking()
             .Where(candidate => candidate.UserId == post.UserId)
             .Select(candidate => new
             {

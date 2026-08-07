@@ -22,7 +22,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<User> Users => Set<User>();
 
-    public DbSet<Profile> Profiles => Set<Profile>();
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
     public DbSet<Sport> Sports => Set<Sport>();
 

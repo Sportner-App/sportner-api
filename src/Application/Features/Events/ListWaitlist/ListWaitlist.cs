@@ -44,7 +44,7 @@ internal sealed class ListWaitlistQueryHandler
 
         var items = await (
                 from entry in _dbContext.EventWaitlists.AsNoTracking()
-                join profile in _dbContext.Profiles.AsNoTracking()
+                join profile in _dbContext.UserProfiles.AsNoTracking()
                     on entry.UserId equals profile.UserId into profiles
                 from profile in profiles.DefaultIfEmpty()
                 where entry.EventId == request.EventId

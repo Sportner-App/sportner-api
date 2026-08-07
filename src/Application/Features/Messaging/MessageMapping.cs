@@ -11,7 +11,7 @@ internal static class MessageMapping
         Message message,
         CancellationToken cancellationToken)
     {
-        var profile = await dbContext.Profiles.AsNoTracking()
+        var profile = await dbContext.UserProfiles.AsNoTracking()
             .Where(candidate => candidate.UserId == message.SenderUserId)
             .Select(candidate => new { candidate.Username, candidate.FirstName })
             .FirstOrDefaultAsync(cancellationToken);

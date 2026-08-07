@@ -90,7 +90,7 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
             user.VerifyPhoneNumber(utcNow);
             user.Activate(utcNow);
 
-            var profile = Profile.Create(
+            var profile = UserProfile.Create(
                 user.Id,
                 definition.Username,
                 definition.FirstName,
@@ -99,7 +99,7 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
 
             profile.UpdateBio(definition.Bio, utcNow);
             profile.UpdateLocation(definition.City, utcNow);
-            user.AttachProfile(profile);
+            user.AttachUserProfile(profile);
 
             var primarySport = sports[(definition.Index - 1) % sports.Count];
             var secondarySport = sports[definition.Index % sports.Count];

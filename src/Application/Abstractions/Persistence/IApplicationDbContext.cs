@@ -14,7 +14,7 @@ namespace Sportner.Application.Abstractions.Persistence;
 public interface IApplicationDbContext
 {
     DbSet<User> Users { get; }
-    DbSet<Profile> Profiles { get; }
+    DbSet<UserProfile> UserProfiles { get; }
     DbSet<Sport> Sports { get; }
     DbSet<UserSport> UserSports { get; }
     DbSet<UserStatistics> UserStatistics { get; }

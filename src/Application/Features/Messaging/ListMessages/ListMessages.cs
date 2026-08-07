@@ -79,7 +79,7 @@ internal sealed class ListMessagesQueryHandler
         // Fetch newest-first page, then reverse to chronological for the client.
         var page = await (
                 from message in query
-                join profile in _dbContext.Profiles.AsNoTracking()
+                join profile in _dbContext.UserProfiles.AsNoTracking()
                     on message.SenderUserId equals profile.UserId into profiles
                 from profile in profiles.DefaultIfEmpty()
                 orderby message.CreatedAt descending, message.Id descending

@@ -11,7 +11,7 @@ The database is organized by bounded contexts following Domain Driven Design pri
 Identity
 
 - users
-- profiles
+- user_profiles
 - sports
 - user_sports
 - user_statistics
@@ -63,7 +63,7 @@ Moderation
 
 users
 
-├── profiles (1 : 1)
+├── user_profiles (1 : 1)
 
 ├── user_statistics (1 : 1)
 
@@ -209,7 +209,7 @@ User
 
 ↓
 
-profiles
+user_profiles
 
 ↓
 
@@ -443,7 +443,7 @@ User / Event / Post / Comment / Review / Message
 
 # Cardinality Summary
 
-users 1 ---- 1 profiles
+users 1 ---- 1 user_profiles
 
 users 1 ---- 1 user_statistics
 

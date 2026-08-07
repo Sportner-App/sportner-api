@@ -25,7 +25,7 @@ internal static class EventQueries
             .Select(candidate => new { candidate.Name, candidate.Slug })
             .FirstAsync(cancellationToken);
 
-        var organizer = await dbContext.Profiles.AsNoTracking()
+        var organizer = await dbContext.UserProfiles.AsNoTracking()
             .Where(profile => profile.UserId == @event.OrganizerUserId)
             .Select(profile => new OrganizerSnippetResponse(
                 profile.UserId,
@@ -98,7 +98,7 @@ internal static class EventQueries
         IApplicationDbContext dbContext) =>
         from @event in dbContext.Events.AsNoTracking()
         join sport in dbContext.Sports.AsNoTracking() on @event.SportId equals sport.Id
-        join profile in dbContext.Profiles.AsNoTracking()
+        join profile in dbContext.UserProfiles.AsNoTracking()
             on @event.OrganizerUserId equals profile.UserId into profiles
         from profile in profiles.DefaultIfEmpty()
         select new EventListItemResponse(

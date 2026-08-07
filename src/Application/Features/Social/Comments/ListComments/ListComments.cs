@@ -38,7 +38,7 @@ internal sealed class ListCommentsQueryHandler
         // Root comments only; clients lazy-load replies separately if needed.
         var query =
             from comment in _dbContext.PostComments.AsNoTracking()
-            join profile in _dbContext.Profiles.AsNoTracking()
+            join profile in _dbContext.UserProfiles.AsNoTracking()
                 on comment.UserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
             where comment.PostId == request.PostId && comment.ParentCommentId == null

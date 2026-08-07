@@ -25,7 +25,7 @@ Badge definitions are stored in the `badges` table, while this table only record
 - Store earned badges
 - Prevent duplicate badge awards
 - Track achievement history
-- Support user profiles
+- Support user user_profiles
 - Support gamification
 
 ---
