@@ -20,8 +20,9 @@ If anything here conflicts with those sources, the rules and database specs win.
 | Controllers | Done for 01–09 |
 | Realtime (SignalR) / background jobs | Deferred (see [10-cross-cutting.md](10-cross-cutting.md)) |
 
-MVP feature backlog through Moderation is implemented. Remaining work is tracked in
-[`docs/roadmap/`](../roadmap/) (summary) and [10-cross-cutting.md](10-cross-cutting.md) (jobs, SignalR, hardening).
+MVP feature backlog through Moderation is implemented. Post-MVP execution playbooks live in
+[`docs/roadmap/`](../roadmap/) (start at [01-ops-security](../roadmap/01-ops-security.md)).
+Cross-cutting notes remain in [10-cross-cutting.md](10-cross-cutting.md).
 
 ---
 

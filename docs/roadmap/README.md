@@ -1,29 +1,58 @@
-# Roadmap & Backlog
+# Roadmap — Planlama playbook’ları
 
-Bu klasör, Sportner API’nin **şu anki durumunu**, **kalan işleri**, **düzeltilmesi gerekenleri** ve **ileri seviye adımları** tek yerde toplar.
+Bu klasör, feature MVP (01–09) bittikten **sonraki** işlerin **nasıl yapılacağını** adım adım anlatır.
 
-Detaylı feature checklist’ler hâlâ [`docs/features/`](../features/) altında yaşar.  
-Tablo / domain kuralları [`docs/database/`](../database/) altında kalır.  
-Bu klasör “ne bitti / ne kaldı / sırada ne var” özetidir.
+Kod yazmaya başlamadan önce buradaki fazı okuyup onaylarız.  
+Uygulama başlarken: “`docs/roadmap/0X-….md` ile başla” demen yeterli.
 
-| Dosya | İçerik |
-| ----- | ------ |
-| [01-current-state.md](01-current-state.md) | Neler tamamlandı (MVP feature yüzeyi) |
-| [02-remaining-work.md](02-remaining-work.md) | Yapılması gereken / eksik kalan işler |
-| [03-fixes-and-hardening.md](03-fixes-and-hardening.md) | Düzeltilmeli / sertleştirilmeli konular |
-| [04-advanced-next.md](04-advanced-next.md) | İleri seviye: jobs, SignalR, admin, geo, test |
+| # | Playbook | Ne zaman |
+| - | -------- | -------- |
+| — | [status.md](status.md) | Anlık “ne bitti” özeti (referans) |
+| 00 | [00-execution-rules.md](00-execution-rules.md) | Her fazdan önce oku |
+| 01 | [01-ops-security.md](01-ops-security.md) | **İlk uygulanacak** — güvenlik / ops |
+| 02 | [02-admin-catalog.md](02-admin-catalog.md) | Admin policy + Sports CRUD |
+| 03 | [03-quality-hardening.md](03-quality-hardening.md) | Test borcu, counter/idempotency |
+| 04 | [04-background-jobs.md](04-background-jobs.md) | Job host + cleanup/reminder |
+| 05 | [05-signalr-realtime.md](05-signalr-realtime.md) | Event chat realtime |
+| 06 | [06-push-email-delivery.md](06-push-email-delivery.md) | Push / email (jobs’a bağlı) |
+| 07 | [07-product-depth.md](07-product-depth.md) | İleri badge, moderation yan etki, DM |
+| 08 | [08-scale-and-platform.md](08-scale-and-platform.md) | PostGIS, CI, SMS, rate limit |
 
 ---
 
-## Kısa durum (2026-08)
+## Önerilen uygulama sırası
 
-| Alan | Durum |
-| ---- | ----- |
-| Domain + Persistence | Tamam |
-| Feature modülleri 01–09 | Tamam (Identity → Moderation) |
-| Cross-cutting (policy, storage cleanup, counters) | Kısmen |
-| Jobs / SignalR / push-email | Beklemede |
-| Prod güvenlik (secrets, RLS) | Manuel / beklemede |
-| Admin CRUD | Beklemede |
+```text
+00 kurallar
+   ↓
+01 Ops & güvenlik          ← kapı: prod / paylaşılan ortam
+   ↓
+02 Admin catalog           ← paralel olabilir 03 ile
+   ↓
+03 Kalite / hardening
+   ↓
+04 Background jobs         ← reminder / cleanup / reconcile
+   ↓
+05 SignalR                 ← REST bozulmadan
+   ↓
+06 Push / email            ← 04’e bağımlı
+   ↓
+07 Ürün derinliği          ← eşikler konuşulmadan kodlama
+   ↓
+08 Ölçek & platform
+```
 
-**Önerilen sıra:** önce [03](03-fixes-and-hardening.md) (prod öncesi hijyen) → sonra [02](02-remaining-work.md) içindeki yakın MVP boşlukları → en sonda [04](04-advanced-next.md).
+**Kural:** Bir playbook’un “Exit criteria” kutusu dolmadan sonrakine geçmeyiz (bilinçli istisna konuşulur).
+
+---
+
+## Bu klasör / features ilişkisi
+
+| Kaynak | Rol |
+| ------ | --- |
+| [`docs/features/`](../features/) | Modül checklist, endpoint listeleri |
+| [`docs/database/`](../database/) | Tablo invariant’ları |
+| [`docs/roadmap/`](.) | **Nasıl ilerleyeceğiz** (playbook) |
+| [`.cursor/rules/`](../../.cursor/rules) | Mimari / kod standartları (en yüksek öncelik) |
+
+Conflict olursa: `.cursor/rules` > `docs/database` > `docs/features` > `docs/roadmap`.

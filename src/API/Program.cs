@@ -31,10 +31,13 @@ app.UseCustomLocalization();
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseCustomSwagger();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseCustomSwagger();
+//}
+
+app.UseCustomSwagger();
+
 
 if (!app.Environment.IsDevelopment())
 {
