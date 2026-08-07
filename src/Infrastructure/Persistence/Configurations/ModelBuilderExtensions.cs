@@ -69,6 +69,10 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.EventId, entity.Position })
             .IsUnique();
 
+        modelBuilder.Entity<EventReminderDispatch>()
+            .HasIndex(entity => new { entity.EventId, entity.UserId, entity.WindowMinutes })
+            .IsUnique();
+
         modelBuilder.Entity<Conversation>()
             .HasIndex(entity => entity.EventId)
             .IsUnique();
@@ -537,6 +541,18 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventReminderDispatch>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EventReminderDispatch>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Conversation>()
             .HasOne<Event>()

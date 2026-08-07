@@ -2,14 +2,14 @@
 
 Table: `Sports`. Domain: `src/Domain/Sports/Sport.cs`. Spec: `docs/database/03-sports.md`.
 
-Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Identity auth for protected writes.
+Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Admin policy for mutations ([02-admin-catalog](../roadmap/02-admin-catalog.md)).
 
 ---
 
 ## Progress
 
 - [x] List active sports (client) + get by slug
-- [~] Admin activate/deactivate/reorder — **deferred** (no admin authorization yet; seed covers the v1 catalog)
+- [x] Admin create / rename / reorder / activate / deactivate
 
 ---
 
@@ -27,11 +27,11 @@ Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Identity auth 
 | ------ | -------- | ---- | -------- | ---- | -------------- |
 | [x] | `ListActiveSports` | Query | `GET /api/sports` | `[Authorize]` | `IsActive` only; order by `DisplayOrder`. |
 | [x] | `GetSportBySlug` | Query | `GET /api/sports/{slug}` | `[Authorize]` | Active only; slug lookup is case-insensitive. 404 when missing/inactive. |
-| [~] | `CreateSport` | Command | `POST /api/sports` | Admin policy | **Deferred** — needs admin authorization. Seed covers v1. |
-| [~] | `RenameSport` | Command | `PUT /api/sports/{id}` | Admin | **Deferred.** |
-| [~] | `ChangeSportDisplayOrder` | Command | `PUT /api/sports/{id}/display-order` | Admin | **Deferred.** |
-| [~] | `DeactivateSport` | Command | `POST /api/sports/{id}/deactivate` | Admin | **Deferred.** Never hard-delete; events keep FK Restrict. |
-| [~] | `ActivateSport` | Command | `POST /api/sports/{id}/activate` | Admin | **Deferred.** |
+| [x] | `CreateSport` | Command | `POST /api/sports` | Admin | Unique name + slug; optional icon. |
+| [x] | `RenameSport` | Command | `PUT /api/sports/{id}` | Admin | Rename; optional slug / icon update. |
+| [x] | `ChangeSportDisplayOrder` | Command | `PUT /api/sports/{id}/display-order` | Admin | Non-negative order. |
+| [x] | `DeactivateSport` | Command | `POST /api/sports/{id}/deactivate` | Admin | Soft deactivate — never hard-delete; events keep FK Restrict. |
+| [x] | `ActivateSport` | Command | `POST /api/sports/{id}/activate` | Admin | Re-enable selection. |
 
 ---
 
@@ -46,4 +46,4 @@ Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Identity auth 
 
 - [x] Active sports list available to the app
 - [x] Seed data covers launch catalog
-- [x] Admin mutations optional for MVP — deferred until an admin authorization module exists
+- [x] Admin mutations live behind `Authorization:AdminUserIds`

@@ -61,12 +61,32 @@ internal sealed class CancelEventCommandHandler
                             ct);
                     }
 
-                    var statistics = await DbContext.UserStatistics
+                    var organizerStatistics = await DbContext.UserStatistics
                         .FirstOrDefaultAsync(
                             candidate => candidate.UserId == @event.OrganizerUserId,
                             ct);
 
-                    statistics?.IncreaseCancelledEvents(utcNow);
+                    organizerStatistics?.IncreaseCancelledEvents(utcNow);
+
+                    // Approved attendees had EventsJoined bumped on approve/promote — reverse it.
+                    var approvedAttendeeIds = @event.Participants
+                        .Where(participant =>
+                            participant.UserId != @event.OrganizerUserId
+                            && participant.Status is ParticipantStatus.Approved)
+                        .Select(participant => participant.UserId)
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var attendeeId in approvedAttendeeIds)
+                    {
+                        var attendeeStatistics = await DbContext.UserStatistics
+                            .FirstOrDefaultAsync(candidate => candidate.UserId == attendeeId, ct);
+
+                        if (attendeeStatistics is not null && attendeeStatistics.EventsJoined > 0)
+                        {
+                            attendeeStatistics.DecreaseEventsJoined(utcNow);
+                        }
+                    }
                 }
 
                 return Result.Success();

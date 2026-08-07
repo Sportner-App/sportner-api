@@ -38,10 +38,11 @@ public static class AuthenticationExtension
                 options.MapInboundClaims = false;
             });
 
-        services.Configure<ModeratorAuthorizationOptions>(
-            configuration.GetSection(ModeratorAuthorizationOptions.SectionName));
+        services.Configure<AuthorizationAllowListOptions>(
+            configuration.GetSection(AuthorizationAllowListOptions.SectionName));
 
         services.AddScoped<IAuthorizationHandler, ModeratorAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AdminAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, ActiveUserAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, CanCreateContentAuthorizationHandler>();
 
@@ -80,6 +81,15 @@ public static class AuthenticationExtension
                     policy.RequireAuthenticatedUser();
                     policy.Requirements.Add(new ActiveUserRequirement());
                     policy.Requirements.Add(new ModeratorRequirement());
+                });
+
+            options.AddPolicy(
+                AuthorizationPolicies.Admin,
+                policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.Requirements.Add(new ActiveUserRequirement());
+                    policy.Requirements.Add(new AdminRequirement());
                 });
         });
 

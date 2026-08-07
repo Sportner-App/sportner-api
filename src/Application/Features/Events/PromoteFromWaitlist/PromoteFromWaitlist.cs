@@ -42,7 +42,8 @@ internal sealed class PromoteFromWaitlistCommandHandler
                     return Result.Failure(EventErrors.CapacityFull);
                 }
 
-                @event.PromoteFromWaitlist(request.UserId, utcNow);
+                var promoted = @event.PromoteFromWaitlist(request.UserId, utcNow);
+                DbContext.MarkAsAdded(promoted);
 
                 await EventAccess.AddConversationMemberIfPresentAsync(
                     DbContext,

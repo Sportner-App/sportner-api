@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sportner.Application.Abstractions.Authentication;
@@ -7,32 +6,32 @@ using Sportner.Application.Abstractions.Authentication;
 namespace Sportner.Infrastructure.Authentication;
 
 /// <summary>
-/// Generates and verifies phone OTP codes. The code is stored only as a hash with a short TTL
-/// in the in-memory cache (single-instance / development). A distributed cache should replace
-/// <see cref="IMemoryCache"/> before horizontal scaling. The OTP code is never logged unless
-/// <see cref="OtpOptions.ExposeCodeInLogs"/> is explicitly enabled for local development.
+/// Generates and verifies phone OTP codes. The code is stored only as a hash with a short TTL.
+/// When <see cref="OtpOptions.ExposeCodeInLogs"/> is true, codes are logged and
+/// optional <see cref="OtpOptions.FixedCode"/> is used (temporary until SMS provider).
 /// </summary>
 public sealed class OtpService : IOtpService
 {
-    private const string CacheKeyPrefix = "otp:";
-
-    private readonly IMemoryCache _cache;
+    private readonly IOtpChallengeStore _challengeStore;
     private readonly ITokenHasher _tokenHasher;
     private readonly ISmsSender _smsSender;
     private readonly OtpOptions _options;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<OtpService> _logger;
 
     public OtpService(
-        IMemoryCache cache,
+        IOtpChallengeStore challengeStore,
         ITokenHasher tokenHasher,
         ISmsSender smsSender,
         IOptions<OtpOptions> options,
+        TimeProvider timeProvider,
         ILogger<OtpService> logger)
     {
-        _cache = cache;
+        _challengeStore = challengeStore;
         _tokenHasher = tokenHasher;
         _smsSender = smsSender;
         _options = options.Value;
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
@@ -40,13 +39,11 @@ public sealed class OtpService : IOtpService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(phoneNumber);
 
-        var code = GenerateCode(_options.CodeLength);
+        var code = ResolveCode();
         var hash = _tokenHasher.Hash(code);
+        var expiresAt = _timeProvider.GetUtcNow().AddMinutes(_options.ExpirationMinutes);
 
-        _cache.Set(
-            BuildKey(phoneNumber),
-            hash,
-            TimeSpan.FromMinutes(_options.ExpirationMinutes));
+        await _challengeStore.SetAsync(phoneNumber, hash, expiresAt, cancellationToken);
 
         if (_options.ExposeCodeInLogs)
         {
@@ -62,36 +59,50 @@ public sealed class OtpService : IOtpService
             cancellationToken);
     }
 
-    public Task<bool> VerifyAsync(
+    public async Task<bool> VerifyAsync(
         string phoneNumber,
         string code,
         CancellationToken cancellationToken = default)
     {
-        _ = cancellationToken;
-
         if (string.IsNullOrWhiteSpace(phoneNumber) || string.IsNullOrWhiteSpace(code))
         {
-            return Task.FromResult(false);
+            return false;
         }
 
-        var key = BuildKey(phoneNumber);
+        var storedHash = await _challengeStore.GetHashAsync(phoneNumber, cancellationToken);
 
-        if (!_cache.TryGetValue(key, out string? storedHash) || storedHash is null)
+        if (storedHash is null)
         {
-            return Task.FromResult(false);
+            return false;
         }
 
         var isValid = _tokenHasher.Verify(code, storedHash);
 
         if (isValid)
         {
-            _cache.Remove(key);
+            await _challengeStore.RemoveAsync(phoneNumber, cancellationToken);
         }
 
-        return Task.FromResult(isValid);
+        return isValid;
     }
 
-    private static string BuildKey(string phoneNumber) => CacheKeyPrefix + phoneNumber.Trim();
+    private string ResolveCode()
+    {
+        if (_options.ExposeCodeInLogs && !string.IsNullOrWhiteSpace(_options.FixedCode))
+        {
+            var fixedCode = _options.FixedCode.Trim();
+
+            if (fixedCode.Length != _options.CodeLength || !fixedCode.All(char.IsDigit))
+            {
+                throw new InvalidOperationException(
+                    $"Otp:FixedCode must be {_options.CodeLength} digits when ExposeCodeInLogs is enabled.");
+            }
+
+            return fixedCode;
+        }
+
+        return GenerateCode(_options.CodeLength);
+    }
 
     private static string GenerateCode(int length)
     {
@@ -100,3 +111,4 @@ public sealed class OtpService : IOtpService
         return value.ToString().PadLeft(length, '0');
     }
 }
+

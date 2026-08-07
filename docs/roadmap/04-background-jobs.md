@@ -9,13 +9,11 @@ Kaynak: [10-cross-cutting](../features/10-cross-cutting.md)
 
 ## Karar kapısı (zorunlu konuşma)
 
-| # | Soru | Seçenekler | Öneri |
-| - | ---- | ---------- | ----- |
-| 1 | Host | A) Hangfire in-process API · B) Quartz in-process · C) Ayrı Worker projesi | **C** uzun vadede temiz; MVP hızı için **A** kabul edilebilir |
-| 2 | Storage | Hangfire Postgres / memory (dev) | Dev memory OK; prod Postgres |
-| 3 | İlk job seti | Hangisi day-1? | Session cleanup + OTP cleanup + Event reminder |
-
-**Bu faz kodlanmadan host seçimi netleşmeli.**
+| # | Soru | Seçenekler | Öneri | Karar |
+| - | ---- | ---------- | ----- | ----- |
+| 1 | Host | A) Hangfire in-process API · B) Quartz in-process · C) Ayrı Worker projesi | **C** | **C** — amaçlı ayrı deploy: Identity + Events |
+| 2 | Storage | Hangfire Postgres / memory (dev) | — | Cronos + `IHostedService` (Hangfire yok) |
+| 3 | İlk job seti | Hangisi day-1? | Session + OTP + Event reminder | Aynı |
 
 ---
 
@@ -23,128 +21,92 @@ Kaynak: [10-cross-cutting](../features/10-cross-cutting.md)
 
 ### Ne
 
-```text
-ISessionCleanupJob / IOtpCleanupJob / IEventReminderJob
-```
-
-veya tek `IBackgroundJob` değil — **use-case servisleri**:
-
 ```csharp
-// Application
-public interface IExpiredSessionCleaner {
-  Task<int> CleanupAsync(CancellationToken ct);
-}
+IExpiredSessionCleaner / IOtpCleaner / IEventReminderDispatcher
 ```
 
 Infrastructure/Worker sadece çağırır + schedule eder.
 
-### Nasıl
-
-1. Application’da cleaner/reminder servisleri (DbContext kullanır, domain kurallarına uyar).
-2. Hiçbir Hangfire/Quartz using’i Application’da olmasın.
-3. DI: Application registration + Infrastructure schedule wiring.
-
 ### Exit
 
-- [ ] Contract’lar Application’da
-- [ ] Host referansı sadece Infrastructure / Worker
+- [x] Contract’lar Application’da
+- [x] Host referansı sadece worker process’lerinde (`Cronos` via `Sportner.Workers.Hosting`)
 
 ---
 
 ## 4.2 Job: Expired session cleanup
 
-### Ne
-
-Revoked/expired session’ları retention (~90 gün) sonrası sil.
-
-### Nasıl
-
-1. Spec: `UserSessions` — `ExpiresAt` / `RevokedAt` + CreatedAt kuralını database doc’tan doğrula.
-2. Batch delete (LIMIT’li döngü — tek seferde milyon satır yok).
-3. Schedule: günde 1 (03:00 UTC öneri).
-4. Log: silinen adet (PII yok).
+- Retention: `BackgroundJobs:SessionRetentionDays` (default 90)
+- Batch delete via `SessionCleanupBatchSize`
+- Cron: `0 3 * * *` (UTC)
 
 ### Exit
 
-- [ ] Manuel trigger + scheduled run
-- [ ] Test: expired satır silinir, aktif kalır
+- [x] Scheduled + `RunOnStartup` ile manuel/dev trigger
+- [x] Test: expired silinir, aktif kalır
 
 ---
 
 ## 4.3 Job: OTP cleanup
 
-### Ne
-
-Kullanılmamış / expired OTP kayıtlarını temizle.
-
-### Nasıl
-
-1. OTP store nerede? (EF table / cache — mevcut `IOtpService` impl’e bak).
-2. Retention: expire + 24h buffer (karar).
-3. Schedule: saatlik veya günlük.
+OTP challenges: `IOtpChallengeStore` (process-local `InMemoryOtpChallengeStore`).  
+`IOtpCleaner` expired entry’leri siler. Distributed store scaling öncesi ayrı iş.
 
 ### Exit
 
-- [ ] Cleanup çalışıyor + test
+- [x] Cleanup + test
 
 ---
 
 ## 4.4 Job: Event reminder
 
-### Ne
-
-Yaklaşan Published event’ler için `NotificationType.EventReminder` (veya mevcut enum).
-
-### Nasıl
-
-1. Pencere: örn. start − 24h ve start − 1h (karar kapısı).
-2. Katılımcılar: Approved (+ Attended değil henüz).
-3. `INotificationPublisher.PublishAsync` — in-app; push 06’da.
-4. **Idempotency:** aynı event+user+window için tekrar gönderme (outbox / “ReminderSent” flag / ayrı tablo).
-5. Schedule: her 15 dk.
-
-### Karar kapısı ek
-
-| Soru | Varsayılan |
-| ---- | ---------- |
-| Reminder pencereleri | 24h + 1h |
-| Organizer’a da mı? | Hayır (sadece participants) |
+- Windows: 24h + 1h (`EventReminderWindowsMinutes`)
+- Grace: threshold sonrası ~20 dk (15 dk cron’a uyum)
+- Participants: Approved, organizer hariç
+- Idempotency: `EventReminderDispatches` UNIQUE(event, user, window)
+- Cron: `*/15 * * * *`
+- Settings: `InAppEnabled=false` → publisher skip
 
 ### Exit
 
-- [ ] Reminder bir kez gider
-- [ ] Settings `InAppEnabled=false` ise skip (publisher zaten bakıyor)
+- [x] Reminder bir kez gider
+- [x] Settings skip publisher’da
 
 ---
 
 ## 4.5 (İsteğe bağlı bu fazda) Counter reconcile + storage GC
 
-Küçük bırakılabilir → 08’e de kayabilir.
-
-- Counter reconcile: source COUNT vs `UserStatistics` / Post counts — drift log + fix mode flag.
-- Storage GC: DB’de referansı olmayan path’leri bucket’tan sil (dikkatli allow-list).
+Defer → 08 / sonraki job seti.
 
 ---
 
 ## 4.6 Ops
 
-- Health: job host ayakta mı (Hangfire dashboard / log heartbeat).
-- Dev’de job’lar default kapalı veya sık interval — config flag `BackgroundJobs:Enabled`.
+Amaçlı worker’lar (ayrı deploy / scale):
 
-### Dokunulacak (host’a göre)
+| Process | Jobs |
+| ------- | ---- |
+| `Sportner.Identity.Worker` | session cleanup, OTP cleanup |
+| `Sportner.Events.Worker` | event reminders |
 
-- Yeni `src/Worker/` veya `Infrastructure/Jobs/*`
-- `Program.cs` / DI
-- `appsettings` → `BackgroundJobs` section (secret yok)
+```bash
+dotnet run --project src/Workers/Identity.Worker/Sportner.Identity.Worker.csproj
+dotnet run --project src/Workers/Events.Worker/Sportner.Events.Worker.csproj
+```
+
+Shared schedule helpers: `src/Workers/Hosting`.  
+Config: `BackgroundJobs:Enabled`, `RunOnStartup`, cron (UTC). Dev’de `RunOnStartup: true`.
+
+Migration: `AddEventReminderDispatches`. RLS listesine tablo eklendi — SQL Editor’de yeniden çalıştır.
 
 ---
 
 ## Exit criteria (04 tamam)
 
-- [ ] Host seçimi uygulandı
-- [ ] Session + OTP + Event reminder live
-- [ ] Application host’tan izole
-- [ ] status.md + features/10 checkbox kısmi update
+- [x] Host seçimi uygulandı (Identity.Worker + Events.Worker)
+- [x] Session + OTP + Event reminder live
+- [x] Application host’tan izole
+- [x] status.md + features/10 checkbox kısmi update
 
 ## Sonraki
 

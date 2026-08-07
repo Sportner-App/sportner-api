@@ -12,4 +12,6 @@ public static class AuthorizationPolicies
     public const string CanCreateContent = "CanCreateContent";
 
     public const string Moderator = "Moderator";
+
+    public const string Admin = "Admin";
 }

@@ -37,4 +37,9 @@ Layers: `API → Application → Domain` and `Infrastructure → Application →
 ```bash
 dotnet build Sportner.slnx
 dotnet run --project src/API/Sportner.API.csproj
+dotnet run --project src/Workers/Identity.Worker/Sportner.Identity.Worker.csproj
+dotnet run --project src/Workers/Events.Worker/Sportner.Events.Worker.csproj
 ```
+
+Workers are purpose-split deployable hosts (Atmaca-style). Shared cron helpers: `Sportner.Workers.Hosting`.  
+Job logic stays in Application (`BackgroundJobs:*` config).

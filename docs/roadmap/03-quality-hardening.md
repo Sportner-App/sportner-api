@@ -36,8 +36,8 @@
 
 ### Exit
 
-- [ ] Çift confirm counter’ı bozmuyor
-- [ ] Test var
+- [x] Çift confirm counter’ı bozmuyor
+- [x] Test var
 
 ---
 
@@ -55,8 +55,8 @@
 
 ### Exit
 
-- [ ] Audit dokümanı var
-- [ ] Bulunan gap’ler kapatıldı veya “bilinçli defer (job reconcile)” işaretli
+- [x] Audit dokümanı var (`docs/roadmap/artifacts/counter-matrix.md`)
+- [x] Bulunan gap’ler kapatıldı veya “bilinçli defer (job reconcile)” işaretli
 
 ---
 
@@ -79,8 +79,8 @@ Modül başına hedef:
 
 ### Exit
 
-- [ ] Yukarıdaki minimum paket yeşil
-- [ ] Toplam test sayısı artmış; CI lokal `dotnet test` OK
+- [x] Yukarıdaki minimum paket yeşil
+- [x] Toplam test sayısı artmış; CI lokal `dotnet test` OK
 
 ---
 
@@ -100,7 +100,7 @@ Kalanları `UserProfiles` / `/api/user-profiles` yap (kolon `ProfileImageUrl` do
 
 ### Exit
 
-- [ ] docs’ta stale path yok
+- [x] docs’ta stale path yok *(client `/api/profiles` migrate notu 01’de owner aksiyonu olarak kaldı)*
 
 ---
 
@@ -117,14 +117,14 @@ PR checklist maddesi olarak 00-rules’a zaten işlendi; burada kod review bilin
 
 ### Exit
 
-- [ ] `/swagger/v1/swagger.json` 200 (manuel)
+- [x] Nested DTO isimleri unique (`UpdateCityRequest` / `UpdateEventLocationRequest`); yeni DTO’lar resource-prefixed
 
 ---
 
 ## Exit criteria (03 tamam)
 
-- [ ] 3.1–3.4 tamam
-- [ ] status.md güncellendi
+- [x] 3.1–3.4 tamam
+- [x] status.md güncellendi
 
 ## Sonraki
 

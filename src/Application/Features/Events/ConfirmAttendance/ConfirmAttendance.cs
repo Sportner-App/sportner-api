@@ -33,12 +33,23 @@ internal sealed class ConfirmAttendanceCommandHandler
             request.EventId,
             async (@event, utcNow, ct) =>
             {
-                if (@event.Participants.All(participant => participant.UserId != request.UserId))
+                var participant = @event.Participants
+                    .FirstOrDefault(candidate => candidate.UserId == request.UserId);
+
+                if (participant is null)
                 {
                     return Result.Failure(EventErrors.ParticipantNotFound);
                 }
 
+                // Side effects only on Approved → Attended. Domain no-ops when already Attended.
+                var shouldCreditAttendance = participant.Status is ParticipantStatus.Approved;
+
                 @event.ConfirmAttendance(request.UserId, utcNow);
+
+                if (!shouldCreditAttendance)
+                {
+                    return Result.Success();
+                }
 
                 var statistics = await DbContext.UserStatistics
                     .FirstOrDefaultAsync(candidate => candidate.UserId == request.UserId, ct);

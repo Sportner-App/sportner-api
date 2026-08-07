@@ -9,11 +9,11 @@ public sealed class ModeratorRequirement : IAuthorizationRequirement;
 public sealed class ModeratorAuthorizationHandler : AuthorizationHandler<ModeratorRequirement>
 {
     private readonly ICurrentUser _currentUser;
-    private readonly ModeratorAuthorizationOptions _options;
+    private readonly AuthorizationAllowListOptions _options;
 
     public ModeratorAuthorizationHandler(
         ICurrentUser currentUser,
-        IOptions<ModeratorAuthorizationOptions> options)
+        IOptions<AuthorizationAllowListOptions> options)
     {
         _currentUser = currentUser;
         _options = options.Value;

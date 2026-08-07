@@ -39,8 +39,8 @@ Moderator’a benzer `Admin` policy.
 
 ### Exit
 
-- [ ] Admin user → 200; diğer → 403
-- [ ] Logout hâlâ `Authenticated` only
+- [x] Admin user → 200; diğer → 403 *(policy wired; AdminUserIds Guid owner tarafından doldurulacak)*
+- [x] Logout hâlâ `Authenticated` only
 
 ---
 
@@ -71,9 +71,9 @@ Moderator’a benzer `Admin` policy.
 
 ### Exit
 
-- [ ] 5 mutate endpoint çalışıyor
-- [ ] Deactivate sonrası `ListActiveSports` göstermiyor; mevcut Event FK bozulmuyor
-- [ ] `docs/features/02-catalog.md` checkbox’ları `[x]`
+- [x] 5 mutate endpoint çalışıyor
+- [x] Deactivate sonrası `ListActiveSports` göstermiyor; mevcut Event FK bozulmuyor
+- [x] `docs/features/02-catalog.md` checkbox’ları `[x]`
 
 ---
 
@@ -87,10 +87,10 @@ Moderator’a benzer `Admin` policy.
 
 ## Exit criteria (02 tamam)
 
-- [ ] Admin policy wired + en az 1 AdminUserId
-- [ ] Sports CRUD (activate/deactivate dahil) live
-- [ ] Tests yeşil
-- [ ] status.md güncellendi
+- [x] Admin policy wired *(AdminUserIds listesine Guid eklenmesi owner aksiyonu)*
+- [x] Sports CRUD (activate/deactivate dahil) live
+- [x] Tests yeşil
+- [x] status.md güncellendi
 
 ## Sonraki
 

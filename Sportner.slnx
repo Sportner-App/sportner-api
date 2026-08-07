@@ -15,6 +15,11 @@
   <Folder Name="/src/Localization/">
     <Project Path="src/Localization/Sportner.Localization.csproj" />
   </Folder>
+  <Folder Name="/src/Workers/">
+    <Project Path="src/Workers/Hosting/Sportner.Workers.Hosting.csproj" />
+    <Project Path="src/Workers/Identity.Worker/Sportner.Identity.Worker.csproj" />
+    <Project Path="src/Workers/Events.Worker/Sportner.Events.Worker.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/API.IntegrationTests/">
     <Project Path="tests/API.IntegrationTests/Sportner.API.IntegrationTests.csproj" />

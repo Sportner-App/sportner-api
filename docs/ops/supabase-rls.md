@@ -28,6 +28,7 @@ DECLARE
     'Events',
     'EventParticipants',
     'EventWaitlists',
+    'EventReminderDispatches',
     'Conversations',
     'ConversationMembers',
     'Messages',

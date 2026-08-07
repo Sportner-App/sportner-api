@@ -1,6 +1,6 @@
 # 01 — Identity
 
-Tables: `Users`, `Profiles`, `UserSports`, `UserStatistics`, `UserSessions`, `UserDevices`, `UserSavedLocations`, plus side-effect `NotificationSettings`.
+Tables: `Users`, `UserProfiles`, `UserSports`, `UserStatistics`, `UserSessions`, `UserDevices`, `UserSavedLocations`, plus side-effect `NotificationSettings`.
 
 Domain: `src/Domain/Users/*`. Specs: `docs/database/01`–`08`.
 

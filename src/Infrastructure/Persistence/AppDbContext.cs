@@ -42,6 +42,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<EventWaitlist> EventWaitlists => Set<EventWaitlist>();
 
+    public DbSet<EventReminderDispatch> EventReminderDispatches => Set<EventReminderDispatch>();
+
     public DbSet<Conversation> Conversations => Set<Conversation>();
 
     public DbSet<ConversationMember> ConversationMembers => Set<ConversationMember>();
@@ -71,6 +73,9 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Report> Reports => Set<Report>();
 
     public DbSet<ReportReason> ReportReasons => Set<ReportReason>();
+
+    public void MarkAsAdded<TEntity>(TEntity entity) where TEntity : class =>
+        Entry(entity).State = EntityState.Added;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

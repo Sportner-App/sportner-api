@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<Event> Events { get; }
     DbSet<EventParticipant> EventParticipants { get; }
     DbSet<EventWaitlist> EventWaitlists { get; }
+    DbSet<EventReminderDispatch> EventReminderDispatches { get; }
     DbSet<Conversation> Conversations { get; }
     DbSet<ConversationMember> ConversationMembers { get; }
     DbSet<Message> Messages { get; }
@@ -39,6 +40,12 @@ public interface IApplicationDbContext
     DbSet<UserBadge> UserBadges { get; }
     DbSet<Report> Reports { get; }
     DbSet<ReportReason> ReportReasons { get; }
+
+    /// <summary>
+    /// Forces EF to insert an entity that already has a client-generated key
+    /// (otherwise some providers track it as <c>Modified</c>).
+    /// </summary>
+    void MarkAsAdded<TEntity>(TEntity entity) where TEntity : class;
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

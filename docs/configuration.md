@@ -23,3 +23,19 @@ ConnectionStrings__SupabaseConnection
 Supabase__ServiceRoleKey
 JwtSettings__Secret
 ```
+
+## OTP (temporary — until SMS provider)
+
+Auth is phone OTP only (`POST /api/auth/request-otp` → `verify-otp`). There is no email/password.
+
+**Current (dev + Production/Render):** fixed code `000000` when `Otp:ExposeCodeInLogs` is true.
+
+```json
+"Otp": {
+  "ExposeCodeInLogs": true,
+  "FixedCode": "000000"
+}
+```
+
+UI flow: `request-otp` → `verify-otp` with `000000`.  
+Before real launch: disable `ExposeCodeInLogs`, clear `FixedCode`, wire SMS.
