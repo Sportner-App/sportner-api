@@ -16,11 +16,11 @@ If anything here conflicts with those sources, the rules and database specs win.
 | Domain (26 entities) | Done |
 | Persistence + `InitialCreate` | Done (apply DB + RLS hardening if not yet) |
 | Application foundation (CQRS contracts, Result, validation pipeline) | Done |
-| Feature folders / use cases | Not started |
-| Controllers | Not started |
+| Feature folders / use cases | Done for 01–09 (Identity → Moderation) |
+| Controllers | Done for 01–09 |
 | Realtime (SignalR) / background jobs | Deferred (see [10-cross-cutting.md](10-cross-cutting.md)) |
 
-Next concrete work starts at [00-prerequisites.md](00-prerequisites.md), then [01-identity.md](01-identity.md).
+MVP feature backlog through Moderation is implemented. Remaining work is [10-cross-cutting.md](10-cross-cutting.md) (jobs, SignalR, policies hardening, etc.).
 
 ---
 
@@ -112,16 +112,16 @@ Finish a module file’s checkboxes before starting the next, unless a dependenc
 ## Progress checklist
 
 - [ ] 00 Prerequisites
-- [ ] 01 Identity
-- [ ] 02 Catalog
-- [ ] 03 Events
-- [ ] 04 Messaging
-- [ ] 05 Reviews
-- [ ] 06 Social
-- [ ] 07 Notifications
-- [ ] 08 Gamification
-- [ ] 09 Moderation
-- [ ] 10 Cross-cutting (ongoing; not a gate for MVP API)
+- [x] 01 Identity
+- [x] 02 Catalog
+- [x] 03 Events
+- [x] 04 Messaging
+- [x] 05 Reviews
+- [x] 06 Social
+- [x] 07 Notifications
+- [x] 08 Gamification
+- [x] 09 Moderation
+- [x] 10 Cross-cutting (partial: policies, counters, storage cleanup; jobs/SignalR/secrets deferred)
 
 ---
 

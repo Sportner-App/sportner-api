@@ -10,10 +10,10 @@ Depends on: seed reasons ([00-prerequisites.md](00-prerequisites.md)). Can start
 
 ## Progress
 
-- [ ] List active report reasons
-- [ ] Create report (user)
-- [ ] Moderator queue: start review / resolve / reject
-- [ ] Side effects on target entities (e.g. `Review.MarkAsReported`)
+- [x] List active report reasons
+- [x] Create report (user)
+- [x] Moderator queue: start review / resolve / reject
+- [x] Side effects on target entities (e.g. `Review.MarkAsReported`)
 
 ---
 
@@ -24,7 +24,7 @@ Depends on: seed reasons ([00-prerequisites.md](00-prerequisites.md)). Can start
 | `ReportsController` | `/api/reports` |
 | `ReportReasonsController` | `/api/report-reasons` |
 
-Moderator endpoints require an admin/moderator authorization policy (define in [10-cross-cutting.md](10-cross-cutting.md)).
+Moderator endpoints require the `Moderator` policy (`Authorization:ModeratorUserIds` allow-list until roles exist).
 
 ---
 
@@ -34,7 +34,7 @@ Moderator endpoints require an admin/moderator authorization policy (define in [
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ListActiveReportReasons` | Query | `GET /api/report-reasons` | `IsSelectable` / active only. |
+| [x] | `ListActiveReportReasons` | Query | `GET /api/report-reasons` | Active / selectable only. |
 
 Admin CRUD optional; seed covers launch.
 
@@ -42,8 +42,9 @@ Admin CRUD optional; seed covers launch.
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `CreateReport` | Command | `POST /api/reports` | `Report.Create` → Pending. Unique `(reporter, entityType, entityId)`. No self-report. Validate entity exists. |
-| [ ] | `GetMyReports` | Query | `GET /api/reports/mine` | Optional. |
+| [x] | `CreateReport` | Command | `POST /api/reports` | `Report.Create` → Pending. Unique `(reporter, entityType, entityId)`. No self-report. Validate entity exists. Review targets get `MarkAsReported`. |
+| [x] | `GetMyReports` | Query | `GET /api/reports/mine` | Offset page. |
+| [x] | `UpdateReportDescription` | Command | `PUT /api/reports/{id}/description` | Only while Pending (reporter). |
 
 `ReportEntityType`: User, Event, Post, Comment, Review, Message.
 
@@ -51,23 +52,22 @@ Admin CRUD optional; seed covers launch.
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ListPendingReports` | Query | `GET /api/reports` (mod) | Filter by status. |
-| [ ] | `StartReportReview` | Command | `POST /api/reports/{id}/start-review` | `StartReview` — assignee. |
-| [ ] | `ResolveReport` | Command | `POST /api/reports/{id}/resolve` | Resolution note required. |
-| [ ] | `RejectReport` | Command | `POST /api/reports/{id}/reject` | |
-| [ ] | `UpdateReportDescription` | Command | `PUT /api/reports/{id}/description` | Only while Pending (reporter). |
+| [x] | `ListReports` | Query | `GET /api/reports` (mod) | Optional status filter. |
+| [x] | `StartReportReview` | Command | `POST /api/reports/{id}/start-review` | `StartReview` — assignee. |
+| [x] | `ResolveReport` | Command | `POST /api/reports/{id}/resolve` | Resolution note required. |
+| [x] | `RejectReport` | Command | `POST /api/reports/{id}/reject` | Clears `Review.IsReported`. |
 
 ### Target side effects
 
 | Entity | On create / resolve |
 | ------ | ------------------- |
-| Review | `MarkAsReported` / `ClearReportedStatus` when rejected |
-| Post / Comment / User / Message | Product rules (hide, suspend) — implement deliberately; do not auto-ban without policy |
+| Review | `MarkAsReported` on create/resolve; `ClearReportedStatus` when rejected |
+| Post / Comment / User / Message | Product rules (hide, suspend) — deferred |
 
 ---
 
 ## Exit criteria
 
-- [ ] User can report with a seeded reason
-- [ ] Duplicate report → Conflict
-- [ ] Moderator can move Pending → UnderReview → Resolved/Rejected
+- [x] User can report with a seeded reason
+- [x] Duplicate report → Conflict
+- [x] Moderator can move Pending → UnderReview → Resolved/Rejected

@@ -8,10 +8,10 @@ Depends on: [03-events.md](03-events.md) (event Completed + `EventParticipant.Ca
 
 ## Progress
 
-- [ ] Create / update review
-- [ ] List reviews for user / event
-- [ ] Sync profile + statistics rating caches
-- [ ] Report linkage (mark reported via Moderation)
+- [x] Create / update review
+- [x] List reviews for user / event
+- [x] Sync profile + statistics rating caches
+- [~] Report linkage (mark reported via Moderation) — deferred to [09-moderation.md](09-moderation.md)
 
 ---
 
@@ -20,6 +20,8 @@ Depends on: [03-events.md](03-events.md) (event Completed + `EventParticipant.Ca
 | Controller | Base route |
 | ---------- | ---------- |
 | `ReviewsController` | `/api/reviews` |
+| `UserReviewsController` | `/api/users/{userId}/reviews` |
+| `EventsController` (nested) | `/api/events/{eventId}/reviews`, `/reviewable` |
 
 ---
 
@@ -27,26 +29,26 @@ Depends on: [03-events.md](03-events.md) (event Completed + `EventParticipant.Ca
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `CreateReview` | Command | `POST /api/reviews` | `Review.Create`. App must enforce: same completed event, both Attended, no self-review, unique `(event, reviewer, reviewed)`. |
-| [ ] | `UpdateReview` | Command | `PUT /api/reviews/{id}` | Reviewer only; recalculate caches. |
-| [ ] | `GetReviewById` | Query | `GET /api/reviews/{id}` | Hide if reported pending moderation (product rule). |
-| [ ] | `ListReviewsForUser` | Query | `GET /api/users/{userId}/reviews` | Received reviews; paginated. |
-| [ ] | `ListReviewsForEvent` | Query | `GET /api/events/{eventId}/reviews` | Paginated. |
-| [ ] | `ListReviewablePeers` | Query | `GET /api/events/{eventId}/reviewable` | Attended peers not yet reviewed by me. |
+| [x] | `CreateReview` | Command | `POST /api/reviews` | Event Completed; both Attended; reviewer `CanReview`; no self-review; unique `(event, reviewer, reviewed)` → 409. Syncs rating caches; awards `FIRST_REVIEW` once. |
+| [x] | `UpdateReview` | Command | `PUT /api/reviews/{id}` | Reviewer only; recalculates caches. |
+| [x] | `GetReviewById` | Query | `GET /api/reviews/{id}` | Reported reviews hidden (404) except to the original reviewer. |
+| [x] | `ListReviewsForUser` | Query | `GET /api/users/{userId}/reviews` | Received, non-reported; paginated. |
+| [x] | `ListReviewsForEvent` | Query | `GET /api/events/{eventId}/reviews` | Non-reported; paginated. |
+| [x] | `ListReviewablePeers` | Query | `GET /api/events/{eventId}/reviewable` | Attended peers not yet reviewed by me. |
 
 ---
 
-## Side effects (same UoW)
+## Side effects (same feature / UoW)
 
-1. Recompute / update `Profile.UpdateCachedRating` for reviewed user.
-2. Update `UserStatistics` (`UpdateAverageRating`, `Increase*` review counters as per domain helpers).
-3. Optional badge hook `FIRST_REVIEW` ([08-gamification.md](08-gamification.md)).
-4. On moderation report: `Review.MarkAsReported`.
+1. `Profile.UpdateCachedRating` + `UserStatistics.UpdateAverageRating` via `ReviewRatingSync`.
+2. `UserStatistics.IncreaseReviewCount` on create (received count).
+3. Optional `FIRST_REVIEW` badge + `IncreaseBadgesCount` for the reviewer.
+4. `Review.MarkAsReported` — deferred to Moderation.
 
 ---
 
 ## Exit criteria
 
-- [ ] Cannot review without Attended eligibility
-- [ ] Unique constraint failures mapped to Conflict
-- [ ] Rating caches update after create/update
+- [x] Cannot review without Attended eligibility
+- [x] Unique constraint failures mapped to Conflict (pre-check)
+- [x] Rating caches update after create/update

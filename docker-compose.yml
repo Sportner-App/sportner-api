@@ -16,5 +16,4 @@ services:
       JwtSettings__ExpirationDays: ${JwtSettings__ExpirationDays:-7}
       Supabase__Url: ${Supabase__Url}
       Supabase__ServiceRoleKey: ${Supabase__ServiceRoleKey}
-      Supabase__AvatarsBucket: ${Supabase__AvatarsBucket:-avatars}
     restart: unless-stopped

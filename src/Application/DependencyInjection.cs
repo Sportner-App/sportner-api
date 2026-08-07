@@ -2,8 +2,10 @@ using FluentValidation;
 using Mapster;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Behaviors;
 using Sportner.Application.Common.Mapping;
+using Sportner.Application.Features.Gamification;
 
 namespace Sportner.Application;
 
@@ -20,6 +22,8 @@ public static class DependencyInjection
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestLoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+        services.AddScoped<IBadgeAwarder, BadgeAwarder>();
 
         MappingConfig.Configure();
         services.AddMapster();

@@ -12,11 +12,11 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 
 ## Progress
 
-- [ ] Friendships (request / accept / reject / block / remove / list)
-- [ ] Posts CRUD + media
-- [ ] Likes
-- [ ] Comments / replies (1-level)
-- [ ] Feed / explore queries
+- [x] Friendships (request / accept / reject / block / remove / list)
+- [x] Posts CRUD + media
+- [x] Likes
+- [x] Comments / replies (1-level)
+- [x] Feed / explore queries
 
 ---
 
@@ -26,10 +26,10 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | ---------- | ---------- |
 | `FriendshipsController` | `/api/friendships` |
 | `PostsController` | `/api/posts` |
+| `UserPostsController` | `/api/users/{userId}/posts` |
 | `CommentsController` | `/api/posts/{postId}/comments` |
-| `FeedController` (optional) | `/api/feed` |
-
-Like/unlike can live on `PostsController`.
+| `CommentActionsController` | `/api/comments/{id}` |
+| `FeedController` | `/api/feed` |
 
 ---
 
@@ -39,56 +39,56 @@ Like/unlike can live on `PostsController`.
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `SendFriendRequest` | Command | `POST /api/friendships` | `Friendship.CreateRequest`. Bidirectional existence check before insert. No self; respect blocks. Notify `FriendRequest`. |
-| [ ] | `AcceptFriendRequest` | Command | `POST /api/friendships/{id}/accept` | Notify `FriendAccepted`; bump both `FriendsCount`. Badge `FIRST_FRIEND`. |
-| [ ] | `RejectFriendRequest` | Command | `POST /api/friendships/{id}/reject` | |
-| [ ] | `BlockUser` | Command | `POST /api/friendships/block` | `Block`; sets `BlockedByUserId`. |
-| [ ] | `RemoveFriendship` | Command | `DELETE /api/friendships/{id}` | Accepted → delete row; decrease friends counts. |
-| [ ] | `ListFriends` | Query | `GET /api/friendships` | Accepted only. |
-| [ ] | `ListPendingRequests` | Query | `GET /api/friendships/pending` | Incoming (and optionally outgoing). |
+| [x] | `SendFriendRequest` | Command | `POST /api/friendships` | Bidirectional existence check; blocked → 403; rejected row replaced. Notify `FriendRequest`. |
+| [x] | `AcceptFriendRequest` | Command | `POST /api/friendships/{id}/accept` | Addressee only; bumps both `FriendsCount`; `FIRST_FRIEND`; `FriendAccepted`. |
+| [x] | `RejectFriendRequest` | Command | `POST /api/friendships/{id}/reject` | Addressee only. |
+| [x] | `BlockUser` | Command | `POST /api/friendships/block` | Creates relationship if missing; decreases friends counts when leaving Accepted. |
+| [x] | `RemoveFriendship` | Command | `DELETE /api/friendships/{id}` | Accepted only; physical delete; decrease both counts. |
+| [x] | `ListFriends` | Query | `GET /api/friendships` | Accepted; paginated. |
+| [x] | `ListPendingRequests` | Query | `GET /api/friendships/pending?outgoing=` | Incoming default; optional outgoing. |
 
 ### Posts
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `CreatePost` | Command | `POST /api/posts` | `Post.Create` + media via aggregate; `ValidatePublishable`; require `CanCreateContent`. Max 10 media. Increment `PostsCount`. Badge `FIRST_POST`. |
-| [ ] | `UpdatePostContent` | Command | `PUT /api/posts/{id}` | Owner. |
-| [ ] | `AddPostMedia` | Command | `POST /api/posts/{id}/media` | Storage upload + `AddMedia`. |
-| [ ] | `RemovePostMedia` | Command | `DELETE /api/posts/{id}/media/{mediaId}` | Delete storage object too. |
-| [ ] | `ReorderPostMedia` | Command | `PUT /api/posts/{id}/media/order` | |
-| [ ] | `DeletePost` | Command | `DELETE /api/posts/{id}` | Physical delete; orchestrate comments/likes/reports/notifications + storage. DB cascade ≠ storage cleanup. Decrement `PostsCount`. |
-| [ ] | `GetPostById` | Query | `GET /api/posts/{id}` | Include liked-by-me flag. |
-| [ ] | `ListPostsByUser` | Query | `GET /api/users/{userId}/posts` | Cursor; visibility/block rules. |
+| [x] | `CreatePost` | Command | `POST /api/posts` | Multipart content + files; `ValidatePublishable`; `PostsCount++`; `FIRST_POST`. |
+| [x] | `UpdatePostContent` | Command | `PUT /api/posts/{id}` | Owner. |
+| [x] | `AddPostMedia` | Command | `POST /api/posts/{id}/media` | `post-media` bucket. |
+| [x] | `RemovePostMedia` | Command | `DELETE /api/posts/{id}/media/{mediaId}` | DB then best-effort storage delete. |
+| [x] | `ReorderPostMedia` | Command | `PUT /api/posts/{id}/media/order` | |
+| [x] | `DeletePost` | Command | `DELETE /api/posts/{id}` | Cascades likes/comments in app; storage cleanup; `PostsCount--`. |
+| [x] | `GetPostById` | Query | `GET /api/posts/{id}` | `likedByMe`; blocked authors forbidden. |
+| [x] | `ListPostsByUser` | Query | `GET /api/users/{userId}/posts` | Cursor; block rules. |
 
 ### Likes
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `LikePost` | Command | `POST /api/posts/{id}/likes` | `PostLike.Create`; unique; no self-like; `IncreaseLikeCount`; notify `PostLiked`. |
-| [ ] | `UnlikePost` | Command | `DELETE /api/posts/{id}/likes` | Decrease count. |
+| [x] | `LikePost` | Command | `POST /api/posts/{id}/likes` | No self-like; unique; notify `PostLiked`. |
+| [x] | `UnlikePost` | Command | `DELETE /api/posts/{id}/likes` | |
 
 ### Comments
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `CreateComment` | Command | `POST /api/posts/{postId}/comments` | Root: `CreateRoot`; notify post owner `PostCommented`. |
-| [ ] | `CreateReply` | Command | `POST /api/posts/{postId}/comments/{parentId}/replies` | One nesting level; notify `CommentReplied`. |
-| [ ] | `UpdateComment` | Command | `PUT /api/comments/{id}` | Owner. |
-| [ ] | `DeleteComment` | Command | `DELETE /api/comments/{id}` | Physical delete; maintain `comment_count` / `reply_count` in app (parent Restrict). |
-| [ ] | `ListComments` | Query | `GET /api/posts/{postId}/comments` | Cursor; lazy-load replies. |
+| [x] | `CreateComment` | Command | `POST /api/posts/{postId}/comments` | Root; notify `PostCommented`. |
+| [x] | `CreateReply` | Command | `POST /api/posts/{postId}/comments/{parentId}/replies` | One nesting level; notify `CommentReplied`. |
+| [x] | `UpdateComment` | Command | `PUT /api/comments/{id}` | Owner. |
+| [x] | `DeleteComment` | Command | `DELETE /api/comments/{id}` | Deletes replies with root; maintains counters. |
+| [x] | `ListComments` | Query | `GET /api/posts/{postId}/comments` | Root comments cursor; `replyCount` on each. |
 
-### Feed (read models)
+### Feed
 
 | Status | Use case | Type | Endpoint | Notes |
 | ------ | -------- | ---- | -------- | ----- |
-| [ ] | `GetHomeFeed` | Query | `GET /api/feed` | Posts from accepted friends (+ self), exclude blocks, cursor. |
-| [ ] | `GetExploreFeed` | Query | `GET /api/feed/explore` | Public posts discovery; simple recency first. |
+| [x] | `GetHomeFeed` | Query | `GET /api/feed` | Self + accepted friends; exclude blocks; cursor. |
+| [x] | `GetExploreFeed` | Query | `GET /api/feed/explore` | Recency; exclude blocks. |
 
 ---
 
 ## Exit criteria
 
-- [ ] Friendship state machine covered
-- [ ] Post with media create/delete cleans storage
-- [ ] Like/comment counters stay non-negative and accurate
-- [ ] Home feed paginated
+- [x] Friendship state machine covered
+- [x] Post with media create/delete cleans storage (best-effort after commit)
+- [x] Like/comment counters stay non-negative and accurate
+- [x] Home feed paginated

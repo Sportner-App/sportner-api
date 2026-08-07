@@ -62,6 +62,12 @@ public class UserStatistics : AuditableEntity
         Touch(utcNow);
     }
 
+    public void DecreaseEventsJoined(DateTimeOffset utcNow)
+    {
+        EventsJoined = Decrement(EventsJoined, "Events joined");
+        Touch(utcNow);
+    }
+
     public void IncreaseHostedEvents(DateTimeOffset utcNow)
     {
         EventsOrganized = Increment(EventsOrganized);
@@ -101,6 +107,12 @@ public class UserStatistics : AuditableEntity
     public void IncreasePostsCount(DateTimeOffset utcNow)
     {
         PostsCount = Increment(PostsCount);
+        Touch(utcNow);
+    }
+
+    public void DecreasePostsCount(DateTimeOffset utcNow)
+    {
+        PostsCount = Decrement(PostsCount, "Posts count");
         Touch(utcNow);
     }
 

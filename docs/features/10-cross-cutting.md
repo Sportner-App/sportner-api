@@ -8,9 +8,9 @@ See also: [IMPLEMENTATION_WORKFLOW.md](../../.cursor/rules/IMPLEMENTATION_WORKFL
 
 ## Progress (backlog)
 
-- [ ] Authorization policies named and wired
-- [ ] Cached counter matrix respected in handlers
-- [ ] Storage cleanup on deletes
+- [x] Authorization policies named and wired (`ActiveUser`, `CanCreateContent`, `Moderator`)
+- [x] Cached counter matrix respected in handlers (incl. `DecreaseEventsJoined` on cancel)
+- [x] Storage cleanup on deletes (commit-then-best-effort via `StorageCleanup`)
 - [ ] Background jobs host
 - [ ] SignalR realtime
 - [ ] Security hygiene (secrets out of tracked config)
@@ -21,11 +21,10 @@ See also: [IMPLEMENTATION_WORKFLOW.md](../../.cursor/rules/IMPLEMENTATION_WORKFL
 
 | Policy | Intent |
 | ------ | ------ |
-| `Authenticated` | Default `[Authorize]` |
-| `ActiveUser` | `CanAuthenticate` / status Active (optional filter) |
-| `CanCreateContent` | Blocks Suspended from events/posts |
-| `Moderator` | Report queue + resolve |
-| `Admin` | Sports/Badges/ReportReasons mutations |
+| `Authenticated` + `ActiveUser` | Default `[Authorize]` — DB check `User.CanAuthenticate()` |
+| `CanCreateContent` | Blocks suspended/banned from posts/events/messages/reviews/friend requests |
+| `Moderator` | Report queue + resolve — config: `Authorization:ModeratorUserIds` |
+| `Admin` | Sports/Badges/ReportReasons mutations (not wired yet) |
 
 Map roles/claims when admin model exists. Until then, Moderator/Admin can be a config allow-list of user ids (document clearly; replace before production scale).
 
@@ -53,9 +52,10 @@ Optional later job: reconcile counters from source tables.
 When deleting posts, media, messages, avatars:
 
 1. Remove/update DB rows in the transaction.
-2. Delete Supabase Storage objects **after** successful commit (or outbox), so a failed DB write does not orphan authority — prefer: commit DB then best-effort delete; retry job for orphans.
+2. Delete Supabase Storage objects **after** successful commit via `StorageCleanup.TryDelete*`.
+3. Orphan retry remains a Phase 9 job.
 
-Paths only in PostgreSQL.
+Covered today: post delete/remove media, avatar/intro replace-or-clear, chat media redact.
 
 ---
 
@@ -95,6 +95,8 @@ REST messaging ([04-messaging.md](04-messaging.md)) ships first; SignalR must no
 - Keep Supabase Data API locked down (RLS / revoke / disable).
 - `service_role` key only on server.
 
+Tracked `appsettings.*.json` files currently hold local development secrets for convenience.
+Before production, move them to user-secrets / env and rotate.
 ---
 
 ## Testing expectations (as modules land)

@@ -10,12 +10,12 @@ Depends on: [01-identity.md](01-identity.md), [02-catalog.md](02-catalog.md).
 
 ## Progress
 
-- [ ] Organizer create / update / publish / cancel / complete
-- [ ] Discovery queries
-- [ ] Apply / approve / reject / cancel participation
-- [ ] Waitlist join / promote
-- [ ] Attendance (Attended / NoShow)
-- [ ] Publish → event conversation orchestration
+- [x] Organizer create / update / publish / cancel / complete
+- [x] Discovery queries
+- [x] Apply / approve / reject / cancel participation
+- [x] Waitlist join / promote
+- [x] Attendance (Attended / NoShow)
+- [x] Publish → event conversation orchestration
 
 ---
 
@@ -25,7 +25,7 @@ Depends on: [01-identity.md](01-identity.md), [02-catalog.md](02-catalog.md).
 | ---------- | ---------- |
 | `EventsController` | `/api/events` |
 
-Nested actions stay on the same controller or thin nested controllers — prefer one `EventsController` with clear routes for v1.
+Nested actions stay on the same controller for v1.
 
 ---
 
@@ -35,73 +35,56 @@ Nested actions stay on the same controller or thin nested controllers — prefer
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `CreateEvent` | Command | `POST /api/events` | `Event.Create` (Draft); auto organizer participant. Require `CanCreateContent`. |
-| [ ] | `UpdateEventDetails` | Command | `PUT /api/events/{id}` | `UpdateDetails` — Draft/Published/Full. |
-| [ ] | `UpdateEventSchedule` | Command | `PUT /api/events/{id}/schedule` | Date must be in future when changing; duration > 0. |
-| [ ] | `UpdateEventLocation` | Command | `PUT /api/events/{id}/location` | |
-| [ ] | `UpdateEventCapacity` | Command | `PUT /api/events/{id}/capacity` | Cannot shrink below occupied count. |
-| [ ] | `PublishEvent` | Command | `POST /api/events/{id}/publish` | `Publish` → ensure one `Conversation.CreateEventConversation` + owner member. Idempotent if conversation exists (`U(event_id)`). |
-| [ ] | `CancelEvent` | Command | `POST /api/events/{id}/cancel` | Not from Completed. Side effect: notify participants; close conversation (Messaging). |
-| [ ] | `CompleteEvent` | Command | `POST /api/events/{id}/complete` | Only after scheduled end; Published/Full. Unlocks attendance + reviews. |
-| [ ] | `GetEventById` | Query | `GET /api/events/{id}` | Projection: sport, organizer profile snippet, counts, my participation state. |
-| [ ] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Paginated. |
-| [ ] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating` | Paginated. |
-| [ ] | `DiscoverEvents` | Query | `GET /api/events` | `Published`/`Full`, `event_date > now`, filters (sport, city), paginated. Geo bbox optional later. |
+| [x] | `CreateEvent` | Command | `POST /api/events` | Draft + auto organizer participant. Requires `CanCreateContent`. |
+| [x] | `UpdateEventDetails` | Command | `PUT /api/events/{id}` | Draft/Published/Full. |
+| [x] | `UpdateEventSchedule` | Command | `PUT /api/events/{id}/schedule` | Future date + duration > 0 (domain). |
+| [x] | `UpdateEventLocation` | Command | `PUT /api/events/{id}/location` | |
+| [x] | `UpdateEventCapacity` | Command | `PUT /api/events/{id}/capacity` | Cannot shrink below occupied count. |
+| [x] | `PublishEvent` | Command | `POST /api/events/{id}/publish` | Creates event conversation + owner member if missing; bumps `EventsOrganized` once. |
+| [x] | `CancelEvent` | Command | `POST /api/events/{id}/cancel` | Closes conversation; notifies approved/pending participants (`EventCancelled`); bumps cancelled counter. |
+| [x] | `CompleteEvent` | Command | `POST /api/events/{id}/complete` | After scheduled end; closes conversation. |
+| [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport, organizer snippet, counts, my participation / waitlist, conversation id. |
+| [x] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Offset pagination. |
+| [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating` | Excludes self-organized; skips rejected/cancelled. |
+| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring. |
 
 ### Participation
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ApplyToEvent` | Command | `POST /api/events/{id}/apply` | `Event.Apply` → participant or waitlist. Organizer cannot apply. |
-| [ ] | `ApproveParticipant` | Command | `POST /api/events/{id}/participants/{userId}/approve` | Organizer only. Sync conversation membership (add member). Notify `EventRequestApproved`. |
-| [ ] | `RejectParticipant` | Command | `POST /api/events/{id}/participants/{userId}/reject` | Notify `EventRequestRejected`. |
-| [ ] | `CancelParticipation` | Command | `POST /api/events/{id}/participants/me/cancel` | Free capacity; may move status Published↔Full; remove conversation member if present. |
-| [ ] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Organizer sees all; others may see approved only (product rule — document in handler). |
+| [x] | `ApplyToEvent` | Command | `POST /api/events/{id}/apply` | Pending participant or waitlist. Organizer blocked. |
+| [x] | `ApproveParticipant` | Command | `POST /api/events/{id}/participants/{userId}/approve` | Adds conversation member; `EventsJoined`++; `EventRequestApproved` notification. |
+| [x] | `RejectParticipant` | Command | `POST /api/events/{id}/participants/{userId}/reject` | `EventRequestRejected` notification. |
+| [x] | `CancelParticipation` | Command | `POST /api/events/{id}/participants/me/cancel` | Removes conversation membership when present. |
+| [x] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Organizer sees all; others see approved/attended/no-show (+ own pending). |
 
 ### Waitlist
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ListWaitlist` | Query | `GET /api/events/{id}/waitlist` | Organizer. |
-| [ ] | `PromoteFromWaitlist` | Command | `POST /api/events/{id}/waitlist/{userId}/promote` | `PromoteFromWaitlist`; add conversation member. |
+| [x] | `ListWaitlist` | Query | `GET /api/events/{id}/waitlist` | Organizer only. |
+| [x] | `PromoteFromWaitlist` | Command | `POST /api/events/{id}/waitlist/{userId}/promote` | Approved participant + conversation member + notification. |
 
 ### Attendance (after Complete)
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ConfirmAttendance` | Command | `POST /api/events/{id}/participants/{userId}/attended` | Organizer. Updates stats counters. |
-| [ ] | `MarkNoShow` | Command | `POST /api/events/{id}/participants/{userId}/no-show` | Organizer. Affects attendance rate. |
+| [x] | `ConfirmAttendance` | Command | `POST /api/events/{id}/participants/{userId}/attended` | `EventsCompleted`++; refreshes attendance rate. |
+| [x] | `MarkNoShow` | Command | `POST /api/events/{id}/participants/{userId}/no-show` | Refreshes attendance rate. |
 
 ---
 
-## Application orchestration (critical)
+## Application orchestration
 
-Load **Event aggregate** with participants + waitlist for mutating commands.
-
-On **Publish**:
-
-1. Domain `Publish`.
-2. Create event conversation if missing; add organizer as Owner.
-3. Persist once via `SaveChangesAsync`.
-
-On **Approve / Promote**:
-
-1. Domain transition.
-2. `Conversation.AddMember` for the event conversation.
-3. Notification create (respect settings) — can be same UoW or outbox later.
-
-On **Cancel event / remove participant**:
-
-1. Domain transition.
-2. Membership leave/remove; optionally `Conversation.Close` when event cancelled/completed.
-
-Update `UserStatistics` event counters in the same transaction where attendance/completion rules require it (see [10-cross-cutting.md](10-cross-cutting.md)).
+- Mutating commands load the **Event aggregate** with participants + waitlist via `EventAccess.LoadAggregateAsync`.
+- `INotificationPublisher` (in-app only for v1) is used for approve / reject / cancel / promote. Push/email stay deferred.
+- Conversation helpers live in `EventAccess` (ensure on publish, add/remove member, close on cancel/complete).
 
 ---
 
 ## Exit criteria
 
-- [ ] Full Draft → Publish → Apply → Approve → Complete → Attendance path works
-- [ ] Capacity / Full / waitlist behaviors match Domain
-- [ ] Event conversation exists after publish
-- [ ] Discovery query paginated and filtered
+- [x] Full Draft → Publish → Apply → Approve → Complete → Attendance path works (domain + handlers wired)
+- [x] Capacity / Full / waitlist behaviors match Domain
+- [x] Event conversation exists after publish
+- [x] Discovery query paginated and filtered

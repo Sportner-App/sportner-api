@@ -12,10 +12,10 @@ Depends on: [03-events.md](03-events.md) (conversation created on publish).
 
 ## Progress
 
-- [ ] Get conversation by event / list my conversations
-- [ ] List messages (cursor)
-- [ ] Send / edit / redact text (and media)
-- [ ] Membership stays event-driven (no free-form invite in v1)
+- [x] Get conversation by event / list my conversations
+- [x] List messages (cursor)
+- [x] Send / edit / redact text (and media)
+- [x] Membership stays event-driven (no free-form invite in v1)
 
 ---
 
@@ -25,6 +25,7 @@ Depends on: [03-events.md](03-events.md) (conversation created on publish).
 | ---------- | ---------- |
 | `ConversationsController` | `/api/conversations` |
 | `MessagesController` | `/api/conversations/{conversationId}/messages` |
+| `EventsController` (nested) | `GET /api/events/{eventId}/conversation` |
 
 ---
 
@@ -34,39 +35,39 @@ Depends on: [03-events.md](03-events.md) (conversation created on publish).
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `GetConversationByEvent` | Query | `GET /api/events/{eventId}/conversation` | Active members only. |
-| [ ] | `GetConversationById` | Query | `GET /api/conversations/{id}` | Must be active member. |
-| [ ] | `ListMyConversations` | Query | `GET /api/conversations` | Event chats for current user; paginated. |
-| [ ] | `CloseConversation` | Command | `POST /api/conversations/{id}/close` | System/organizer after cancel/complete — often invoked from Events handler, not public. |
+| [x] | `GetConversationByEvent` | Query | `GET /api/events/{eventId}/conversation` | Active members only → 403 otherwise. |
+| [x] | `GetConversationById` | Query | `GET /api/conversations/{id}` | Must be active member. |
+| [x] | `ListMyConversations` | Query | `GET /api/conversations` | Event chats only; offset pagination; last message preview. |
+| [~] | `CloseConversation` | Command | — | **Not public.** Invoked from Events Cancel/Complete via `EventAccess.CloseEventConversationAsync`. |
 
-Membership add/remove/promote is **orchestrated from Events**, not exposed as open social DM APIs in v1.
+Membership add/remove remains orchestrated from Events.
 
 ### Messages
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ListMessages` | Query | `GET .../messages` | Cursor pagination; member only. |
-| [ ] | `SendTextMessage` | Command | `POST .../messages` | `Message.CreateText` after `Conversation.CanUserSendMessage`. |
-| [ ] | `SendMediaMessage` | Command | `POST .../messages/media` | Upload via storage → `CreateMedia`. |
-| [ ] | `EditMessage` | Command | `PUT .../messages/{id}` | Sender only; text only. |
-| [ ] | `RedactMessage` | Command | `DELETE .../messages/{id}` | Soft clear content (domain `Redact`); no physical delete. |
-| [ ] | `CreateSystemMessage` | Command | (internal) | Backend-only; e.g. “Event cancelled”. |
+| [x] | `ListMessages` | Query | `GET .../messages?before=&limit=` | Cursor keyset `(CreatedAt, Id)`; chronological page; member only. |
+| [x] | `SendTextMessage` | Command | `POST .../messages` | `Message.CreateText` after membership + open checks. Notifies other members (`NewMessage`). |
+| [x] | `SendMediaMessage` | Command | `POST .../messages/media` | Multipart → `chat-media` bucket → `CreateMedia` (image/video/pdf). |
+| [x] | `EditMessage` | Command | `PUT .../messages/{id}` | Sender only; text only. |
+| [x] | `RedactMessage` | Command | `DELETE .../messages/{id}` | Soft clear (`Redact`). Sender or owner/moderator. |
+| [~] | `CreateSystemMessage` | Command | (internal) | Deferred until Events needs system lines in chat. |
 
-**Deferred:** `MessageType.Location` factory; Direct/Group create; typing indicators; realtime push.
+**Deferred:** `MessageType.Location`; Direct/Group create; typing indicators; realtime push.
 
 ---
 
 ## Rules
 
-- Closed conversation → no send / membership changes.
+- Closed conversation → no send.
 - Pending participants / waitlist are not members (Events sync).
-- Notify `NewMessage` respecting settings (batching later).
+- `NewMessage` notifications respect in-app settings via `INotificationPublisher`.
 
 ---
 
 ## Exit criteria
 
-- [ ] Approved participant can list and send in event chat
-- [ ] Non-members receive Forbidden
-- [ ] Cursor pagination stable
-- [ ] Redact leaves row with cleared content
+- [x] Approved participant can list and send in event chat
+- [x] Non-members receive Forbidden
+- [x] Cursor pagination stable
+- [x] Redact leaves row with cleared content

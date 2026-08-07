@@ -10,12 +10,12 @@ Related rules: [IMPLEMENTATION_WORKFLOW.md](../../.cursor/rules/IMPLEMENTATION_W
 
 ## Progress
 
-- [ ] Database applied (`Update-Database` / `dotnet ef database update`)
-- [ ] Supabase RLS + Data API hardening
-- [ ] Seed: Sports, Badges, ReportReasons
-- [ ] Auth infrastructure contracts + JWT wiring
-- [ ] Storage abstraction
-- [ ] API conventions (pagination, Result → HTTP)
+- [ ] Database applied (`Update-Database` / `dotnet ef database update`) — your action
+- [ ] Supabase RLS + Data API hardening — your action (dashboard)
+- [x] Seed: Sports, Badges, ReportReasons — idempotent `DatabaseSeeder`, runs at startup
+- [x] Auth infrastructure contracts + JWT wiring — `IJwtService`, `IOtpService`, `ITokenHasher`, `ISmsSender` + JWT bearer
+- [x] Storage abstraction — `IFileStorage` + `SupabaseFileStorage`
+- [x] API conventions (pagination, Result → HTTP) — `PagedResult`/`CursorPagedResult`, `ApiResults`, `ApiControllerBase`
 
 ---
 

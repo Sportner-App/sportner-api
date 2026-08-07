@@ -10,9 +10,9 @@ Depends on: seed ([00-prerequisites.md](00-prerequisites.md)). Award hooks fire 
 
 ## Progress
 
-- [ ] List badge catalog
-- [ ] List my / user badges
-- [ ] Award service + hooks for FIRST_* codes
+- [x] List badge catalog
+- [x] List my / user badges
+- [x] Award service + hooks for FIRST_* codes
 - [ ] Admin badge CRUD (optional; seed-first)
 
 ---
@@ -22,6 +22,7 @@ Depends on: seed ([00-prerequisites.md](00-prerequisites.md)). Award hooks fire 
 | Controller | Base route |
 | ---------- | ---------- |
 | `BadgesController` | `/api/badges` |
+| `UserBadgesController` | `/api/users/{userId}/badges` |
 
 ---
 
@@ -31,30 +32,28 @@ Depends on: seed ([00-prerequisites.md](00-prerequisites.md)). Award hooks fire 
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `ListBadges` | Query | `GET /api/badges` | Active definitions; cacheable. |
-| [ ] | `ListMyBadges` | Query | `GET /api/badges/me` | Joined with definition. |
-| [ ] | `ListUserBadges` | Query | `GET /api/users/{userId}/badges` | Public profile section. |
+| [x] | `ListBadges` | Query | `GET /api/badges` | Active definitions; anonymous OK. |
+| [x] | `ListMyBadges` | Query | `GET /api/badges/me` | Joined with definition. |
+| [x] | `ListUserBadges` | Query | `GET /api/users/{userId}/badges` | Public profile section. |
 
 ### Award (internal)
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [ ] | `AwardBadge` | Command / domain service | **Not public** | `Badge.IsEarnable` → `UserBadge.Award`; unique `(user, badge)`; `IncreaseBadgesCount`; notify `BadgeEarned`. |
-
-Suggested Application helper: `IBadgeAwarder.TryAwardAsync(userId, BadgeCodes.X)`.
+| [x] | `IBadgeAwarder.TryAwardAsync` | Domain service | **Not public** | `Badge.IsEarnable` → `UserBadge.Award`; unique `(user, badge)`; `IncreaseBadgesCount`; notify `BadgeEarned`. |
 
 ### Hook points (implement with producers)
 
-| Code | When |
-| ---- | ---- |
-| `FIRST_EVENT` | First Attended (or first completed participation — pick one rule and stick to it) |
-| `FIRST_POST` | After first successful `CreatePost` |
-| `FIRST_FRIEND` | After first `AcceptFriendRequest` |
-| `FIRST_REVIEW` | After first `CreateReview` |
-| `SPORTS_EXPLORER` | N distinct user sports or sports played in events |
-| `EVENT_MASTER` | N attended events |
-| `MARATHON_RUNNER` | Streak / volume rule |
-| `COMMUNITY_HELPER` | Reports helpful / comments threshold — define explicitly before coding |
+| Code | When | Status |
+| ---- | ---- | ------ |
+| `FIRST_EVENT` | After `ConfirmAttendance` | [x] |
+| `FIRST_POST` | After first successful `CreatePost` | [x] |
+| `FIRST_FRIEND` | After first `AcceptFriendRequest` (both users) | [x] |
+| `FIRST_REVIEW` | After first `CreateReview` | [x] |
+| `SPORTS_EXPLORER` | N distinct user sports or sports played in events | deferred |
+| `EVENT_MASTER` | N attended events | deferred |
+| `MARATHON_RUNNER` | Streak / volume rule | deferred |
+| `COMMUNITY_HELPER` | Reports helpful / comments threshold | deferred |
 
 ### Admin (optional v1)
 
@@ -66,6 +65,6 @@ Suggested Application helper: `IBadgeAwarder.TryAwardAsync(userId, BadgeCodes.X)
 
 ## Exit criteria
 
-- [ ] Catalog + earned badges readable
-- [ ] At least FIRST_* awards work idempotently
-- [ ] Duplicate award attempts are no-ops / Conflict handled cleanly
+- [x] Catalog + earned badges readable
+- [x] At least FIRST_* awards work idempotently
+- [x] Duplicate award attempts are no-ops / Conflict handled cleanly
