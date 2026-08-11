@@ -31,17 +31,9 @@ try
             await provider.GetRequiredService<IExpiredSessionCleaner>().CleanupAsync(ct);
         });
 
-    builder.Services.AddCronJob(
-        "otp-cleanup",
-        options => options.OtpCleanupCron,
-        async (provider, ct) =>
-        {
-            await provider.GetRequiredService<IOtpCleaner>().CleanupAsync(ct);
-        });
-
     var host = builder.Build();
 
-    Log.Information("Sportner.Identity.Worker starting (session + OTP cleanup).");
+    Log.Information("Sportner.Identity.Worker starting (session cleanup).");
     await host.RunAsync();
 }
 catch (Exception ex)

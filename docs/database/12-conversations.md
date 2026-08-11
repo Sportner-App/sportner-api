@@ -119,7 +119,7 @@ Messages are stored separately in the `messages` table.
 - Event conversations are created automatically when an event is published.
 - Event conversations are closed automatically after the event ends.
 - Closed conversations become read-only.
-- Direct and Group conversations are reserved for future implementation.
+- Direct and Group conversations are supported (`CreateDirectConversation` / `CreateGroupConversation`). Group max members = 50. Direct membership is fixed (2).
 
 ---
 

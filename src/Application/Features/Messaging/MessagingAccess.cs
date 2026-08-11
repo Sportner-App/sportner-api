@@ -92,6 +92,32 @@ internal static class MessagingAccess
             (short)myMembership.Role,
             members);
     }
+
+    internal static async Task<Conversation?> FindDirectBetweenAsync(
+        IApplicationDbContext dbContext,
+        Guid firstUserId,
+        Guid secondUserId,
+        CancellationToken cancellationToken)
+    {
+        var myConversationIds = await dbContext.ConversationMembers.AsNoTracking()
+            .Where(member => member.UserId == firstUserId && member.LeftAt == null)
+            .Select(member => member.ConversationId)
+            .ToListAsync(cancellationToken);
+
+        if (myConversationIds.Count == 0)
+        {
+            return null;
+        }
+
+        return await dbContext.Conversations
+            .Include(conversation => conversation.Members)
+            .Where(conversation =>
+                conversation.Type == Domain.Common.Enums.ConversationType.Direct
+                && myConversationIds.Contains(conversation.Id)
+                && conversation.Members.Any(member =>
+                    member.UserId == secondUserId && member.LeftAt == null))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
 
 internal static class MessageCursor

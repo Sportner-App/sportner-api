@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sportner.Application.Abstractions.Authentication;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Notifications;
@@ -12,23 +13,28 @@ namespace Sportner.Infrastructure.Persistence.Seed;
 
 /// <summary>
 /// Development-only demo data. Idempotent: presence of the first demo phone number short-circuits
-/// the whole seeding run, so restarting the API never duplicates rows.
+/// bulk seeding; password hashes are backfilled on later runs if missing.
 /// </summary>
 public sealed class DemoDataSeeder : IDemoDataSeeder
 {
+    public const string DemoPassword = "Demo123!";
+
     private const string DemoPhonePrefix = "+90555000000";
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
+    private readonly IPasswordHasher _passwordHasher;
     private readonly ILogger<DemoDataSeeder> _logger;
 
     public DemoDataSeeder(
         AppDbContext dbContext,
         TimeProvider timeProvider,
+        IPasswordHasher passwordHasher,
         ILogger<DemoDataSeeder> logger)
     {
         _dbContext = dbContext;
         _timeProvider = timeProvider;
+        _passwordHasher = passwordHasher;
         _logger = logger;
     }
 
@@ -41,6 +47,7 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
 
         if (alreadySeeded)
         {
+            await EnsureDemoPasswordsAsync(cancellationToken);
             _logger.LogInformation("Demo data seeding skipped: demo users already exist.");
             return;
         }
@@ -68,6 +75,33 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
         _logger.LogInformation("Demo data seeded: {UserCount} users with events, chat and posts.", users.Count);
     }
 
+    private async Task EnsureDemoPasswordsAsync(CancellationToken cancellationToken)
+    {
+        var demoUsers = await _dbContext.Users
+            .Where(user => user.PhoneNumber != null && user.PhoneNumber.StartsWith(DemoPhonePrefix))
+            .ToListAsync(cancellationToken);
+
+        if (demoUsers.Count == 0)
+        {
+            return;
+        }
+
+        var utcNow = _timeProvider.GetUtcNow();
+        var hash = _passwordHasher.Hash(DemoPassword);
+        var updated = 0;
+
+        foreach (var user in demoUsers.Where(user => string.IsNullOrWhiteSpace(user.PasswordHash)))
+        {
+            user.SetPasswordHash(hash, utcNow);
+            updated++;
+        }
+
+        if (updated > 0)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Backfilled password hash for {Count} demo users.", updated);
+        }
+    }
     private List<User> CreateUsers(IReadOnlyList<Sport> sports, DateTimeOffset utcNow)
     {
         var definitions = new[]
@@ -89,6 +123,7 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
             var user = User.Create($"{DemoPhonePrefix}{definition.Index}", utcNow);
             user.VerifyPhoneNumber(utcNow);
             user.Activate(utcNow);
+            user.SetPasswordHash(_passwordHasher.Hash(DemoPassword), utcNow);
 
             var profile = UserProfile.Create(
                 user.Id,

@@ -17,3 +17,54 @@ services:
       Supabase__Url: ${Supabase__Url}
       Supabase__ServiceRoleKey: ${Supabase__ServiceRoleKey}
     restart: unless-stopped
+
+  # Optional: docker compose --profile workers up --build
+  identity-worker:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      args:
+        WORKER_DIR: Identity.Worker
+        WORKER_ASSEMBLY: Sportner.Identity.Worker
+    image: sportner-identity-worker:local
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__SupabaseConnection: ${ConnectionStrings__SupabaseConnection}
+      JwtSettings__Secret: ${JwtSettings__Secret}
+      BackgroundJobs__Enabled: "true"
+    restart: unless-stopped
+
+  events-worker:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      args:
+        WORKER_DIR: Events.Worker
+        WORKER_ASSEMBLY: Sportner.Events.Worker
+    image: sportner-events-worker:local
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__SupabaseConnection: ${ConnectionStrings__SupabaseConnection}
+      JwtSettings__Secret: ${JwtSettings__Secret}
+      BackgroundJobs__Enabled: "true"
+    restart: unless-stopped
+
+  notifications-worker:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      args:
+        WORKER_DIR: Notifications.Worker
+        WORKER_ASSEMBLY: Sportner.Notifications.Worker
+    image: sportner-notifications-worker:local
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__SupabaseConnection: ${ConnectionStrings__SupabaseConnection}
+      JwtSettings__Secret: ${JwtSettings__Secret}
+      Supabase__Url: ${Supabase__Url}
+      Supabase__ServiceRoleKey: ${Supabase__ServiceRoleKey}
+      BackgroundJobs__Enabled: "true"
+    restart: unless-stopped

@@ -86,6 +86,11 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         };
 
         problem.Extensions["traceId"] = httpContext.TraceIdentifier;
+        if (httpContext.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var correlation)
+            && correlation is string correlationId)
+        {
+            problem.Extensions["correlationId"] = correlationId;
+        }
 
         if (exception is ValidationException validationException)
         {

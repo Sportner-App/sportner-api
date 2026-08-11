@@ -36,12 +36,15 @@ public sealed class EventsController : ApiControllerBase
     public async Task<IActionResult> Discover(
         [FromQuery] Guid? sportId,
         [FromQuery] string? city,
+        [FromQuery] decimal? lat,
+        [FromQuery] decimal? lng,
+        [FromQuery] double? radiusKm,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(
-            new DiscoverEventsQuery(sportId, city, page, pageSize),
+            new DiscoverEventsQuery(sportId, city, lat, lng, radiusKm, page, pageSize),
             cancellationToken);
 
         return result.ToActionResult();

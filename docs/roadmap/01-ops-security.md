@@ -56,11 +56,11 @@ SQL runbook: [`docs/ops/supabase-rls.md`](../ops/supabase-rls.md)
 
 ### Exit
 
-- [ ] En az 1 moderator Guid tanımlı *(Guid’i yaz, config’e ekleriz)*
+- [x] En az 1 moderator Guid tanımlı — demo `ahmet` `88f544fe-ff4a-4f10-8272-64a5dae757e4` (`+905550000001`, OTP `000000`)
 - [ ] Moderator endpoint smoke test OK
 - [ ] Non-moderator 403
 
-Config yeri: `Authorization:ModeratorUserIds` (appsettings veya user-secrets).
+Config yeri: `Authorization:ModeratorUserIds` (appsettings Development/Production).
 
 ---
 
@@ -68,7 +68,7 @@ Config yeri: `Authorization:ModeratorUserIds` (appsettings veya user-secrets).
 
 ### Exit
 
-- [ ] Client’ta `/api/profiles` → `/api/user-profiles` *(client repo — sen)*
+- [x] Client’ta `/api/profiles` → `/api/user-profiles` *(client confirm)*
 
 ---
 
@@ -90,7 +90,7 @@ Config yeri: `Authorization:ModeratorUserIds` (appsettings veya user-secrets).
 - [~] Repo: migrate + RLS runbook tamam; secrets temizleme **yok**
 - [x] `docs/roadmap/status.md` güncellendi
 - [ ] RLS SQL dashboard’da çalıştırıldı
-- [ ] Moderator Guid eklendi
+- [x] Moderator Guid eklendi
 
 ## Sonraki (01 kapandıktan sonra)
 
@@ -98,6 +98,7 @@ Config yeri: `Authorization:ModeratorUserIds` (appsettings veya user-secrets).
 
 ## Senin sıradaki aksiyonlar
 
-1. Supabase SQL Editor’de [`docs/ops/supabase-rls.md`](../ops/supabase-rls.md) script’ini çalıştır.  
-2. Moderator olacak kullanıcının `UserId` (Guid) değerini ver → `ModeratorUserIds`’e ekleyelim.  
-3. ~~Secrets temizleme / rotate~~ — **yapma**; appsettings olduğu gibi kalır.
+## Senin sıradaki aksiyonlar
+
+1. ~~RLS~~ / ~~Moderator~~ / ~~client route~~ — bkz. [`docs/ops/ek-notlar.md`](../ops/ek-notlar.md) (RLS ertelendi; moderator demo `ahmet` / `Demo123!`; client `/api/user-profiles` done).
+2. Auth: `POST /api/auth/register` + `login` (OTP yok).

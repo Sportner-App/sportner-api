@@ -52,7 +52,21 @@ Constants: `BadgeThresholds` + `docs/features/08-gamification.md`.
 
 ## 7.3 Messaging genişleme (Direct / Group)
 
-**Deferred** — Event chat + SignalR yeterli; Direct/Group ayrı dilim.
+### Karar kapısı (kilitli)
+
+| Soru | Karar |
+| ---- | ----- |
+| Direct | Evet — accepted friends; idempotent existing DM |
+| Group max members | **50** (`Conversation.MaxGroupMembers`) |
+| Invite | Group only; owner/moderator + friend of inviter |
+| SignalR | Aynı hub / `conversation:{id}` |
+
+### Exit
+
+- [x] Direct create + mesajlaş (mevcut message endpoints)
+- [x] Group create / invite / leave
+- [x] features/04 update
+
 
 ---
 
@@ -64,10 +78,10 @@ Deferred — seed source of truth.
 
 ## Exit criteria (07 tamam)
 
-- [x] 7.1 + 7.2 seçilip bitti
+- [x] 7.1 + 7.2 + 7.3 bitti
 - [x] status.md
-- [ ] 7.3 / 7.4 (sonraki ürün dilimi)
+- [ ] 7.4 Admin badges/reasons (opsiyonel)
 
 ## Sonraki
 
-→ [08-scale-and-platform.md](08-scale-and-platform.md) **veya** 7.3 Direct messaging
+→ [08-scale-and-platform.md](08-scale-and-platform.md)

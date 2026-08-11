@@ -24,18 +24,10 @@ Supabase__ServiceRoleKey
 JwtSettings__Secret
 ```
 
-## OTP (temporary — until SMS provider)
+## Auth (username + password)
 
-Auth is phone OTP only (`POST /api/auth/request-otp` → `verify-otp`). There is no email/password.
+V1 uses username/password (`POST /api/auth/register`, `POST /api/auth/login`). No OTP/SMS/2FA.
 
-**Current (dev + Production/Render):** fixed code `000000` when `Otp:ExposeCodeInLogs` is true.
+Demo users (after seed / password backfill): username `ahmet` / `elif` / `mert` / `zeynep`, password `Demo123!`.
 
-```json
-"Otp": {
-  "ExposeCodeInLogs": true,
-  "FixedCode": "000000"
-}
-```
-
-UI flow: `request-otp` → `verify-otp` with `000000`.  
-Before real launch: disable `ExposeCodeInLogs`, clear `FixedCode`, wire SMS.
+JWT settings remain under `JwtSettings`.

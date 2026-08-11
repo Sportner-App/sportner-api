@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sportner.Application.Abstractions.Authentication;
-using Sportner.Application.Abstractions.BackgroundJobs;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
@@ -55,14 +54,10 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-        services.Configure<OtpOptions>(configuration.GetSection(OtpOptions.SectionName));
 
         services.AddSingleton<ITokenHasher, TokenHasher>();
-        services.AddSingleton<IOtpChallengeStore, InMemoryOtpChallengeStore>();
+        services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<ISmsSender, LoggingSmsSender>();
-        services.AddScoped<IOtpService, OtpService>();
-        services.AddScoped<IOtpCleaner, OtpCleaner>();
 
         return services;
     }

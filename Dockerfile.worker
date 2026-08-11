@@ -1,0 +1,51 @@
+# syntax=docker/dockerfile:1
+#
+# docker build -f Dockerfile.worker \
+#   --build-arg WORKER_DIR=Identity.Worker \
+#   --build-arg WORKER_ASSEMBLY=Sportner.Identity.Worker \
+#   -t sportner-identity-worker:local .
+#
+# Events:       WORKER_DIR=Events.Worker        WORKER_ASSEMBLY=Sportner.Events.Worker
+# Notifications: WORKER_DIR=Notifications.Worker WORKER_ASSEMBLY=Sportner.Notifications.Worker
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG WORKER_DIR=Identity.Worker
+ARG WORKER_ASSEMBLY=Sportner.Identity.Worker
+WORKDIR /src
+
+COPY Sportner.slnx ./
+COPY src/Domain/Sportner.Domain.csproj src/Domain/
+COPY src/Application/Sportner.Application.csproj src/Application/
+COPY src/Infrastructure/Sportner.Infrastructure.csproj src/Infrastructure/
+COPY src/Localization/Sportner.Localization.csproj src/Localization/
+COPY src/Workers/Hosting/Sportner.Workers.Hosting.csproj src/Workers/Hosting/
+COPY src/Workers/${WORKER_DIR}/${WORKER_ASSEMBLY}.csproj src/Workers/${WORKER_DIR}/
+
+RUN dotnet restore "src/Workers/${WORKER_DIR}/${WORKER_ASSEMBLY}.csproj"
+
+COPY src/Domain/ src/Domain/
+COPY src/Application/ src/Application/
+COPY src/Infrastructure/ src/Infrastructure/
+COPY src/Localization/ src/Localization/
+COPY src/Workers/Hosting/ src/Workers/Hosting/
+COPY src/Workers/${WORKER_DIR}/ src/Workers/${WORKER_DIR}/
+
+RUN dotnet publish "src/Workers/${WORKER_DIR}/${WORKER_ASSEMBLY}.csproj" \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+ARG WORKER_ASSEMBLY=Sportner.Identity.Worker
+WORKDIR /app
+
+ENV DOTNET_EnableDiagnostics=0 \
+    DOTNET_ENVIRONMENT=Production \
+    WORKER_DLL=${WORKER_ASSEMBLY}.dll
+
+COPY --from=build /app/publish .
+
+USER $APP_UID
+
+ENTRYPOINT ["sh", "-c", "exec dotnet \"$WORKER_DLL\""]

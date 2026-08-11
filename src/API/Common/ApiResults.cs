@@ -75,6 +75,7 @@ public static class ApiResults
         ErrorType.Forbidden => StatusCodes.Status403Forbidden,
         ErrorType.NotFound => StatusCodes.Status404NotFound,
         ErrorType.Conflict => StatusCodes.Status409Conflict,
+        ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
         _ => StatusCodes.Status500InternalServerError
     };
 
@@ -85,6 +86,7 @@ public static class ApiResults
         ErrorType.Forbidden => "Forbidden",
         ErrorType.NotFound => "Resource not found",
         ErrorType.Conflict => "Conflict",
+        ErrorType.TooManyRequests => "Too many requests",
         _ => "An unexpected error occurred"
     };
 }

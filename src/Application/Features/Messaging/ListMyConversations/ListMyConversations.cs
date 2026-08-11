@@ -4,11 +4,10 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
-using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Messaging.ListMyConversations;
 
-public sealed record ListMyConversationsQuery(int Page = 1, int PageSize = 20)
+public sealed record ListMyConversationsQuery(int Page = 1, int PageSize = 20, short? Type = null)
     : IQuery<PagedResult<ConversationListItemResponse>>;
 
 internal sealed class ListMyConversationsQueryHandler
@@ -42,7 +41,8 @@ internal sealed class ListMyConversationsQueryHandler
         var query =
             from conversation in _dbContext.Conversations.AsNoTracking()
             where conversationIds.Contains(conversation.Id)
-                && conversation.Type == ConversationType.Event
+                && (request.Type == null
+                    || (short)conversation.Type == request.Type.Value)
             select new ConversationListItemResponse(
                 conversation.Id,
                 (short)conversation.Type,

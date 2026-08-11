@@ -71,9 +71,7 @@ public class UserOnboardingTests
 
     private static User CreateActiveUser()
     {
-        var user = User.Create("+905551111111", CreatedAt);
-        user.VerifyPhoneNumber(CreatedAt);
-        user.Activate(CreatedAt);
+        var user = User.RegisterWithPassword("test-hash", CreatedAt);
         return user;
     }
 

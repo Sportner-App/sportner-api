@@ -27,7 +27,8 @@ internal static class ModelBuilderExtensions
     {
         modelBuilder.Entity<User>()
             .HasIndex(entity => entity.PhoneNumber)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"PhoneNumber\" IS NOT NULL");
 
         modelBuilder.Entity<UserProfile>()
             .HasIndex(entity => entity.UserId)
@@ -167,6 +168,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>().HasIndex(entity => entity.Status);
         modelBuilder.Entity<Event>()
             .HasIndex(entity => new { entity.Status, entity.EventDate });
+        modelBuilder.Entity<Event>()
+            .HasIndex(entity => new { entity.Latitude, entity.Longitude });
 
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.EventId);
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.UserId);
@@ -250,6 +253,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<User>()
             .Property(entity => entity.PhoneNumber)
             .HasMaxLength(20);
+
+        modelBuilder.Entity<User>()
+            .Property(entity => entity.PasswordHash)
+            .HasMaxLength(500);
 
         modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.Username)

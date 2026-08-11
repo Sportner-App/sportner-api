@@ -1,36 +1,48 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Sportner.API.Authorization;
 using Sportner.API.Common;
+using Sportner.API.Extensions.RateLimiting;
+using Sportner.Application.Features.Identity.Auth.Login;
 using Sportner.Application.Features.Identity.Auth.Logout;
 using Sportner.Application.Features.Identity.Auth.LogoutAll;
 using Sportner.Application.Features.Identity.Auth.RefreshToken;
-using Sportner.Application.Features.Identity.Auth.RequestOtp;
-using Sportner.Application.Features.Identity.Auth.VerifyOtp;
+using Sportner.Application.Features.Identity.Auth.Register;
 
 namespace Sportner.API.Controllers;
 
 public sealed class AuthController : ApiControllerBase
 {
     [AllowAnonymous]
-    [HttpPost("request-otp")]
-    public async Task<IActionResult> RequestOtp(
-        [FromBody] RequestOtpRequest request,
+    [HttpPost("register")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await Sender.Send(new RequestOtpCommand(request.PhoneNumber), cancellationToken);
-        return result.ToActionResult(StatusCodes.Status202Accepted);
+        var command = new RegisterCommand(
+            request.Username,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            UserAgent: HttpContext.Request.Headers.UserAgent.ToString());
+
+        var result = await Sender.Send(command, cancellationToken);
+        return result.ToActionResult(StatusCodes.Status201Created);
     }
 
     [AllowAnonymous]
-    [HttpPost("verify-otp")]
-    public async Task<IActionResult> VerifyOtp(
-        [FromBody] VerifyOtpRequest request,
+    [HttpPost("login")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new VerifyOtpCommand(
-            request.PhoneNumber,
-            request.Code,
+        var command = new LoginCommand(
+            request.Username,
+            request.Password,
             IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
             UserAgent: HttpContext.Request.Headers.UserAgent.ToString());
 
@@ -40,6 +52,7 @@ public sealed class AuthController : ApiControllerBase
 
     [AllowAnonymous]
     [HttpPost("refresh")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
     public async Task<IActionResult> Refresh(
         [FromBody] RefreshTokenRequest request,
         CancellationToken cancellationToken)
@@ -69,9 +82,13 @@ public sealed class AuthController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
-    public sealed record RequestOtpRequest(string PhoneNumber);
+    public sealed record RegisterRequest(
+        string Username,
+        string Password,
+        string FirstName,
+        string? LastName);
 
-    public sealed record VerifyOtpRequest(string PhoneNumber, string Code);
+    public sealed record LoginRequest(string Username, string Password);
 
     public sealed record RefreshTokenRequest(string RefreshToken);
 

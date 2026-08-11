@@ -1,41 +1,34 @@
 # Status — Ne bitti? (anlık özet)
 
-Son güncelleme: 2026-08 (07.1 badge + 07.2 moderation side effects).
+Son güncelleme: 2026-08 (V1 auth → username/password).
 
-## Tamam
+## Tamam (V1 MVP)
 
 | Alan | Not |
 | ---- | --- |
-| Domain + Persistence | + outbox, `IsHidden` on Posts/Comments |
-| Features 01–09 | Identity → Moderation |
-| Auth policies | ActiveUser, CanCreateContent, Moderator, Admin |
-| Catalog admin | Sports CRUD |
-| Quality hardening | ConfirmAttendance idempotency; counter matrix |
-| Workers | Identity / Events (+ marathon sweep) / Notifications |
-| SignalR | `/hubs/event-chat` |
-| Push delivery | Outbox + LoggingPushSender |
-| **Advanced badges** | SPORTS_EXPLORER / EVENT_MASTER / MARATHON_RUNNER / COMMUNITY_HELPER |
-| **Moderation effects** | Post/Comment hide; Message redact; Review reported |
+| Auth | **Username + password** (register/login); OTP/SMS kaldırıldı |
+| Users / Sports / Events / Applications / Participants | Done |
+| Event Messages | REST + SignalR |
+| Reviews / Notifications / Reports / Saved Locations | Done |
+| Workers / Push outbox / Badges / Direct+Group | Done |
+| Platform baseline | CI, rate limit, correlation, discover bbox |
 
-## 01 Ops (owner)
+## Owner / sonraya — [`docs/ops/ek-notlar.md`](../ops/ek-notlar.md)
 
 | Madde | Durum |
 | ----- | ----- |
-| RLS SQL (outbox + yeni kolonlar) | SQL Editor’de yeniden çalıştır |
-| ModeratorUserIds / AdminUserIds | Pending |
-| Client `/api/user-profiles` | Pending |
+| RLS SQL | Ertelendi |
+| Client `/api/user-profiles` | ✅ Done |
 | Real FCM/APNs | Pending |
+| Admin panel | Yok — seed ile |
+| PostGIS / perf smoke | Optional |
 
-## 02–07
+## Demo login
 
-| Faz | Durum |
-| --- | ----- |
-| 02–06 | Done |
-| 07.1 Badges | Done |
-| 07.2 Moderation side effects | Done |
-| 07.3 Direct/Group messaging | Deferred |
-| 07.4 Admin badges/reasons | Deferred |
+- username: `ahmet` (veya elif/mert/zeynep)
+- password: `Demo123!`
+- moderator Guid: `88f544fe-ff4a-4f10-8272-64a5dae757e4` (ahmet)
 
 ## Sıradaki
 
-→ [08-scale-and-platform.md](08-scale-and-platform.md) veya 7.3 Direct
+V1 backend feature set tamam. Ops notları `ek-notlar.md`.

@@ -15,9 +15,12 @@ public class User : AggregateRoot
     {
     }
 
-    public string PhoneNumber { get; private set; } = null!;
+    public string? PhoneNumber { get; private set; }
 
     public DateTimeOffset? PhoneVerifiedAt { get; private set; }
+
+    /// <summary>ASP.NET Identity compatible password hash. Null = cannot sign in with password.</summary>
+    public string? PasswordHash { get; private set; }
 
     public UserStatus Status { get; private set; }
 
@@ -52,6 +55,40 @@ public class User : AggregateRoot
         user.Statistics = UserStatistics.Create(user.Id, utcNow);
 
         return user;
+    }
+
+    /// <summary>V1 password auth: active account with password hash; phone optional.</summary>
+    public static User RegisterWithPassword(string passwordHash, DateTimeOffset utcNow)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw new DomainException("Password hash is required.");
+        }
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            PasswordHash = passwordHash,
+            Status = UserStatus.Active,
+            CreatedAt = utcNow
+        };
+
+        user.Statistics = UserStatistics.Create(user.Id, utcNow);
+
+        return user;
+    }
+
+    public void SetPasswordHash(string passwordHash, DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw new DomainException("Password hash is required.");
+        }
+
+        PasswordHash = passwordHash;
+        Touch(utcNow);
     }
 
     public void Activate(DateTimeOffset utcNow)
@@ -426,8 +463,8 @@ public class User : AggregateRoot
 
     public bool CanAuthenticate()
     {
-        return PhoneVerifiedAt is not null
-            && Status is UserStatus.Active;
+        return Status is UserStatus.Active
+            && !string.IsNullOrWhiteSpace(PasswordHash);
     }
 
     public bool HasCompletedOnboarding()

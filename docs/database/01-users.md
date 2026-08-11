@@ -38,8 +38,9 @@ This table must never contain profile-related information.
 | Column             | Type        | Nullable | Description             |
 | ------------------ | ----------- | -------- | ----------------------- |
 | id                 | UUID        | No       | Primary Key             |
-| phone_number       | VARCHAR(20) | No       | User phone number       |
+| phone_number       | VARCHAR(20) | Yes      | Optional contact phone  |
 | phone_verified_at  | TIMESTAMPTZ | Yes      | Phone verification date |
+| password_hash      | VARCHAR(500)| Yes      | Password auth hash (PBKDF2) |
 | status             | SMALLINT    | No       | User status             |
 | onboarding_completed_at | TIMESTAMPTZ | Yes | Onboarding completion date |
 | last_seen_at       | TIMESTAMPTZ | Yes      | Last activity           |
@@ -53,7 +54,7 @@ This table must never contain profile-related information.
 # Indexes
 
 - PK(id)
-- UNIQUE(phone_number)
+- UNIQUE(phone_number) WHERE phone_number IS NOT NULL
 - INDEX(status)
 - INDEX(last_seen_at)
 

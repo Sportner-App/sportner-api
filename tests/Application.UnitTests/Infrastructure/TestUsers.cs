@@ -9,6 +9,7 @@ internal static class TestUsers
         var user = User.Create(phoneNumber, utcNow);
         user.VerifyPhoneNumber(utcNow);
         user.Activate(utcNow);
+        user.SetPasswordHash("test-password-hash", utcNow);
         return user;
     }
 }

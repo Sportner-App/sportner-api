@@ -28,7 +28,7 @@ Cross-cutting notes remain in [10-cross-cutting.md](10-cross-cutting.md).
 
 ## Locked decisions
 
-- **Auth:** Phone + OTP + JWT + Refresh Token. Refresh tokens live only in `UserSessions` (hashed). Application owns `IOtpService` / `IJwtService` abstractions; Infrastructure implements them.
+- **Auth:** Username + password + JWT + Refresh Token. Refresh tokens live only in `UserSessions` (hashed). No OTP/SMS/2FA in V1.
 - **Supabase:** Postgres + Storage. Clients do not use the Supabase Data API against business tables (RLS enabled, no public policies; prefer Data API off for backend-only).
 - **Messaging v1:** Event conversations only. Direct / Group remain schema-reserved.
 - **No generic repository / no separate Unit of Work.** Handlers use `IApplicationDbContext`.

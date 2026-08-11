@@ -18,9 +18,6 @@ public sealed class BackgroundJobsOptions
     /// <summary>Daily 03:00 UTC.</summary>
     public string SessionCleanupCron { get; set; } = "0 3 * * *";
 
-    /// <summary>Hourly.</summary>
-    public string OtpCleanupCron { get; set; } = "0 * * * *";
-
     /// <summary>Every 15 minutes.</summary>
     public string EventReminderCron { get; set; } = "*/15 * * * *";
 

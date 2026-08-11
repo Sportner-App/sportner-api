@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Sportner.API.Authorization;
 using Sportner.API.Common;
+using Sportner.API.Extensions.RateLimiting;
 using Sportner.Application.Features.Moderation.CreateReport;
 using Sportner.Application.Features.Moderation.GetMyReports;
 using Sportner.Application.Features.Moderation.ListReports;
@@ -17,6 +19,7 @@ namespace Sportner.API.Controllers;
 public sealed class ReportsController : ApiControllerBase
 {
     [HttpPost]
+    [EnableRateLimiting(RateLimitingExtensions.ReportPolicy)]
     public async Task<IActionResult> Create(
         [FromBody] CreateReportBody request,
         CancellationToken cancellationToken)

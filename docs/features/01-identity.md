@@ -10,7 +10,7 @@ Depends on: [00-prerequisites.md](00-prerequisites.md).
 
 ## Progress
 
-- [x] Auth (OTP + JWT + refresh + logout)
+- [x] Auth (username/password + JWT + refresh + logout)
 - [x] Devices
 - [x] Sessions management
 - [x] UserProfile (create / me / public / updates)
@@ -33,7 +33,7 @@ Depends on: [00-prerequisites.md](00-prerequisites.md).
 | `SessionsController` | `/api/me/sessions` |
 | `SavedLocationsController` | `/api/me/saved-locations` |
 
-All except `RequestOtp` / `VerifyOtp` / `Refresh` require `[Authorize]` unless noted.
+All except `Register` / `Login` / `Refresh` require `[Authorize]` unless noted.
 
 ---
 
@@ -43,16 +43,15 @@ All except `RequestOtp` / `VerifyOtp` / `Refresh` require `[Authorize]` unless n
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [x] | `RequestOtp` | Command | `POST /api/auth/request-otp` | Create-on-verify chosen (no orphan phones). Always returns 202 to avoid phone enumeration. |
-| [x] | `VerifyOtp` | Command | `POST /api/auth/verify-otp` | Verify OTP → `User.Create` if missing → `VerifyPhoneNumber` → `Activate` → issue JWT + refresh → `CreateSession`. Seeds `NotificationSetting.CreateDefault` for all `NotificationType` values. Banned/Deleted/Suspended → 403. |
+| [x] | `Register` | Command | `POST /api/auth/register` | Username + password + firstName → `User.RegisterWithPassword` + `UserProfile` + session. Seeds notification settings. |
+| [x] | `Login` | Command | `POST /api/auth/login` | Lookup profile username → verify password hash → JWT + refresh. |
 | [x] | `RefreshToken` | Command | `POST /api/auth/refresh` | Validate hash, user `CanAuthenticate`, session active → `RotateRefreshToken` → new access token. |
 | [x] | `Logout` | Command | `POST /api/auth/logout` | Revokes the session for the given refresh token (idempotent). |
 | [x] | `LogoutAll` | Command | `POST /api/auth/logout-all` | `RevokeAllSessions` for current user. |
 
-`VerifyOtp` and `RefreshToken` both return `isOnboardingCompleted`, so the client can route users
-with an unfinished profile to the onboarding screen right after authentication.
+`Register` / `Login` / `RefreshToken` return `isOnboardingCompleted` (sport still required for full onboarding).
 
-Never log OTP, JWT, or refresh token plaintext.
+OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 
 ### Devices
 

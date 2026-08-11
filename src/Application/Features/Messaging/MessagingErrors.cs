@@ -43,4 +43,32 @@ internal static class MessagingErrors
     internal static readonly Error ReplyNotFound = Error.NotFound(
         "Messaging.ReplyNotFound",
         "The message being replied to was not found in this conversation.");
+
+    internal static readonly Error PeerNotFound = Error.NotFound(
+        "Messaging.PeerNotFound",
+        "The other user was not found.");
+
+    internal static readonly Error NotFriends = Error.Forbidden(
+        "Messaging.NotFriends",
+        "You can only start a conversation with an accepted friend.");
+
+    internal static readonly Error CannotMessageSelf = Error.Validation(
+        "Messaging.CannotMessageSelf",
+        "You cannot create a direct conversation with yourself.");
+
+    internal static readonly Error CannotInvite = Error.Forbidden(
+        "Messaging.CannotInvite",
+        "You cannot invite members to this conversation.");
+
+    internal static readonly Error GroupFull = Error.Conflict(
+        "Messaging.GroupFull",
+        "The group conversation is full.");
+
+    internal static readonly Error InvalidOperation = Error.Conflict(
+        "Messaging.InvalidOperation",
+        "The conversation operation is not allowed in the current state.");
+
+    internal static readonly Error UserNotFound = Error.NotFound(
+        "Messaging.UserNotFound",
+        "One or more users were not found.");
 }

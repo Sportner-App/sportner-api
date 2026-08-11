@@ -196,6 +196,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status");
 
+                    b.HasIndex("Latitude", "Longitude");
+
                     b.HasIndex("Status", "EventDate");
 
                     b.ToTable("Events");
@@ -1177,8 +1179,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("OnboardingCompletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
@@ -1199,7 +1204,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("LastSeenAt");
 
                     b.HasIndex("PhoneNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"PhoneNumber\" IS NOT NULL");
 
                     b.HasIndex("Status");
 
