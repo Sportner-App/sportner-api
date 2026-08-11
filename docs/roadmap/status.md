@@ -1,36 +1,41 @@
 # Status — Ne bitti? (anlık özet)
 
-Son güncelleme: 2026-08 (04 background jobs / Worker tamamlandı).
+Son güncelleme: 2026-08 (07.1 badge + 07.2 moderation side effects).
 
 ## Tamam
 
 | Alan | Not |
 | ---- | --- |
-| Domain + Persistence | + `EventReminderDispatches` migration |
+| Domain + Persistence | + outbox, `IsHidden` on Posts/Comments |
 | Features 01–09 | Identity → Moderation |
 | Auth policies | ActiveUser, CanCreateContent, Moderator, Admin |
 | Catalog admin | Sports CRUD |
-| Quality hardening | ConfirmAttendance idempotency; counter matrix; handler tests |
-| **Workers** | `Identity.Worker` (session/OTP), `Events.Worker` (reminders) — ayrı deploy |
-| Storage cleanup | StorageCleanup |
-| API rename | `/api/user-profiles` |
+| Quality hardening | ConfirmAttendance idempotency; counter matrix |
+| Workers | Identity / Events (+ marathon sweep) / Notifications |
+| SignalR | `/hubs/event-chat` |
+| Push delivery | Outbox + LoggingPushSender |
+| **Advanced badges** | SPORTS_EXPLORER / EVENT_MASTER / MARATHON_RUNNER / COMMUNITY_HELPER |
+| **Moderation effects** | Post/Comment hide; Message redact; Review reported |
 
 ## 01 Ops (owner)
 
 | Madde | Durum |
 | ----- | ----- |
-| RLS SQL (şimdi `EventReminderDispatches` dahil) | SQL Editor’de yeniden çalıştır |
+| RLS SQL (outbox + yeni kolonlar) | SQL Editor’de yeniden çalıştır |
 | ModeratorUserIds / AdminUserIds | Pending |
 | Client `/api/user-profiles` | Pending |
+| Real FCM/APNs | Pending |
 
-## 02–04
+## 02–07
 
 | Faz | Durum |
 | --- | ----- |
-| 02 Admin + Catalog | Done |
-| 03 Quality hardening | Done |
-| 04 Background jobs (Identity + Events workers) | Done |
+| 02–06 | Done |
+| 07.1 Badges | Done |
+| 07.2 Moderation side effects | Done |
+| 07.3 Direct/Group messaging | Deferred |
+| 07.4 Admin badges/reasons | Deferred |
 
 ## Sıradaki
 
-→ [05-signalr-realtime.md](05-signalr-realtime.md)
+→ [08-scale-and-platform.md](08-scale-and-platform.md) veya 7.3 Direct

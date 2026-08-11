@@ -62,6 +62,8 @@ internal sealed class ConfirmAttendanceCommandHandler
                     BadgeCodes.FirstEvent,
                     ct);
 
+                await _badgeAwarder.EvaluateAfterAttendanceAsync(request.UserId, ct);
+
                 return Result.Success();
             },
             cancellationToken);

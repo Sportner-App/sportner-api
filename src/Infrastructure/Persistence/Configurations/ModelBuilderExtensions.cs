@@ -110,6 +110,9 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.UserId, entity.NotificationType })
             .IsUnique();
 
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .HasIndex(entity => new { entity.Status, entity.NextAttemptAt });
+
         modelBuilder.Entity<Badge>()
             .HasIndex(entity => entity.Code)
             .IsUnique();
@@ -219,6 +222,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Notification>().HasIndex(entity => entity.NotificationType);
 
         modelBuilder.Entity<NotificationSetting>().HasIndex(entity => entity.UserId);
+
+        modelBuilder.Entity<NotificationDeliveryOutbox>().HasIndex(entity => entity.RecipientUserId);
+        modelBuilder.Entity<NotificationDeliveryOutbox>().HasIndex(entity => entity.NotificationId);
+        modelBuilder.Entity<NotificationDeliveryOutbox>().HasIndex(entity => entity.CreatedAt);
 
         modelBuilder.Entity<Badge>().HasIndex(entity => entity.Category);
         modelBuilder.Entity<Badge>().HasIndex(entity => entity.Rarity);
@@ -396,6 +403,9 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Post>()
             .Property(entity => entity.MediaCount)
             .HasDefaultValue((short)0);
+        modelBuilder.Entity<Post>()
+            .Property(entity => entity.IsHidden)
+            .HasDefaultValue(false);
 
         modelBuilder.Entity<PostComment>()
             .Property(entity => entity.LikeCount)
@@ -403,6 +413,9 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<PostComment>()
             .Property(entity => entity.ReplyCount)
             .HasDefaultValue(0);
+        modelBuilder.Entity<PostComment>()
+            .Property(entity => entity.IsHidden)
+            .HasDefaultValue(false);
     }
 
     private static void ConfigureSmallIntColumns(ModelBuilder modelBuilder)
@@ -441,6 +454,18 @@ internal static class ModelBuilderExtensions
             .HasColumnType("smallint");
         modelBuilder.Entity<NotificationSetting>()
             .Property(entity => entity.NotificationType)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .Property(entity => entity.Channel)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .Property(entity => entity.Status)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .Property(entity => entity.NotificationType)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .Property(entity => entity.EntityType)
             .HasColumnType("smallint");
         modelBuilder.Entity<Badge>().Property(entity => entity.Category)
             .HasColumnType("smallint");
@@ -685,6 +710,18 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.RecipientUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NotificationDeliveryOutbox>()
+            .HasOne<Notification>()
+            .WithMany()
+            .HasForeignKey(entity => entity.NotificationId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<UserBadge>()
             .HasOne<User>()

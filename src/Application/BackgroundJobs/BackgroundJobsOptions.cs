@@ -26,4 +26,12 @@ public sealed class BackgroundJobsOptions
 
     /// <summary>Reminder windows in minutes before event start (defaults: 24h + 1h).</summary>
     public int[] EventReminderWindowsMinutes { get; set; } = [1440, 60];
+
+    /// <summary>Every minute.</summary>
+    public string NotificationDeliveryCron { get; set; } = "* * * * *";
+
+    public int NotificationDeliveryBatchSize { get; set; } = 100;
+
+    /// <summary>Daily 04:00 UTC — MARATHON_RUNNER streak sweep.</summary>
+    public string MarathonRunnerBadgeCron { get; set; } = "0 4 * * *";
 }

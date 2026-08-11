@@ -6,7 +6,10 @@ using Sportner.API.Extensions.HealthCheck;
 using Sportner.API.Extensions.Localization;
 using Sportner.API.Extensions.Seeding;
 using Sportner.API.Extensions.Swagger;
+using Sportner.API.Hubs;
+using Sportner.API.Realtime;
 using Sportner.Application;
+using Sportner.Application.Abstractions.Realtime;
 using Sportner.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +27,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomLocalization();
 builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
+// Overrides Application's NullChatRealtimeNotifier — must register after AddApplication.
+builder.Services.AddSingleton<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
 
 var app = builder.Build();
 
@@ -31,13 +36,7 @@ app.UseCustomLocalization();
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseCustomSwagger();
-//}
-
 app.UseCustomSwagger();
-
 
 if (!app.Environment.IsDevelopment())
 {
@@ -48,6 +47,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ConversationHub>("/hubs/event-chat");
 app.UseAppHealthChecks();
 
 await app.SeedDatabaseAsync();

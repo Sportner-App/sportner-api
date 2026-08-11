@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
@@ -31,17 +32,20 @@ internal sealed class SendTextMessageCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
 
     public SendTextMessageCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
-        INotificationPublisher notificationPublisher)
+        INotificationPublisher notificationPublisher,
+        IChatRealtimeNotifier chatRealtimeNotifier)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _notificationPublisher = notificationPublisher;
+        _chatRealtimeNotifier = chatRealtimeNotifier;
     }
 
     public async Task<Result<MessageResponse>> Handle(
@@ -105,8 +109,13 @@ internal sealed class SendTextMessageCommandHandler
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result<MessageResponse>.Success(
-            await MessageMapping.ToResponseAsync(_dbContext, message, cancellationToken));
+        var response = await MessageMapping.ToResponseAsync(_dbContext, message, cancellationToken);
+        await _chatRealtimeNotifier.NotifyMessageCreatedAsync(
+            conversation.Id,
+            response,
+            cancellationToken);
+
+        return Result<MessageResponse>.Success(response);
     }
 
     private async Task NotifyOtherMembersAsync(

@@ -25,6 +25,8 @@ public class Post : AggregateRoot
 
     public short MediaCount { get; private set; }
 
+    public bool IsHidden { get; private set; }
+
     public IReadOnlyCollection<PostMedia> Media => _media.AsReadOnly();
 
     public static Post Create(Guid userId, string? content, DateTimeOffset utcNow)
@@ -42,6 +44,7 @@ public class Post : AggregateRoot
             LikeCount = 0,
             CommentCount = 0,
             MediaCount = 0,
+            IsHidden = false,
             CreatedAt = utcNow
         };
     }
@@ -170,6 +173,28 @@ public class Post : AggregateRoot
     public void DecrementCommentCount(DateTimeOffset utcNow, int amount = 1)
     {
         CommentCount = Decrement(CommentCount, amount, "Comment count");
+        Touch(utcNow);
+    }
+
+    public void Hide(DateTimeOffset utcNow)
+    {
+        if (IsHidden)
+        {
+            return;
+        }
+
+        IsHidden = true;
+        Touch(utcNow);
+    }
+
+    public void Unhide(DateTimeOffset utcNow)
+    {
+        if (!IsHidden)
+        {
+            return;
+        }
+
+        IsHidden = false;
         Touch(utcNow);
     }
 

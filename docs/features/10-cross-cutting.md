@@ -12,7 +12,7 @@ See also: [IMPLEMENTATION_WORKFLOW.md](../../.cursor/rules/IMPLEMENTATION_WORKFL
 - [x] Cached counter matrix respected in handlers (incl. `DecreaseEventsJoined` on cancel / cancel-event)
 - [x] Storage cleanup on deletes (commit-then-best-effort via `StorageCleanup`)
 - [x] Background jobs hosts (`Identity.Worker`, `Events.Worker` + Application cleaners)
-- [ ] SignalR realtime
+- [x] SignalR realtime (event chat push; typing/presence later)
 - [ ] Security hygiene (secrets out of tracked config) — **owner: appsettings temizleme yok**; RLS apply ayrı
 
 ---
@@ -63,16 +63,17 @@ Covered today: post delete/remove media, avatar/intro replace-or-clear, chat med
 
 ## Background jobs (Phase 9)
 
-Hosts: **`Sportner.Identity.Worker`**, **`Sportner.Events.Worker`** (separate deployable processes; Cronos via `Sportner.Workers.Hosting`). Contracts in Application.
+Hosts: **`Sportner.Identity.Worker`**, **`Sportner.Events.Worker`**, **`Sportner.Notifications.Worker`** (separate deployable processes; Cronos via `Sportner.Workers.Hosting`). Contracts in Application.
 
 | Job | Purpose | Status |
 | --- | ------- | ------ |
 | Expired session cleanup | Revoked/expired sessions older than retention (~90 days) | Live |
 | OTP cleanup | Expired challenges in `IOtpChallengeStore` | Live |
 | Event reminders | `EventReminder` 24h + 1h; idempotent via `EventReminderDispatches` | Live |
-| Badge rule sweeps | Non-realtime awards (`EVENT_MASTER`, streaks) | Later |
+| Push delivery | `NotificationDeliveryOutbox` → `IPushSender` (`LoggingPushSender` day-1) | Live |
+| Badge rule sweeps | `MARATHON_RUNNER` daily via Events.Worker | Live |
 | Counter reconciliation | Nightly integrity | Later |
-| Push/email dispatch | From notification outbox | Later |
+| Email dispatch | Outbox Email channel | Later |
 | Storage orphan GC | Unreferenced paths | Later |
 
 ---
@@ -81,12 +82,13 @@ Hosts: **`Sportner.Identity.Worker`**, **`Sportner.Events.Worker`** (separate de
 
 | Hub / feature | Notes |
 | ------------- | ----- |
-| Event chat | Push new messages after REST write |
-| Typing indicator | Ephemeral |
-| Online presence | Device/`LastSeen` optional |
-| Notification push | In-app badge + mobile push |
+| Event chat | **Done** — `ConversationHub` at `/hubs/event-chat`; REST write + push `MessageCreated`/`MessageEdited`/`MessageRedacted` |
+| Typing indicator | Ephemeral — later |
+| Online presence | Device/`LastSeen` optional — later |
+| Notification push | In-app + mobile push via outbox (`LoggingPushSender`; FCM/APNs later) |
 
-REST messaging ([04-messaging.md](04-messaging.md)) ships first; SignalR must not rewrite domain rules.
+REST messaging ([04-messaging.md](04-messaging.md)) remains the write path; SignalR does not rewrite domain rules.
+Group key `conversation:{id}` is DM-ready when Direct conversations ship.
 
 ---
 

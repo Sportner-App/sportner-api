@@ -4,7 +4,8 @@ namespace Sportner.Application.Abstractions.Gamification;
 
 /// <summary>
 /// Idempotent badge award helper used by producer modules.
-/// Does not call <c>SaveChanges</c> — the caller owns the unit of work.
+/// Does not call <c>SaveChanges</c> — the caller owns the unit of work
+/// (except <see cref="SweepMarathonRunnersAsync"/> which saves its own batches).
 /// </summary>
 public interface IBadgeAwarder
 {
@@ -16,4 +17,25 @@ public interface IBadgeAwarder
         Guid userId,
         string badgeCode,
         CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterAttendanceAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterUserSportChangedAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterCommentCreatedAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterReportResolvedAsync(
+        Guid reporterUserId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Daily/periodic sweep for <c>MARATHON_RUNNER</c>. Owns SaveChanges per batch.
+    /// </summary>
+    Task SweepMarathonRunnersAsync(CancellationToken cancellationToken = default);
 }

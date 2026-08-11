@@ -13,16 +13,19 @@ public static class CorsExtensions
             {
                 if (environment.IsDevelopment())
                 {
-                    policy.AllowAnyOrigin()
+                    // SignalR negotiate needs credentials-compatible CORS (AllowAnyOrigin cannot).
+                    policy.SetIsOriginAllowed(_ => true)
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 }
                 else
                 {
                     var origins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
                     policy.WithOrigins(origins)
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 }
             });
         });

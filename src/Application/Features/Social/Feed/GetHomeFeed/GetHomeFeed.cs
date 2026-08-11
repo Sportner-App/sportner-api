@@ -41,7 +41,8 @@ internal sealed class GetHomeFeedQueryHandler
             .Include(post => post.Media)
             .Where(post =>
                 (post.UserId == userId || friendIds.Contains(post.UserId))
-                && !blockedIds.Contains(post.UserId));
+                && !blockedIds.Contains(post.UserId)
+                && (!post.IsHidden || post.UserId == userId));
 
         if (!string.IsNullOrWhiteSpace(request.Before))
         {

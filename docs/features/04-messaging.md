@@ -6,7 +6,8 @@ Domain: `src/Domain/Messaging/*`. Specs: `docs/database/12`–`14`.
 
 Depends on: [03-events.md](03-events.md) (conversation created on publish).
 
-**v1 scope:** `ConversationType.Event` only. Direct / Group = Future. REST first; SignalR in Phase 8 ([10-cross-cutting.md](10-cross-cutting.md)).
+**v1 scope:** `ConversationType.Event` only. Direct / Group = Future.  
+**Realtime:** REST remains the write path; SignalR pushes `MessageCreated` / `MessageEdited` / `MessageRedacted` to hub group `conversation:{id}` (`/hubs/event-chat`).
 
 ---
 
@@ -47,13 +48,15 @@ Membership add/remove remains orchestrated from Events.
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
 | [x] | `ListMessages` | Query | `GET .../messages?before=&limit=` | Cursor keyset `(CreatedAt, Id)`; chronological page; member only. |
-| [x] | `SendTextMessage` | Command | `POST .../messages` | `Message.CreateText` after membership + open checks. Notifies other members (`NewMessage`). |
-| [x] | `SendMediaMessage` | Command | `POST .../messages/media` | Multipart → `chat-media` bucket → `CreateMedia` (image/video/pdf). |
-| [x] | `EditMessage` | Command | `PUT .../messages/{id}` | Sender only; text only. |
-| [x] | `RedactMessage` | Command | `DELETE .../messages/{id}` | Soft clear (`Redact`). Sender or owner/moderator. |
+| [x] | `SendTextMessage` | Command | `POST .../messages` | `Message.CreateText` after membership + open checks. Notifies other members (`NewMessage`). Realtime `MessageCreated`. |
+| [x] | `SendMediaMessage` | Command | `POST .../messages/media` | Multipart → `chat-media` bucket → `CreateMedia` (image/video/pdf). Realtime `MessageCreated`. |
+| [x] | `EditMessage` | Command | `PUT .../messages/{id}` | Sender only; text only. Realtime `MessageEdited`. |
+| [x] | `RedactMessage` | Command | `DELETE .../messages/{id}` | Soft clear (`Redact`). Sender or owner/moderator. Realtime `MessageRedacted`. |
 | [~] | `CreateSystemMessage` | Command | (internal) | Deferred until Events needs system lines in chat. |
 
-**Deferred:** `MessageType.Location`; Direct/Group create; typing indicators; realtime push.
+**Deferred:** `MessageType.Location`; Direct/Group create; typing indicators.
+
+**Realtime client notes:** Connect to `/hubs/event-chat?access_token={jwt}`, invoke `JoinConversation(conversationId)`, listen for `MessageCreated` / `MessageEdited` / `MessageRedacted` (payload = `MessageResponse`).
 
 ---
 

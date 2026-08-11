@@ -13,7 +13,8 @@ Depends on: Identity (settings seed). Most **creates** are side effects from Eve
 - [x] Inbox list / mark read / delete
 - [x] Settings get / update
 - [x] Delivery helper used by other modules (`INotificationPublisher`)
-- [ ] Push/email workers deferred to jobs
+- [x] Push delivery via outbox + `Notifications.Worker` (`LoggingPushSender` until FCM/APNs)
+- [ ] Email delivery (deferred)
 
 ---
 
@@ -56,11 +57,21 @@ Settings rows are created at user activation ([01-identity.md](01-identity.md)).
 Pipeline:
 
 1. Skip if recipient == actor (no self-notify).
-2. Load `NotificationSetting` for `(user, type)`.
+2. Load `NotificationSetting` for `(user, type)` (missing → `CreateDefault` channel matrix, not persisted).
 3. If in-app allowed → `Notification.Create` (no save).
-4. If push/email allowed → no-op for v1 (jobs deferred).
+4. If push allowed → `NotificationDeliveryOutbox.CreatePush` (same UoW; worker drains).
+5. Email: deferred (settings flag ignored until provider).
 
 Default channel matrix lives in `NotificationSetting.CreateDefault`.
+
+### Push delivery
+
+| Piece | Role |
+| ----- | ---- |
+| `NotificationDeliveryOutbox` | Pending/Sent/Failed/Cancelled + retry |
+| `INotificationDeliveryDispatcher` | Batch poll; call `IPushSender` per device token |
+| `LoggingPushSender` | Day-1 sandbox (log + success); swap for FCM/APNs later |
+| `Notifications.Worker` | Cron `NotificationDeliveryCron` (default every minute) |
 
 ### Types that producers emit
 
@@ -80,4 +91,4 @@ Default channel matrix lives in `NotificationSetting.CreateDefault`.
 - [x] User can list and mark notifications
 - [x] Settings readable/updatable
 - [x] At least one producer module uses the shared publisher
-- [x] Push/email can be no-op stubs without blocking MVP
+- [x] Push/email can be no-op stubs without blocking MVP → **superseded:** push outbox + Logging sender live; email still deferred

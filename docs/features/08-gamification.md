@@ -13,6 +13,7 @@ Depends on: seed ([00-prerequisites.md](00-prerequisites.md)). Award hooks fire 
 - [x] List badge catalog
 - [x] List my / user badges
 - [x] Award service + hooks for FIRST_* codes
+- [x] Advanced badge thresholds (`BadgeThresholds` + evaluate hooks)
 - [ ] Admin badge CRUD (optional; seed-first)
 
 ---
@@ -50,10 +51,10 @@ Depends on: seed ([00-prerequisites.md](00-prerequisites.md)). Award hooks fire 
 | `FIRST_POST` | After first successful `CreatePost` | [x] |
 | `FIRST_FRIEND` | After first `AcceptFriendRequest` (both users) | [x] |
 | `FIRST_REVIEW` | After first `CreateReview` | [x] |
-| `SPORTS_EXPLORER` | N distinct user sports or sports played in events | deferred |
-| `EVENT_MASTER` | N attended events | deferred |
-| `MARATHON_RUNNER` | Streak / volume rule | deferred |
-| `COMMUNITY_HELPER` | Reports helpful / comments threshold | deferred |
+| `SPORTS_EXPLORER` | ≥3 UserSports **veya** ≥3 distinct attended sports | [x] |
+| `EVENT_MASTER` | ≥10 Attended | [x] |
+| `MARATHON_RUNNER` | 4 consecutive ISO weeks with ≥1 attended | [x] (hook + Events.Worker sweep) |
+| `COMMUNITY_HELPER` | ≥5 resolved reports as reporter **veya** ≥20 comments | [x] |
 
 ### Admin (optional v1)
 

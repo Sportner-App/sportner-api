@@ -1,6 +1,7 @@
 using Serilog;
 using Sportner.Application;
 using Sportner.Application.Abstractions.BackgroundJobs;
+using Sportner.Application.Abstractions.Gamification;
 using Sportner.Infrastructure;
 using Sportner.Workers.Hosting;
 
@@ -31,9 +32,17 @@ try
             await provider.GetRequiredService<IEventReminderDispatcher>().DispatchAsync(ct);
         });
 
+    builder.Services.AddCronJob(
+        "marathon-runner-badge",
+        options => options.MarathonRunnerBadgeCron,
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IBadgeAwarder>().SweepMarathonRunnersAsync(ct);
+        });
+
     var host = builder.Build();
 
-    Log.Information("Sportner.Events.Worker starting (event reminders).");
+    Log.Information("Sportner.Events.Worker starting (event reminders + marathon badge sweep).");
     await host.RunAsync();
 }
 catch (Exception ex)

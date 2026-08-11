@@ -59,6 +59,11 @@ public sealed class ConfirmAttendanceCommandHandlerTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        badgeAwarder
+            .Setup(awarder => awarder.EvaluateAfterAttendanceAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var handler = new ConfirmAttendanceCommandHandler(
             db,

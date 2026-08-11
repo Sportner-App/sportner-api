@@ -1,0 +1,73 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Persistence;
+
+namespace Sportner.API.Hubs;
+
+/// <summary>
+/// Generic conversation realtime hub. Works for Event chat today and Direct/Group later —
+/// membership is always checked against <c>ConversationMembers</c>.
+/// </summary>
+[Authorize]
+public sealed class ConversationHub : Hub
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentUser _currentUser;
+    private readonly ILogger<ConversationHub> _logger;
+
+    public ConversationHub(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        ILogger<ConversationHub> logger)
+    {
+        _dbContext = dbContext;
+        _currentUser = currentUser;
+        _logger = logger;
+    }
+
+    public static string GroupName(Guid conversationId) => $"conversation:{conversationId:D}";
+
+    public async Task JoinConversation(Guid conversationId)
+    {
+        if (_currentUser.UserId is not { } userId)
+        {
+            throw new HubException("Authentication is required.");
+        }
+
+        var isMember = await _dbContext.ConversationMembers.AsNoTracking()
+            .AnyAsync(
+                member =>
+                    member.ConversationId == conversationId
+                    && member.UserId == userId
+                    && member.LeftAt == null,
+                Context.ConnectionAborted);
+
+        if (!isMember)
+        {
+            _logger.LogWarning(
+                "User {UserId} tried to join conversation {ConversationId} without membership.",
+                userId,
+                conversationId);
+
+            throw new HubException("You are not a member of this conversation.");
+        }
+
+        await Groups.AddToGroupAsync(
+            Context.ConnectionId,
+            GroupName(conversationId),
+            Context.ConnectionAborted);
+
+        _logger.LogDebug(
+            "User {UserId} joined conversation group {ConversationId}.",
+            userId,
+            conversationId);
+    }
+
+    public Task LeaveConversation(Guid conversationId) =>
+        Groups.RemoveFromGroupAsync(
+            Context.ConnectionId,
+            GroupName(conversationId),
+            Context.ConnectionAborted);
+}

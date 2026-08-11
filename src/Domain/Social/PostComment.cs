@@ -23,6 +23,8 @@ public class PostComment : AggregateRoot
 
     public int ReplyCount { get; private set; }
 
+    public bool IsHidden { get; private set; }
+
     public static PostComment CreateRoot(
         Guid postId,
         Guid userId,
@@ -89,6 +91,28 @@ public class PostComment : AggregateRoot
         return ParentCommentId is not null;
     }
 
+    public void Hide(DateTimeOffset utcNow)
+    {
+        if (IsHidden)
+        {
+            return;
+        }
+
+        IsHidden = true;
+        Touch(utcNow);
+    }
+
+    public void Unhide(DateTimeOffset utcNow)
+    {
+        if (!IsHidden)
+        {
+            return;
+        }
+
+        IsHidden = false;
+        Touch(utcNow);
+    }
+
     private static PostComment Create(
         Guid postId,
         Guid userId,
@@ -115,6 +139,7 @@ public class PostComment : AggregateRoot
             Content = NormalizeContent(content),
             LikeCount = 0,
             ReplyCount = 0,
+            IsHidden = false,
             CreatedAt = utcNow
         };
     }

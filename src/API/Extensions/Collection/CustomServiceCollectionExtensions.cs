@@ -34,6 +34,7 @@ public static class CustomServiceCollectionExtensions
                     new CamelCasePropertyNamesContractResolver();
             });
 
+        services.AddSignalR();
         services.AddHttpContextAccessor();
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();

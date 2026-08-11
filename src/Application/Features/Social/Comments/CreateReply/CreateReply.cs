@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
@@ -30,17 +31,20 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly IBadgeAwarder _badgeAwarder;
 
     public CreateReplyCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
-        INotificationPublisher notificationPublisher)
+        INotificationPublisher notificationPublisher,
+        IBadgeAwarder badgeAwarder)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _notificationPublisher = notificationPublisher;
+        _badgeAwarder = badgeAwarder;
     }
 
     public async Task<Result<CommentResponse>> Handle(
@@ -106,6 +110,8 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
             reply.Id,
             userId,
             cancellationToken);
+
+        await _badgeAwarder.EvaluateAfterCommentCreatedAsync(userId, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

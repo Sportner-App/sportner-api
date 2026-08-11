@@ -111,4 +111,87 @@ internal static class ReportQueries
             review.ClearReportedStatus(utcNow);
         }
     }
+
+    /// <summary>
+    /// Resolve (<paramref name="hideOrFlag"/> = true) / Reject (false) side effects.
+    /// User/Event: no auto Suspend/Cancel — Suspend is a separate Admin action.
+    /// Message redact is one-way (reject does not restore content).
+    /// </summary>
+    internal static async Task ApplyTargetSideEffectsAsync(
+        IApplicationDbContext dbContext,
+        Report report,
+        bool hideOrFlag,
+        DateTimeOffset utcNow,
+        CancellationToken cancellationToken)
+    {
+        switch (report.EntityType)
+        {
+            case ReportEntityType.Review:
+                await ApplyReviewSideEffectsAsync(
+                    dbContext,
+                    report,
+                    markReported: hideOrFlag,
+                    utcNow,
+                    cancellationToken);
+                break;
+
+            case ReportEntityType.Post:
+            {
+                var post = await dbContext.Posts
+                    .FirstOrDefaultAsync(candidate => candidate.Id == report.EntityId, cancellationToken);
+                if (post is null)
+                {
+                    return;
+                }
+
+                if (hideOrFlag)
+                {
+                    post.Hide(utcNow);
+                }
+                else
+                {
+                    post.Unhide(utcNow);
+                }
+
+                break;
+            }
+
+            case ReportEntityType.Comment:
+            {
+                var comment = await dbContext.PostComments
+                    .FirstOrDefaultAsync(candidate => candidate.Id == report.EntityId, cancellationToken);
+                if (comment is null)
+                {
+                    return;
+                }
+
+                if (hideOrFlag)
+                {
+                    comment.Hide(utcNow);
+                }
+                else
+                {
+                    comment.Unhide(utcNow);
+                }
+
+                break;
+            }
+
+            case ReportEntityType.Message:
+                if (!hideOrFlag)
+                {
+                    return;
+                }
+
+                var message = await dbContext.Messages
+                    .FirstOrDefaultAsync(candidate => candidate.Id == report.EntityId, cancellationToken);
+                message?.Redact(utcNow);
+                break;
+
+            case ReportEntityType.User:
+            case ReportEntityType.Event:
+                // No automatic Suspend / Cancel — separate admin / organizer commands.
+                break;
+        }
+    }
 }

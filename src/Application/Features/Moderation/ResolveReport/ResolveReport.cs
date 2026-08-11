@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
@@ -26,15 +27,18 @@ internal sealed class ResolveReportCommandHandler
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IBadgeAwarder _badgeAwarder;
 
     public ResolveReportCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IBadgeAwarder badgeAwarder)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _badgeAwarder = badgeAwarder;
     }
 
     public async Task<Result<ReportResponse>> Handle(
@@ -65,11 +69,15 @@ internal sealed class ResolveReportCommandHandler
             return Result<ReportResponse>.Failure(ReportErrors.InvalidOperation);
         }
 
-        await ReportQueries.ApplyReviewSideEffectsAsync(
+        await ReportQueries.ApplyTargetSideEffectsAsync(
             _dbContext,
             report,
-            markReported: true,
+            hideOrFlag: true,
             utcNow,
+            cancellationToken);
+
+        await _badgeAwarder.EvaluateAfterReportResolvedAsync(
+            report.ReporterUserId,
             cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddAuthenticationServices(configuration);
         services.AddStorageServices(configuration);
         services.AddScoped<INotificationPublisher, InAppNotificationPublisher>();
+        services.AddSingleton<IPushSender, LoggingPushSender>();
 
         services.AddHealthChecks();
 

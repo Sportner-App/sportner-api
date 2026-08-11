@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Messaging.EditMessage;
@@ -25,15 +26,18 @@ internal sealed class EditMessageCommandHandler : ICommandHandler<EditMessageCom
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
 
     public EditMessageCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IChatRealtimeNotifier chatRealtimeNotifier)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _chatRealtimeNotifier = chatRealtimeNotifier;
     }
 
     public async Task<Result<MessageResponse>> Handle(
@@ -77,7 +81,12 @@ internal sealed class EditMessageCommandHandler : ICommandHandler<EditMessageCom
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result<MessageResponse>.Success(
-            await MessageMapping.ToResponseAsync(_dbContext, message, cancellationToken));
+        var response = await MessageMapping.ToResponseAsync(_dbContext, message, cancellationToken);
+        await _chatRealtimeNotifier.NotifyMessageEditedAsync(
+            request.ConversationId,
+            response,
+            cancellationToken);
+
+        return Result<MessageResponse>.Success(response);
     }
 }

@@ -36,6 +36,7 @@ public interface IApplicationDbContext
     DbSet<PostComment> PostComments { get; }
     DbSet<Notification> Notifications { get; }
     DbSet<NotificationSetting> NotificationSettings { get; }
+    DbSet<NotificationDeliveryOutbox> NotificationDeliveryOutbox { get; }
     DbSet<Badge> Badges { get; }
     DbSet<UserBadge> UserBadges { get; }
     DbSet<Report> Reports { get; }

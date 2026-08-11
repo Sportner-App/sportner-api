@@ -35,7 +35,13 @@ internal sealed class GetExploreFeedQueryHandler
         if (_currentUser.UserId is { } userId)
         {
             var blockedIds = SocialQueries.BlockedUserIds(_dbContext, userId);
-            query = query.Where(post => !blockedIds.Contains(post.UserId));
+            query = query.Where(post =>
+                !blockedIds.Contains(post.UserId)
+                && (!post.IsHidden || post.UserId == userId));
+        }
+        else
+        {
+            query = query.Where(post => !post.IsHidden);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Before))

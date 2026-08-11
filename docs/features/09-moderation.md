@@ -59,10 +59,15 @@ Admin CRUD optional; seed covers launch.
 
 ### Target side effects
 
-| Entity | On create / resolve |
-| ------ | ------------------- |
-| Review | `MarkAsReported` on create/resolve; `ClearReportedStatus` when rejected |
-| Post / Comment / User / Message | Product rules (hide, suspend) — deferred |
+| Entity | Create report | Resolve | Reject |
+| ------ | ------------- | ------- | ------ |
+| Review | `MarkAsReported` | flagged | `ClearReportedStatus` |
+| Post | — | `Hide` (`IsHidden`) | `Unhide` |
+| Comment | — | `Hide` | `Unhide` |
+| Message | — | `Redact` (one-way) | — |
+| User / Event | — | no auto Suspend/Cancel | — |
+
+Feed / list / get-by-id queries exclude hidden posts (author can still see own). Comment lists exclude hidden.
 
 ---
 

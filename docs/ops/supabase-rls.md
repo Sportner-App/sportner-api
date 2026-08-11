@@ -29,6 +29,7 @@ DECLARE
     'EventParticipants',
     'EventWaitlists',
     'EventReminderDispatches',
+    'NotificationDeliveryOutbox',
     'Conversations',
     'ConversationMembers',
     'Messages',

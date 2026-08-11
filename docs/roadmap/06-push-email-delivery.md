@@ -1,7 +1,9 @@
 # 06 — Push & email delivery
 
 **Amaç:** `NotificationSettings` push/email flag’leri gerçekten işe yarasın.  
-**Bağımlılık:** [04-background-jobs](04-background-jobs.md) (outbox worker). In-app publisher olduğu gibi kalır.
+**Bağımlılık:** [04-background-jobs](04-background-jobs.md). In-app publisher genişletildi.
+
+**Durum:** Done (2026-08) — push outbox + `Notifications.Worker`; email alt-faz sonra.
 
 ---
 
@@ -9,73 +11,45 @@
 
 | # | Soru | Varsayılan |
 | - | ---- | ---------- |
-| 1 | Push provider | FCM (Android) + APNs (iOS) — device `PushToken` üzerinden |
-| 2 | Email provider | Sonra; day-1 sadece push olabilir |
-| 3 | Outbox tablosu yeni migration mı? | **Evet** — `NotificationDeliveryOutbox` veya benzeri |
+| 1 | Push provider | Day-1: `LoggingPushSender` (pipeline canlı). FCM/APNs credentials → sonra `IPushSender` swap |
+| 2 | Email provider | Sonra; day-1 enqueue yok (Email channel reserved) |
+| 3 | Outbox tablosu | **Evet** — `NotificationDeliveryOutbox` |
+| 4 | Worker host | `Notifications.Worker` (ayrı deploy) |
 
 ---
 
 ## 6.1 Outbox modeli
 
-### Ne
-
-In-app `Notifications` satırından bağımsız veya ona bağlı delivery kuyruğu:
-
-| Alan | Anlam |
-| ---- | ----- |
-| NotificationId / payload | Ne gönderilecek |
-| Channel | Push / Email |
-| Status | Pending / Sent / Failed |
-| AttemptCount / NextAttemptAt | Retry |
-
-### Nasıl
-
-1. Domain/Persistence entity + migration.
-2. `INotificationPublisher` genişlemesi:
-   - In-app: bugünkü gibi
-   - Push/Email enabled ise outbox’a enqueue (**aynı UoW**, SaveChanges caller’da)
-3. Job: pending outbox’ı batch çek → provider → status update.
-
 ### Exit
 
-- [ ] Publisher outbox yazar
-- [ ] Worker gönderir / fail’de retry
+- [x] Publisher outbox yazar (`PushEnabled`)
+- [x] Worker gönderir / fail’de retry (max 5 + backoff)
 
 ---
 
 ## 6.2 Push gönderimi
 
-### Ne
-
-`UserDevices.PushToken` + platform.
-
-### Nasıl
-
-1. `IPushSender` Application abstract.
-2. Infrastructure: FCM HTTP v1 (service account — **secret env**).
-3. Token invalid → device token clear / disable (domain method).
-4. Settings: `PushEnabled=false` → enqueue yok.
-
 ### Exit
 
-- [ ] Gerçek veya sandbox device’a test push
-- [ ] Disabled setting skip
+- [x] `IPushSender` + Logging sandbox
+- [x] Token invalid → `ClearPushToken`
+- [x] `PushEnabled=false` → enqueue yok
+- [x] No device token → `Cancelled`
 
 ---
 
 ## 6.3 Email (opsiyonel alt-faz)
 
-- `IEmailSender` + provider (SendGrid/SES…)
-- Sadece `EmailEnabled` tipler (NotificationSetting defaults)
+- `IEmailSender` + provider — deferred
 
 ---
 
 ## Exit criteria (06 tamam)
 
-- [ ] Outbox + worker
-- [ ] En az push kanalı canlı
-- [ ] features/07 push checkbox update
-- [ ] status.md
+- [x] Outbox + worker
+- [x] Push kanalı pipeline canlı (Logging)
+- [x] features/07 update
+- [x] status.md
 
 ## Sonraki
 

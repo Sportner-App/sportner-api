@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
+using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Features.Moderation.CreateReport;
 using Sportner.Application.Features.Moderation.RejectReport;
 using Sportner.Application.Features.Moderation.ResolveReport;
@@ -73,10 +75,18 @@ public sealed class ReportHandlerTests
         created.IsSuccess.Should().BeTrue(because: string.Join("; ", created.Errors.Select(e => e.Code)));
         review.IsReported.Should().BeTrue();
 
+        var badgeAwarder = new Mock<IBadgeAwarder>();
+        badgeAwarder
+            .Setup(awarder => awarder.EvaluateAfterReportResolvedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var resolveHandler = new ResolveReportCommandHandler(
             db,
             new TestCurrentUser(moderator.Id),
-            time);
+            time,
+            badgeAwarder.Object);
 
         var resolved = await resolveHandler.Handle(
             new ResolveReportCommand(created.Value!.Id, "Action taken"),

@@ -41,7 +41,9 @@ internal sealed class ListCommentsQueryHandler
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on comment.UserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
-            where comment.PostId == request.PostId && comment.ParentCommentId == null
+            where comment.PostId == request.PostId
+                  && comment.ParentCommentId == null
+                  && !comment.IsHidden
             select new { comment, profile };
 
         if (!string.IsNullOrWhiteSpace(request.Before))

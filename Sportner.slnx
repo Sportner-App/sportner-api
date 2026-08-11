@@ -19,6 +19,7 @@
     <Project Path="src/Workers/Hosting/Sportner.Workers.Hosting.csproj" />
     <Project Path="src/Workers/Identity.Worker/Sportner.Identity.Worker.csproj" />
     <Project Path="src/Workers/Events.Worker/Sportner.Events.Worker.csproj" />
+    <Project Path="src/Workers/Notifications.Worker/Sportner.Notifications.Worker.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/API.IntegrationTests/">

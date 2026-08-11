@@ -8,8 +8,9 @@ using Sportner.Domain.Notifications;
 namespace Sportner.Infrastructure.Notifications;
 
 /// <summary>
-/// Persists in-app notifications when the recipient's settings allow it.
-/// Skips self-notifications. Push/email are intentionally not dispatched here.
+/// Persists in-app notifications and enqueues push delivery when settings allow.
+/// Does not call <c>SaveChanges</c> — the caller owns the unit of work.
+/// Email channel is deferred (settings respected later when <c>IEmailSender</c> lands).
 /// </summary>
 public sealed class InAppNotificationPublisher : INotificationPublisher
 {
@@ -42,6 +43,8 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
             return;
         }
 
+        var utcNow = _timeProvider.GetUtcNow();
+
         var setting = await _dbContext.NotificationSettings
             .AsNoTracking()
             .FirstOrDefaultAsync(
@@ -50,24 +53,59 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
                     && candidate.NotificationType == type,
                 cancellationToken);
 
-        if (setting is not null && !setting.CanDeliverInApp())
+        // Missing row → type defaults (same as CreateDefault) without inserting.
+        var effective = setting
+            ?? NotificationSetting.CreateDefault(recipientUserId, type, utcNow);
+
+        var deliverInApp = effective.CanDeliverInApp();
+        var deliverPush = effective.CanDeliverPush();
+
+        if (!deliverInApp && !deliverPush)
         {
             _logger.LogDebug(
-                "Skipping in-app notification {Type} for user {UserId}: channel disabled.",
+                "Skipping notification {Type} for user {UserId}: all channels disabled.",
                 type,
                 recipientUserId);
             return;
         }
 
-        // Missing settings default to deliver — CreateDefault at signup should cover this.
-        _dbContext.Notifications.Add(Notification.Create(
-            recipientUserId,
-            actorUserId,
-            type,
-            entityType,
-            entityId,
-            title,
-            body,
-            _timeProvider.GetUtcNow()));
+        Guid? notificationId = null;
+
+        if (deliverInApp)
+        {
+            var notification = Notification.Create(
+                recipientUserId,
+                actorUserId,
+                type,
+                entityType,
+                entityId,
+                title,
+                body,
+                utcNow);
+
+            _dbContext.Notifications.Add(notification);
+            notificationId = notification.Id;
+        }
+        else
+        {
+            _logger.LogDebug(
+                "Skipping in-app notification {Type} for user {UserId}: channel disabled.",
+                type,
+                recipientUserId);
+        }
+
+        if (deliverPush)
+        {
+            _dbContext.NotificationDeliveryOutbox.Add(
+                NotificationDeliveryOutbox.CreatePush(
+                    recipientUserId,
+                    notificationId,
+                    type,
+                    entityType,
+                    entityId,
+                    title,
+                    body,
+                    utcNow));
+        }
     }
 }

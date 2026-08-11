@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Common.Enums;
@@ -18,17 +19,20 @@ internal sealed class RedactMessageCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
     private readonly IFileStorage _fileStorage;
+    private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
 
     public RedactMessageCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
-        IFileStorage fileStorage)
+        IFileStorage fileStorage,
+        IChatRealtimeNotifier chatRealtimeNotifier)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _fileStorage = fileStorage;
+        _chatRealtimeNotifier = chatRealtimeNotifier;
     }
 
     public async Task<Result<MessageResponse>> Handle(
@@ -85,7 +89,12 @@ internal sealed class RedactMessageCommandHandler
             mediaPath,
             cancellationToken);
 
-        return Result<MessageResponse>.Success(
-            await MessageMapping.ToResponseAsync(_dbContext, message, cancellationToken));
+        var response = await MessageMapping.ToResponseAsync(_dbContext, message, cancellationToken);
+        await _chatRealtimeNotifier.NotifyMessageRedactedAsync(
+            conversation.Id,
+            response,
+            cancellationToken);
+
+        return Result<MessageResponse>.Success(response);
     }
 }

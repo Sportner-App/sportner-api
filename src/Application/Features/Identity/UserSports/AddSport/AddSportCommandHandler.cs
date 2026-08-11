@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
@@ -13,15 +14,18 @@ internal sealed class AddSportCommandHandler
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IBadgeAwarder _badgeAwarder;
 
     public AddSportCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IBadgeAwarder badgeAwarder)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _badgeAwarder = badgeAwarder;
     }
 
     public async Task<Result<IReadOnlyList<UserSportResponse>>> Handle(
@@ -66,6 +70,8 @@ internal sealed class AddSportCommandHandler
             (SkillLevel)request.SkillLevel,
             _timeProvider.GetUtcNow(),
             request.IsPrimary);
+
+        await _badgeAwarder.EvaluateAfterUserSportChangedAsync(userId, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

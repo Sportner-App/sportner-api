@@ -65,10 +65,10 @@ internal sealed class RejectReportCommandHandler
             return Result<ReportResponse>.Failure(ReportErrors.InvalidOperation);
         }
 
-        await ReportQueries.ApplyReviewSideEffectsAsync(
+        await ReportQueries.ApplyTargetSideEffectsAsync(
             _dbContext,
             report,
-            markReported: false,
+            hideOrFlag: false,
             utcNow,
             cancellationToken);
 

@@ -5,6 +5,8 @@
 
 Kaynak: [04-messaging](../features/04-messaging.md) · [10-cross-cutting](../features/10-cross-cutting.md)
 
+**Durum:** Done (2026-08)
+
 ---
 
 ## Karar kapısı
@@ -22,24 +24,24 @@ Kaynak: [04-messaging](../features/04-messaging.md) · [10-cross-cutting](../fea
 
 ### Ne
 
-`EventChatHub` (isim serbest) — group key: `conversation:{id}`.
+`ConversationHub` — group key: `conversation:{id}` (Direct/Group için de aynı transport).
 
 ### Nasıl
 
-1. `MapHub<EventChatHub>("/hubs/event-chat")`
-2. Connect olunca: kullanıcıyı conversation member mı diye doğrula (`MessagingAccess` benzeri).
+1. `MapHub<ConversationHub>("/hubs/event-chat")`
+2. `JoinConversation(conversationId)`: aktif `ConversationMembers` kontrolü
 3. `Groups.AddToGroupAsync(Context.ConnectionId, groupName)`
-4. Yetkisiz → abort.
+4. Yetkisiz → `HubException`
 
 ### Dokunulacak
 
-- `src/API/Hubs/*`
+- `src/API/Hubs/ConversationHub.cs`
 - `Program.cs` — `AddSignalR` + MapHub
 - Auth: JWT bearer events `OnMessageReceived` query token
 
 ### Exit
 
-- [ ] Member join oluyor; non-member reject
+- [x] Member join oluyor; non-member reject
 
 ---
 
@@ -51,10 +53,9 @@ Kaynak: [04-messaging](../features/04-messaging.md) · [10-cross-cutting](../fea
 
 ### Nasıl
 
-1. Application abstraction: `IChatRealtimeNotifier.NotifyMessageCreatedAsync(...)`  
-   (Application → interface; Infrastructure/API impl hub context).
-2. Handler sonunda (SaveChanges sonrası) çağır — **fail olursa HTTP 500 yapma**; log + best-effort (mesaj DB’de durur).
-3. Payload: mevcut `MessageResponse` ile aynı shape (client tek model kullansın).
+1. Application abstraction: `IChatRealtimeNotifier` (+ `NullChatRealtimeNotifier` workers/tests)
+2. API: `SignalRChatRealtimeNotifier` — **fail olursa HTTP 500 yapma**; log + best-effort
+3. Payload: mevcut `MessageResponse`
 
 ### Yapma
 
@@ -62,8 +63,8 @@ Kaynak: [04-messaging](../features/04-messaging.md) · [10-cross-cutting](../fea
 
 ### Exit
 
-- [ ] İki client: A REST gönderir, B hub’dan alır
-- [ ] REST contract değişmedi
+- [x] REST SaveChanges sonrası `MessageCreated` push
+- [x] REST contract değişmedi
 
 ---
 
@@ -73,13 +74,9 @@ Kaynak: [04-messaging](../features/04-messaging.md) · [10-cross-cutting](../fea
 
 `MessageEdited` / `MessageRedacted` event’leri aynı group’a.
 
-### Nasıl
-
-Aynı notifier; event type discriminator.
-
 ### Exit
 
-- [ ] Edit/redact diğer client’ta görünür
+- [x] Edit/redact handler’ları notifier çağırıyor
 
 ---
 
@@ -92,12 +89,21 @@ Ayrı checklist — day-1 değil:
 
 ---
 
+## Client smoke
+
+1. JWT al → `GET /api/events/{eventId}/conversation`
+2. Hub: `/hubs/event-chat?access_token={jwt}`
+3. Invoke `JoinConversation(conversationId)`
+4. Başka client’tan `POST .../messages` → dinle `MessageCreated`
+
+---
+
 ## Exit criteria (05 tamam)
 
-- [ ] Message created/edited/redacted realtime
-- [ ] Auth güvenli
-- [ ] features/04 + 10 docs update
-- [ ] status.md
+- [x] Message created/edited/redacted realtime
+- [x] Auth güvenli (JWT + membership)
+- [x] features/04 + 10 docs update
+- [x] status.md
 
 ## Sonraki
 

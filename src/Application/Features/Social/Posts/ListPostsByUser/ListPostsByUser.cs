@@ -29,22 +29,27 @@ internal sealed class ListPostsByUserQueryHandler
         ListPostsByUserQuery request,
         CancellationToken cancellationToken)
     {
-        if (_currentUser.UserId is { } viewerId)
+        var viewerId = _currentUser.UserId;
+
+        if (viewerId is { } authenticatedViewerId)
         {
-            var blocked = await SocialQueries.BlockedUserIds(_dbContext, viewerId)
+            var blocked = await SocialQueries.BlockedUserIds(_dbContext, authenticatedViewerId)
                 .AnyAsync(userId => userId == request.UserId, cancellationToken);
 
-            if (blocked && viewerId != request.UserId)
+            if (blocked && authenticatedViewerId != request.UserId)
             {
                 return Result<CursorPagedResult<PostResponse>>.Failure(PostErrors.Forbidden);
             }
         }
 
         var limit = request.Limit is < 1 or > MaxLimit ? 20 : request.Limit;
+        var canSeeHidden = viewerId == request.UserId;
 
         var query = _dbContext.Posts.AsNoTracking()
             .Include(post => post.Media)
-            .Where(post => post.UserId == request.UserId);
+            .Where(post =>
+                post.UserId == request.UserId
+                && (!post.IsHidden || canSeeHidden));
 
         if (!string.IsNullOrWhiteSpace(request.Before))
         {
