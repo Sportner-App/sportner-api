@@ -23,6 +23,8 @@ public class User : AggregateRoot
 
     public DateTimeOffset? LastSeenAt { get; private set; }
 
+    public DateTimeOffset? OnboardingCompletedAt { get; private set; }
+
     public UserProfile? UserProfile { get; private set; }
 
     public UserStatistics? Statistics { get; private set; }
@@ -127,6 +129,29 @@ public class User : AggregateRoot
         }
 
         LastSeenAt = utcNow;
+        Touch(utcNow);
+    }
+
+    public void CompleteOnboarding(DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (OnboardingCompletedAt is not null)
+        {
+            return;
+        }
+
+        if (UserProfile is null)
+        {
+            throw new DomainException("Onboarding cannot be completed before the profile is created.");
+        }
+
+        if (_sports.Count == 0)
+        {
+            throw new DomainException("Onboarding cannot be completed before a sport is selected.");
+        }
+
+        OnboardingCompletedAt = utcNow;
         Touch(utcNow);
     }
 
@@ -403,6 +428,11 @@ public class User : AggregateRoot
     {
         return PhoneVerifiedAt is not null
             && Status is UserStatus.Active;
+    }
+
+    public bool HasCompletedOnboarding()
+    {
+        return OnboardingCompletedAt is not null;
     }
 
     public bool CanCreateContent()

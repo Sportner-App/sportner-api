@@ -25,6 +25,7 @@ Public profile information is intentionally stored in the `user_profiles` table.
 - Authentication
 - Phone verification
 - Account status
+- Onboarding completion state
 - Last activity
 - Audit information
 
@@ -40,6 +41,7 @@ This table must never contain profile-related information.
 | phone_number       | VARCHAR(20) | No       | User phone number       |
 | phone_verified_at  | TIMESTAMPTZ | Yes      | Phone verification date |
 | status             | SMALLINT    | No       | User status             |
+| onboarding_completed_at | TIMESTAMPTZ | Yes | Onboarding completion date |
 | last_seen_at       | TIMESTAMPTZ | Yes      | Last activity           |
 | created_at         | TIMESTAMPTZ | No       | Creation date           |
 | updated_at         | TIMESTAMPTZ | Yes      | Last update date        |
@@ -97,6 +99,10 @@ This table must never contain profile-related information.
 
 - Phone number must be unique.
 - A user can exist without a profile.
+- `onboarding_completed_at` stays NULL until the client explicitly completes the onboarding flow.
+- Onboarding cannot be completed before the profile exists and at least one sport with a skill level is selected.
+- Completing onboarding is idempotent; the first completion date is never overwritten.
+- The authentication response exposes the onboarding state so clients can redirect incomplete users to the onboarding screen.
 - A user cannot log in until the phone number is verified.
 - Deleted users cannot authenticate.
 - Suspended users cannot create events or posts.

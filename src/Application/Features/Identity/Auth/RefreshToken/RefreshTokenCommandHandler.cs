@@ -66,7 +66,8 @@ internal sealed class RefreshTokenCommandHandler
             accessToken.ExpiresAt,
             refreshToken.Token,
             refreshToken.ExpiresAt,
-            IsNewUser: false);
+            IsNewUser: false,
+            IsOnboardingCompleted: user.HasCompletedOnboarding());
 
         return Result<AuthenticationResponse>.Success(response);
     }

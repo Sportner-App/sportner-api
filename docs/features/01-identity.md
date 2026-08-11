@@ -14,6 +14,7 @@ Depends on: [00-prerequisites.md](00-prerequisites.md).
 - [x] Devices
 - [x] Sessions management
 - [x] UserProfile (create / me / public / updates)
+- [x] Onboarding completion
 - [x] User sports
 - [x] Saved locations
 - [x] Notification settings seed on user create
@@ -26,6 +27,7 @@ Depends on: [00-prerequisites.md](00-prerequisites.md).
 | ---------- | ---------------------- |
 | `AuthController` | `/api/auth` |
 | `UserProfilesController` | `/api/user-profiles` |
+| `OnboardingController` | `/api/me/onboarding` |
 | `UserSportsController` | `/api/me/sports` |
 | `DevicesController` | `/api/me/devices` |
 | `SessionsController` | `/api/me/sessions` |
@@ -46,6 +48,9 @@ All except `RequestOtp` / `VerifyOtp` / `Refresh` require `[Authorize]` unless n
 | [x] | `RefreshToken` | Command | `POST /api/auth/refresh` | Validate hash, user `CanAuthenticate`, session active → `RotateRefreshToken` → new access token. |
 | [x] | `Logout` | Command | `POST /api/auth/logout` | Revokes the session for the given refresh token (idempotent). |
 | [x] | `LogoutAll` | Command | `POST /api/auth/logout-all` | `RevokeAllSessions` for current user. |
+
+`VerifyOtp` and `RefreshToken` both return `isOnboardingCompleted`, so the client can route users
+with an unfinished profile to the onboarding screen right after authentication.
 
 Never log OTP, JWT, or refresh token plaintext.
 
@@ -83,6 +88,15 @@ Never log OTP, JWT, or refresh token plaintext.
 | [x] | `UpdateVisibility` | Command | `PUT /api/user-profiles/me/visibility` | `IsProfilePublic`. |
 
 `UserStatistics` is **read-only** to clients. Created with `User.Create`; mutated by other modules.
+
+### Onboarding
+
+| Status | Use case | Type | Endpoint | Domain / notes |
+| ------ | -------- | ---- | -------- | -------------- |
+| [x] | `CompleteOnboarding` | Command | `POST /api/me/onboarding/complete` | `User.CompleteOnboarding` stamps `OnboardingCompletedAt`. Requires an existing profile (username + first name) → 409 `Onboarding.ProfileRequired`, and at least one sport with a skill level → 409 `Onboarding.SportRequired`. Idempotent: already-completed users get 204 and keep their original date. |
+
+Onboarding is the second step after login: the client collects profile and sport data through the
+existing profile / sports endpoints and calls this endpoint last to close the flow.
 
 ### User sports
 
@@ -127,6 +141,7 @@ Never log OTP, JWT, or refresh token plaintext.
 - [x] Phone OTP login issues access + refresh
 - [x] Refresh rotation works; logout revokes
 - [x] UserProfile CRUD for current user
+- [x] Onboarding completion is stored and returned on authentication
 - [x] Sports and saved locations CRUD
 - [x] Devices register/remove
 - [x] Default notification settings exist for new users

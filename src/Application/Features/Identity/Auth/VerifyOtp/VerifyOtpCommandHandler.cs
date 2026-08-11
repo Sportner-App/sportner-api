@@ -100,7 +100,8 @@ internal sealed class VerifyOtpCommandHandler
             accessToken.ExpiresAt,
             refreshToken.Token,
             refreshToken.ExpiresAt,
-            isNewUser);
+            isNewUser,
+            user.HasCompletedOnboarding());
 
         return Result<AuthenticationResponse>.Success(response);
     }

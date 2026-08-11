@@ -111,6 +111,7 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
                 user.AddSport(secondarySport.Id, SkillLevel.Beginner, utcNow);
             }
 
+            user.CompleteOnboarding(utcNow);
             user.UpdateLastLogin(utcNow);
 
             _dbContext.Users.Add(user);

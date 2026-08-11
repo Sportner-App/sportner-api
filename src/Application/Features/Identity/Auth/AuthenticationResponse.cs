@@ -6,4 +6,5 @@ public sealed record AuthenticationResponse(
     DateTimeOffset AccessTokenExpiresAt,
     string RefreshToken,
     DateTimeOffset RefreshTokenExpiresAt,
-    bool IsNewUser);
+    bool IsNewUser,
+    bool IsOnboardingCompleted);
