@@ -22,7 +22,7 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
-    builder.Services.AddBackgroundJobsOptions(builder.Configuration);
+    builder.Services.AddWorkerHostDefaults(builder.Configuration);
 
     builder.Services.AddCronJob(
         "event-reminder",
