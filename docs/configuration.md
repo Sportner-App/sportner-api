@@ -7,6 +7,30 @@ Pre-deployment / local development reads database, JWT and Supabase values from
 keys from tracked appsettings unless the owner explicitly asks in that moment.
 Keep local convenience config in place.
 
+## Host config shape (API + all Workers — keep in sync)
+
+Every deployable host uses the same file layout:
+
+```text
+appsettings.json                 # shared defaults (no secrets)
+appsettings.Development.json     # ConnectionStrings / Supabase / Jwt / Authorization + host extras
+appsettings.Production.json      # same secret sections as Development (Render/Docker Production)
+```
+
+| Host | Extra section |
+| ---- | ------------- |
+| API | `Cors`, `AllowedHosts` |
+| Identity.Worker | `BackgroundJobs` (session cleanup) |
+| Events.Worker | `BackgroundJobs` (reminders + marathon badge) |
+| Notifications.Worker | `BackgroundJobs` (push outbox) |
+
+Environment names:
+
+- API Docker: `ASPNETCORE_ENVIRONMENT=Production`
+- Workers Docker: `ASPNETCORE_ENVIRONMENT=Production` **and** `DOTNET_ENVIRONMENT=Production`
+
+New worker / API host: copy this trio from an existing host; only change `BackgroundJobs` (or API-only keys). Do not invent a one-off config style.
+
 The API project also supports .NET user-secrets (optional overlay):
 
 ```powershell

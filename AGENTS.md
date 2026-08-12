@@ -43,4 +43,5 @@ dotnet run --project src/Workers/Notifications.Worker/Sportner.Notifications.Wor
 ```
 
 Workers are purpose-split deployable hosts (Atmaca-style). Shared cron helpers: `Sportner.Workers.Hosting`.  
-Job logic stays in Application (`BackgroundJobs:*` config).
+Job logic stays in Application (`BackgroundJobs:*` config).  
+Config shape matches API for every host: `appsettings.json` + `Development` + `Production` (see [`docs/configuration.md`](docs/configuration.md)).

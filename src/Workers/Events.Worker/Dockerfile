@@ -32,7 +32,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 ENV DOTNET_EnableDiagnostics=0 \
-    DOTNET_ENVIRONMENT=Production
+    DOTNET_ENVIRONMENT=Production \
+    ASPNETCORE_ENVIRONMENT=Production
 
 COPY --from=build /app/publish .
 
