@@ -23,10 +23,7 @@ services:
     profiles: [workers]
     build:
       context: .
-      dockerfile: Dockerfile.worker
-      args:
-        WORKER_DIR: Identity.Worker
-        WORKER_ASSEMBLY: Sportner.Identity.Worker
+      dockerfile: src/Workers/Identity.Worker/Dockerfile
     image: sportner-identity-worker:local
     environment:
       DOTNET_ENVIRONMENT: Development
@@ -39,10 +36,7 @@ services:
     profiles: [workers]
     build:
       context: .
-      dockerfile: Dockerfile.worker
-      args:
-        WORKER_DIR: Events.Worker
-        WORKER_ASSEMBLY: Sportner.Events.Worker
+      dockerfile: src/Workers/Events.Worker/Dockerfile
     image: sportner-events-worker:local
     environment:
       DOTNET_ENVIRONMENT: Development
@@ -55,10 +49,7 @@ services:
     profiles: [workers]
     build:
       context: .
-      dockerfile: Dockerfile.worker
-      args:
-        WORKER_DIR: Notifications.Worker
-        WORKER_ASSEMBLY: Sportner.Notifications.Worker
+      dockerfile: src/Workers/Notifications.Worker/Dockerfile
     image: sportner-notifications-worker:local
     environment:
       DOTNET_ENVIRONMENT: Development
