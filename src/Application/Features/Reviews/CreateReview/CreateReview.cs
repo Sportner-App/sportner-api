@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Reviews;
@@ -34,17 +35,20 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
     private readonly IBadgeAwarder _badgeAwarder;
+    private readonly IQuestProgressTracker _questProgressTracker;
 
     public CreateReviewCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
-        IBadgeAwarder badgeAwarder)
+        IBadgeAwarder badgeAwarder,
+        IQuestProgressTracker questProgressTracker)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _badgeAwarder = badgeAwarder;
+        _questProgressTracker = questProgressTracker;
     }
 
     public async Task<Result<ReviewResponse>> Handle(
@@ -136,6 +140,14 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
                 BadgeCodes.FirstReview,
                 cancellationToken);
         }
+
+        await _badgeAwarder.EvaluateAfterReviewCreatedAsync(reviewerUserId, cancellationToken);
+
+        await _questProgressTracker.ReportAsync(
+            reviewerUserId,
+            QuestMetrics.ReviewsCreated,
+            1,
+            cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

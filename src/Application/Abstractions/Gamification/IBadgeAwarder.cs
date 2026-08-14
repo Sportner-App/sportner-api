@@ -1,5 +1,3 @@
-using Sportner.Application.Abstractions.Persistence;
-
 namespace Sportner.Application.Abstractions.Gamification;
 
 /// <summary>
@@ -32,6 +30,18 @@ public interface IBadgeAwarder
 
     Task EvaluateAfterReportResolvedAsync(
         Guid reporterUserId,
+        CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterFriendshipAcceptedAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterReviewCreatedAsync(
+        Guid reviewerUserId,
+        CancellationToken cancellationToken = default);
+
+    Task EvaluateAfterEventCompletedAsync(
+        Guid organizerUserId,
         CancellationToken cancellationToken = default);
 
     /// <summary>

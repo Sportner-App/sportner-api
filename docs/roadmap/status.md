@@ -31,4 +31,5 @@ Son güncelleme: 2026-08 (V1 auth → username/password).
 
 ## Sıradaki
 
-V1 backend feature set tamam. Ops notları `ek-notlar.md`.
+V1 backend feature set tamam. Ops notları `ek-notlar.md`.  
+V2 planlama: [`docs/v2/`](../v2/) (kod yok — karar kapıları önce).

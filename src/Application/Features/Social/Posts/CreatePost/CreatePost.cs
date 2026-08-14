@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
@@ -50,19 +51,22 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
     private readonly TimeProvider _timeProvider;
     private readonly IFileStorage _fileStorage;
     private readonly IBadgeAwarder _badgeAwarder;
+    private readonly IQuestProgressTracker _questProgressTracker;
 
     public CreatePostCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
         IFileStorage fileStorage,
-        IBadgeAwarder badgeAwarder)
+        IBadgeAwarder badgeAwarder,
+        IQuestProgressTracker questProgressTracker)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _fileStorage = fileStorage;
         _badgeAwarder = badgeAwarder;
+        _questProgressTracker = questProgressTracker;
     }
 
     public async Task<Result<PostResponse>> Handle(
@@ -142,6 +146,12 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
         {
             await _badgeAwarder.TryAwardAsync(userId, BadgeCodes.FirstPost, cancellationToken);
         }
+
+        await _questProgressTracker.ReportAsync(
+            userId,
+            QuestMetrics.PostsCreated,
+            1,
+            cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

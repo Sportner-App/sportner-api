@@ -54,10 +54,13 @@ internal sealed class CreateDirectConversationCommandHandler
             return Result<ConversationResponse>.Failure(MessagingErrors.CannotMessageSelf);
         }
 
-        var otherExists = await _dbContext.Users.AsNoTracking()
-            .AnyAsync(user => user.Id == request.OtherUserId, cancellationToken);
+        var other = await _dbContext.Users.AsNoTracking()
+            .Where(user => user.Id == request.OtherUserId)
+            .Select(user => new { user.Id, user.Status })
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (!otherExists)
+        if (other is null
+            || other.Status is UserStatus.Deleted or UserStatus.Banned)
         {
             return Result<ConversationResponse>.Failure(MessagingErrors.PeerNotFound);
         }
@@ -68,10 +71,12 @@ internal sealed class CreateDirectConversationCommandHandler
             request.OtherUserId,
             cancellationToken);
 
-        if (friendship is null || friendship.Status is not FriendshipStatus.Accepted)
+        if (friendship?.Status is FriendshipStatus.Blocked)
         {
-            return Result<ConversationResponse>.Failure(MessagingErrors.NotFriends);
+            return Result<ConversationResponse>.Failure(MessagingErrors.Blocked);
         }
+
+        // V2: stranger DM allowed — accepted friendship is not required for Direct.
 
         var existing = await MessagingAccess.FindDirectBetweenAsync(
             _dbContext,

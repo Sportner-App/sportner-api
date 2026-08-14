@@ -188,6 +188,7 @@ public class NotificationSetting : AggregateRoot
             NotificationType.BadgeEarned => (true, true, false),
             NotificationType.NewMessage => (true, true, false),
             NotificationType.System => (true, true, true),
+            NotificationType.QuestCompleted => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

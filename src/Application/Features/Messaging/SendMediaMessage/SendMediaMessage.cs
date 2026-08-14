@@ -145,8 +145,11 @@ internal sealed class SendMediaMessageCommandHandler
             ? request.Caption
             : "Yeni medya mesajı";
 
+        var notifyAt = utcNow;
         foreach (var member in conversation.Members.Where(member =>
-                     member.IsActive() && member.UserId != userId))
+                     member.IsActive()
+                     && member.UserId != userId
+                     && !member.IsMuted(notifyAt)))
         {
             await _notificationPublisher.PublishAsync(
                 member.UserId,

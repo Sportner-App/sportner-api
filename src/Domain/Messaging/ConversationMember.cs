@@ -20,6 +20,12 @@ public class ConversationMember : AuditableEntity
 
     public DateTimeOffset? LeftAt { get; private set; }
 
+    public Guid? LastReadMessageId { get; private set; }
+
+    public DateTimeOffset? LastReadAt { get; private set; }
+
+    public DateTimeOffset? MutedUntil { get; private set; }
+
     public static ConversationMember CreateOwner(
         Guid conversationId,
         Guid userId,
@@ -105,6 +111,67 @@ public class ConversationMember : AuditableEntity
         JoinedAt = utcNow;
         Touch(utcNow);
     }
+
+    /// <summary>
+    /// Advances the read cursor. Never moves backwards (multi-device: last forward write wins).
+    /// </summary>
+    public void MarkRead(Guid messageId, DateTimeOffset messageCreatedAt, DateTimeOffset utcNow)
+    {
+        EnsureActive();
+
+        if (messageId == Guid.Empty)
+        {
+            throw new DomainException("Message id is required.");
+        }
+
+        if (LastReadAt is not null && messageCreatedAt < LastReadAt)
+        {
+            return;
+        }
+
+        if (LastReadMessageId == messageId && LastReadAt == messageCreatedAt)
+        {
+            return;
+        }
+
+        LastReadMessageId = messageId;
+        LastReadAt = messageCreatedAt;
+        Touch(utcNow);
+    }
+
+    public void Mute(DateTimeOffset until, DateTimeOffset utcNow)
+    {
+        EnsureActive();
+
+        if (until <= utcNow)
+        {
+            throw new DomainException("Mute expiry must be in the future.");
+        }
+
+        if (MutedUntil == until)
+        {
+            return;
+        }
+
+        MutedUntil = until;
+        Touch(utcNow);
+    }
+
+    public void Unmute(DateTimeOffset utcNow)
+    {
+        EnsureActive();
+
+        if (MutedUntil is null)
+        {
+            return;
+        }
+
+        MutedUntil = null;
+        Touch(utcNow);
+    }
+
+    public bool IsMuted(DateTimeOffset utcNow) =>
+        MutedUntil is { } until && until > utcNow;
 
     public bool IsActive()
     {

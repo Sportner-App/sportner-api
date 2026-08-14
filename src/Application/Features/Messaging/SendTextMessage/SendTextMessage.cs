@@ -124,11 +124,14 @@ internal sealed class SendTextMessageCommandHandler
         string content,
         CancellationToken cancellationToken)
     {
+        var utcNow = _timeProvider.GetUtcNow();
         var preview = content.Length <= 120 ? content : content[..117] + "...";
         var title = conversation.Title ?? "Yeni mesaj";
 
         foreach (var member in conversation.Members.Where(member =>
-                     member.IsActive() && member.UserId != senderUserId))
+                     member.IsActive()
+                     && member.UserId != senderUserId
+                     && !member.IsMuted(utcNow)))
         {
             await _notificationPublisher.PublishAsync(
                 member.UserId,

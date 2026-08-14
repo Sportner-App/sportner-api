@@ -13,6 +13,7 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 ## Progress
 
 - [x] Friendships (request / accept / reject / block / remove / list)
+- [x] Friend suggestions / mutual / search (V2 depth)
 - [x] Posts CRUD + media
 - [x] Likes
 - [x] Comments / replies (1-level)
@@ -30,6 +31,7 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | `CommentsController` | `/api/posts/{postId}/comments` |
 | `CommentActionsController` | `/api/comments/{id}` |
 | `FeedController` | `/api/feed` |
+| `ExploreController` | `/api/explore` (V2 ranked tabs) |
 
 ---
 
@@ -45,7 +47,10 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | [x] | `BlockUser` | Command | `POST /api/friendships/block` | Creates relationship if missing; decreases friends counts when leaving Accepted. |
 | [x] | `RemoveFriendship` | Command | `DELETE /api/friendships/{id}` | Accepted only; physical delete; decrease both counts. |
 | [x] | `ListFriends` | Query | `GET /api/friendships` | Accepted; paginated. |
-| [x] | `ListPendingRequests` | Query | `GET /api/friendships/pending?outgoing=` | Incoming default; optional outgoing. |
+| [x] | `ListPendingRequests` | Query | `GET /api/friendships/pending?outgoing=` | Incoming default; optional outgoing. Response includes avatars, `mutualFriendsCount`, `sharedSportNames`. |
+| [x] | `GetFriendSuggestions` | Query | `GET /api/friendships/suggestions?limit=` | FoF / shared sports / same city; excludes private, pending, blocked, friends, reject within 30d. |
+| [x] | `SearchFriends` | Query | `GET /api/friendships/search?q=` | Accepted friends only (username / first / last). |
+| [x] | `GetMutualFriends` | Query | `GET /api/friendships/mutual/{userId}` | Public or friends-visible; blocked → 403. |
 
 ### Posts
 
@@ -82,13 +87,16 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | Status | Use case | Type | Endpoint | Notes |
 | ------ | -------- | ---- | -------- | ----- |
 | [x] | `GetHomeFeed` | Query | `GET /api/feed` | Self + accepted friends; exclude blocks; cursor. |
-| [x] | `GetExploreFeed` | Query | `GET /api/feed/explore` | Recency; exclude blocks. |
+| [x] | `GetExploreFeed` | Query | `GET /api/feed/explore` | Recency; exclude blocks (V1 compat). |
+| [x] | `ExplorePeople` | Query | `GET /api/explore/people` | Ranked via recommendation engine; optional `sportId`/`city`; `limit`. |
+| [x] | `ExplorePosts` | Query | `GET /api/explore/posts` | Ranked For You; authenticated; `limit`. |
 
 ---
 
 ## Exit criteria
 
 - [x] Friendship state machine covered
+- [x] Friend suggestions / mutual / search (V2/01)
 - [x] Post with media create/delete cleans storage (best-effort after commit)
 - [x] Like/comment counters stay non-negative and accurate
 - [x] Home feed paginated

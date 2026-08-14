@@ -3,6 +3,7 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Features.Events.ConfirmAttendance;
+using Sportner.Application.Features.Quests;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
@@ -69,7 +70,8 @@ public sealed class ConfirmAttendanceCommandHandlerTests
             db,
             new TestCurrentUser(organizer.Id),
             time,
-            badgeAwarder.Object);
+            badgeAwarder.Object,
+            new Mock<IQuestProgressTracker>().Object);
 
         var first = await handler.Handle(
             new ConfirmAttendanceCommand(@event.Id, attendee.Id),

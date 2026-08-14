@@ -97,6 +97,7 @@ The table supports multiple entity types through a polymorphic relationship, eli
 | 3     | Comment |
 | 4     | Review  |
 | 5     | Message |
+| 6     | Album   |
 
 ---
 

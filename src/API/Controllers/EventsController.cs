@@ -11,6 +11,8 @@ using Sportner.Application.Features.Events.ConfirmAttendance;
 using Sportner.Application.Features.Events.CreateEvent;
 using Sportner.Application.Features.Events.DiscoverEvents;
 using Sportner.Application.Features.Events.GetEventById;
+using Sportner.Application.Features.Albums.CreateEventAlbum;
+using Sportner.Application.Features.Albums.ListEventAlbums;
 using Sportner.Application.Features.Events.ListMyOrganizedEvents;
 using Sportner.Application.Features.Events.ListMyParticipatingEvents;
 using Sportner.Application.Features.Events.ListParticipants;
@@ -81,6 +83,31 @@ public sealed class EventsController : ApiControllerBase
     {
         var result = await Sender.Send(new GetEventByIdQuery(eventId), cancellationToken);
         return result.ToActionResult();
+    }
+
+    [HttpGet("{eventId:guid}/albums")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ListAlbums(Guid eventId, CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new ListEventAlbumsQuery(eventId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{eventId:guid}/albums")]
+    [Authorize(Policy = AuthorizationPolicies.CanCreateContent)]
+    public async Task<IActionResult> CreateAlbum(
+        Guid eventId,
+        [FromBody] CreateEventAlbumBody request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new CreateEventAlbumCommand(
+                eventId,
+                request.Title,
+                request.Description,
+                request.Visibility),
+            cancellationToken);
+        return result.ToActionResult(StatusCodes.Status201Created);
     }
 
     [HttpGet("{eventId:guid}/conversation")]
@@ -329,4 +356,9 @@ public sealed class EventsController : ApiControllerBase
     public sealed record UpdateEventLocationRequest(decimal Latitude, decimal Longitude, string Address);
 
     public sealed record UpdateCapacityRequest(int? MaxParticipants);
+
+    public sealed record CreateEventAlbumBody(
+        string Title,
+        string? Description,
+        short? Visibility);
 }

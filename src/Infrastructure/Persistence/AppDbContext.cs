@@ -5,6 +5,7 @@ using Sportner.Domain.Events;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Quests;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
@@ -71,6 +72,14 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Badge> Badges => Set<Badge>();
 
     public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+
+    public DbSet<Quest> Quests => Set<Quest>();
+
+    public DbSet<UserQuest> UserQuests => Set<UserQuest>();
+
+    public DbSet<Album> Albums => Set<Album>();
+
+    public DbSet<AlbumMedia> AlbumMedia => Set<AlbumMedia>();
 
     public DbSet<Report> Reports => Set<Report>();
 

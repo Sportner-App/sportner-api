@@ -19,7 +19,7 @@ try
             .Enrich.FromLogContext()
             .WriteTo.Console());
 
-    builder.Services.AddApplication();
+    builder.Services.AddApplication(builder.Configuration);
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddWorkerHostDefaults(builder.Configuration);
 

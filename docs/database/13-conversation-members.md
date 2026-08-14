@@ -39,6 +39,9 @@ For event conversations, members are automatically synchronized with approved ev
 | role               | SMALLINT    | No       | Member role                  |
 | joined_at          | TIMESTAMPTZ | No       | Member joined date           |
 | left_at            | TIMESTAMPTZ | Yes      | Member left date             |
+| last_read_message_id | UUID      | Yes      | Last read message (receipt)  |
+| last_read_at       | TIMESTAMPTZ | Yes      | Read cursor timestamp        |
+| muted_until        | TIMESTAMPTZ | Yes      | Mute expiry; null = unmuted  |
 | created_at         | TIMESTAMPTZ | No       | Created date                 |
 | updated_at         | TIMESTAMPTZ | Yes      | Updated date                 |
 | created_by_user_id | UUID        | Yes      | Audit                        |
@@ -67,6 +70,7 @@ For event conversations, members are automatically synchronized with approved ev
 | --------------- | ----------------- |
 | conversation_id | conversations(id) |
 | user_id         | users(id)         |
+| last_read_message_id | messages(id) ON DELETE SET NULL |
 
 ---
 

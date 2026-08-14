@@ -15,11 +15,16 @@ internal sealed class ListMyConversationsQueryHandler
 {
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
+    private readonly TimeProvider _timeProvider;
 
-    public ListMyConversationsQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
+    public ListMyConversationsQueryHandler(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        TimeProvider timeProvider)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Result<PagedResult<ConversationListItemResponse>>> Handle(
@@ -33,45 +38,75 @@ internal sealed class ListMyConversationsQueryHandler
         }
 
         var pagination = new PaginationRequest(request.Page, request.PageSize);
+        var utcNow = _timeProvider.GetUtcNow();
 
-        var conversationIds = _dbContext.ConversationMembers.AsNoTracking()
+        var memberships = await _dbContext.ConversationMembers.AsNoTracking()
             .Where(member => member.UserId == userId && member.LeftAt == null)
-            .Select(member => member.ConversationId);
+            .Select(member => new
+            {
+                member.ConversationId,
+                member.LastReadAt,
+                member.MutedUntil
+            })
+            .ToListAsync(cancellationToken);
 
-        var query =
-            from conversation in _dbContext.Conversations.AsNoTracking()
-            where conversationIds.Contains(conversation.Id)
-                && (request.Type == null
-                    || (short)conversation.Type == request.Type.Value)
-            select new ConversationListItemResponse(
+        if (memberships.Count == 0)
+        {
+            return Result<PagedResult<ConversationListItemResponse>>.Success(
+                PagedResult<ConversationListItemResponse>.Create(
+                    [],
+                    pagination.NormalizedPage,
+                    pagination.NormalizedPageSize,
+                    0));
+        }
+
+        var membershipById = memberships.ToDictionary(
+            member => member.ConversationId,
+            member => (member.LastReadAt, member.MutedUntil));
+
+        var myConversationIds = memberships.Select(member => member.ConversationId).ToList();
+
+        var orderedIds = await _dbContext.Conversations.AsNoTracking()
+            .Where(conversation =>
+                myConversationIds.Contains(conversation.Id)
+                && (request.Type == null || (short)conversation.Type == request.Type.Value))
+            .Select(conversation => new
+            {
                 conversation.Id,
-                (short)conversation.Type,
-                conversation.EventId,
-                conversation.Title,
-                conversation.IsClosed,
                 conversation.CreatedAt,
-                _dbContext.Messages
+                LastMessageAt = _dbContext.Messages
                     .Where(message => message.ConversationId == conversation.Id)
                     .OrderByDescending(message => message.CreatedAt)
                     .Select(message => (DateTimeOffset?)message.CreatedAt)
-                    .FirstOrDefault(),
-                _dbContext.Messages
-                    .Where(message => message.ConversationId == conversation.Id)
-                    .OrderByDescending(message => message.CreatedAt)
-                    .Select(message => message.Content ?? message.MediaMimeType)
-                    .FirstOrDefault());
+                    .FirstOrDefault()
+            })
+            .OrderByDescending(item => item.LastMessageAt ?? item.CreatedAt)
+            .Select(item => item.Id)
+            .ToListAsync(cancellationToken);
 
-        query = query.OrderByDescending(item => item.LastMessageAt ?? item.CreatedAt);
-
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query
+        var total = orderedIds.Count;
+        var pageIds = orderedIds
             .Skip(pagination.Skip)
             .Take(pagination.NormalizedPageSize)
-            .ToListAsync(cancellationToken);
+            .ToList();
+
+        var items = await ConversationListBuilder.BuildAsync(
+            _dbContext,
+            userId,
+            pageIds,
+            membershipById,
+            utcNow,
+            cancellationToken);
+
+        var byId = items.ToDictionary(item => item.Id);
+        var orderedItems = pageIds
+            .Where(id => byId.ContainsKey(id))
+            .Select(id => byId[id])
+            .ToList();
 
         return Result<PagedResult<ConversationListItemResponse>>.Success(
             PagedResult<ConversationListItemResponse>.Create(
-                items,
+                orderedItems,
                 pagination.NormalizedPage,
                 pagination.NormalizedPageSize,
                 total));

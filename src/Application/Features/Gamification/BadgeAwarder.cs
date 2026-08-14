@@ -85,6 +85,7 @@ internal sealed class BadgeAwarder : IBadgeAwarder
         await EvaluateSportsExplorerAsync(userId, cancellationToken);
         await EvaluateEventMasterAsync(userId, cancellationToken);
         await EvaluateMarathonRunnerAsync(userId, cancellationToken);
+        await EvaluateEarlyBirdAsync(userId, cancellationToken);
     }
 
     public Task EvaluateAfterUserSportChangedAsync(
@@ -101,6 +102,21 @@ internal sealed class BadgeAwarder : IBadgeAwarder
         Guid reporterUserId,
         CancellationToken cancellationToken = default) =>
         EvaluateCommunityHelperAsync(reporterUserId, cancellationToken);
+
+    public Task EvaluateAfterFriendshipAcceptedAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default) =>
+        EvaluateSocialButterflyAsync(userId, cancellationToken);
+
+    public Task EvaluateAfterReviewCreatedAsync(
+        Guid reviewerUserId,
+        CancellationToken cancellationToken = default) =>
+        EvaluateReviewGuruAsync(reviewerUserId, cancellationToken);
+
+    public Task EvaluateAfterEventCompletedAsync(
+        Guid organizerUserId,
+        CancellationToken cancellationToken = default) =>
+        EvaluateHostHeroAsync(organizerUserId, cancellationToken);
 
     public async Task SweepMarathonRunnersAsync(CancellationToken cancellationToken = default)
     {
@@ -220,6 +236,74 @@ internal sealed class BadgeAwarder : IBadgeAwarder
         }
 
         await TryAwardAsync(userId, BadgeCodes.MarathonRunner, cancellationToken);
+    }
+
+    private async Task EvaluateSocialButterflyAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var friends = await _dbContext.Friendships.AsNoTracking()
+            .CountAsync(
+                friendship =>
+                    friendship.Status == FriendshipStatus.Accepted
+                    && (friendship.RequesterUserId == userId
+                        || friendship.AddresseeUserId == userId),
+                cancellationToken);
+
+        if (friends >= BadgeThresholds.SocialButterflyFriends)
+        {
+            await TryAwardAsync(userId, BadgeCodes.SocialButterfly, cancellationToken);
+        }
+    }
+
+    private async Task EvaluateHostHeroAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var completedHosted = await _dbContext.Events.AsNoTracking()
+            .CountAsync(
+                @event =>
+                    @event.OrganizerUserId == userId
+                    && @event.Status == EventStatus.Completed,
+                cancellationToken);
+
+        if (completedHosted >= BadgeThresholds.HostHeroCompletedOrganized)
+        {
+            await TryAwardAsync(userId, BadgeCodes.HostHero, cancellationToken);
+        }
+    }
+
+    private async Task EvaluateReviewGuruAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var written = await _dbContext.Reviews.AsNoTracking()
+            .CountAsync(review => review.ReviewerUserId == userId, cancellationToken);
+
+        if (written >= BadgeThresholds.ReviewGuruReviewsWritten)
+        {
+            await TryAwardAsync(userId, BadgeCodes.ReviewGuru, cancellationToken);
+        }
+    }
+
+    private async Task EvaluateEarlyBirdAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var morningAttendances = await (
+            from participant in _dbContext.EventParticipants.AsNoTracking()
+            join @event in _dbContext.Events.AsNoTracking()
+                on participant.EventId equals @event.Id
+            where participant.UserId == userId
+                  && participant.Status == ParticipantStatus.Attended
+                  && @event.EventDate.Hour < BadgeThresholds.EarlyBirdHourExclusive
+            select participant.Id)
+            .CountAsync(cancellationToken);
+
+        if (morningAttendances >= BadgeThresholds.EarlyBirdMorningAttendances)
+        {
+            await TryAwardAsync(userId, BadgeCodes.EarlyBird, cancellationToken);
+        }
     }
 
     /// <summary>

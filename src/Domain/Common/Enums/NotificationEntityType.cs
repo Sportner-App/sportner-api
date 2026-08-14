@@ -7,5 +7,6 @@ public enum NotificationEntityType : short
     Post = 2,
     Comment = 3,
     Conversation = 4,
-    Badge = 5
+    Badge = 5,
+    Quest = 6
 }

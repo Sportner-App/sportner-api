@@ -13,4 +13,6 @@ public static class StorageBuckets
     public const string PostMedia = "post-media";
 
     public const string ChatMedia = "chat-media";
+
+    public const string Albums = "albums";
 }

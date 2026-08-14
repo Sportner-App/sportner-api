@@ -106,6 +106,8 @@ Finish a module file’s checkboxes before starting the next, unless a dependenc
 | [06-social.md](06-social.md) | `Friendships`, `Posts`, `Comments` (+ feed queries) |
 | [07-notifications.md](07-notifications.md) | `Notifications`, `NotificationSettings` |
 | [08-gamification.md](08-gamification.md) | `Badges` |
+| [09-quests.md](09-quests.md) | `Quests` / `UserQuests` |
+| [11-albums.md](11-albums.md) | `Albums` / `AlbumMedia` |
 | [09-moderation.md](09-moderation.md) | `Reports` |
 | [10-cross-cutting.md](10-cross-cutting.md) | — (policies, jobs, realtime) |
 

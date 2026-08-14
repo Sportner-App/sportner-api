@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 
@@ -15,15 +16,18 @@ internal sealed class ConfirmAttendanceCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<ConfirmAttendanceCommand, EventResponse>
 {
     private readonly IBadgeAwarder _badgeAwarder;
+    private readonly IQuestProgressTracker _questProgressTracker;
 
     public ConfirmAttendanceCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
-        IBadgeAwarder badgeAwarder)
+        IBadgeAwarder badgeAwarder,
+        IQuestProgressTracker questProgressTracker)
         : base(dbContext, currentUser, timeProvider)
     {
         _badgeAwarder = badgeAwarder;
+        _questProgressTracker = questProgressTracker;
     }
 
     public Task<Result<EventResponse>> Handle(
@@ -63,6 +67,12 @@ internal sealed class ConfirmAttendanceCommandHandler
                     ct);
 
                 await _badgeAwarder.EvaluateAfterAttendanceAsync(request.UserId, ct);
+
+                await _questProgressTracker.ReportAsync(
+                    request.UserId,
+                    QuestMetrics.EventsAttended,
+                    1,
+                    ct);
 
                 return Result.Success();
             },

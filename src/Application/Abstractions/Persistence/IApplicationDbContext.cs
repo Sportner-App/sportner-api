@@ -4,6 +4,7 @@ using Sportner.Domain.Events;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Quests;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
@@ -39,6 +40,10 @@ public interface IApplicationDbContext
     DbSet<NotificationDeliveryOutbox> NotificationDeliveryOutbox { get; }
     DbSet<Badge> Badges { get; }
     DbSet<UserBadge> UserBadges { get; }
+    DbSet<Quest> Quests { get; }
+    DbSet<UserQuest> UserQuests { get; }
+    DbSet<Album> Albums { get; }
+    DbSet<AlbumMedia> AlbumMedia { get; }
     DbSet<Report> Reports { get; }
     DbSet<ReportReason> ReportReasons { get; }
 

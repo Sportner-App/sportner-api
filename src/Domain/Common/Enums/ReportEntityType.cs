@@ -7,5 +7,6 @@ public enum ReportEntityType : short
     Post = 2,
     Comment = 3,
     Review = 4,
-    Message = 5
+    Message = 5,
+    Album = 6
 }

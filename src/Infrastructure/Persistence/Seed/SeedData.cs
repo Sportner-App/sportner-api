@@ -35,6 +35,15 @@ internal static class SeedData
         string? Description,
         short DisplayOrder);
 
+    internal sealed record QuestSeed(
+        string Code,
+        string Title,
+        string Description,
+        string MetricCode,
+        int TargetValue,
+        string RewardBadgeCode,
+        short SortOrder);
+
     // Slugs stay ASCII because they are URL identifiers; display names are Turkish.
     internal static readonly IReadOnlyList<SportSeed> Sports = new SportSeed[]
     {
@@ -72,7 +81,15 @@ internal static class SeedData
         new(BadgeCodes.EventMaster, "Etkinlik Ustası", "Çok sayıda etkinliğe katıldın.",
             "badges/event-master.png", BadgeCategory.Events, BadgeRarity.Epic, 250, 7),
         new(BadgeCodes.MarathonRunner, "Maratoncu", "Uzun süreli bir aktivite serisini sürdürdün.",
-            "badges/marathon-runner.png", BadgeCategory.Streak, BadgeRarity.Legendary, 500, 8)
+            "badges/marathon-runner.png", BadgeCategory.Streak, BadgeRarity.Legendary, 500, 8),
+        new(BadgeCodes.SocialButterfly, "Sosyal Kelebek", "Geniş bir arkadaş çevresi kurdun.",
+            "badges/social-butterfly.png", BadgeCategory.Social, BadgeRarity.Rare, 150, 9),
+        new(BadgeCodes.HostHero, "Ev Sahibi Kahraman", "Birçok etkinliği başarıyla tamamladın.",
+            "badges/host-hero.png", BadgeCategory.Events, BadgeRarity.Epic, 200, 10),
+        new(BadgeCodes.ReviewGuru, "Değerlendirme Ustası", "Çok sayıda değerlendirme yazdın.",
+            "badges/review-guru.png", BadgeCategory.Community, BadgeRarity.Rare, 150, 11),
+        new(BadgeCodes.EarlyBird, "Erken Kalkan", "Sabah erken başlayan etkinliklere katıldın.",
+            "badges/early-bird.png", BadgeCategory.Events, BadgeRarity.Rare, 150, 12)
     };
 
     internal static readonly IReadOnlyList<ReportReasonSeed> ReportReasons = new ReportReasonSeed[]
@@ -87,5 +104,19 @@ internal static class SeedData
         new(ReportReasonCodes.Impersonation, "Sahte Hesap", "Başkasının kimliğine bürünme.", 8),
         new(ReportReasonCodes.Scam, "Dolandırıcılık", "Hileli veya aldatıcı davranış.", 9),
         new(ReportReasonCodes.Other, "Diğer", "Diğer nedenlerle kapsanmayan durumlar.", 10)
+    };
+
+    internal static readonly IReadOnlyList<QuestSeed> Quests = new QuestSeed[]
+    {
+        new(QuestCodes.Attend3, "3 etkinliğe katıl", "Üç etkinlikte katılımını onaylat.",
+            QuestMetrics.EventsAttended, 3, BadgeCodes.FirstEvent, 1),
+        new(QuestCodes.Post5, "5 gönderi paylaş", "Beş gönderi oluştur.",
+            QuestMetrics.PostsCreated, 5, BadgeCodes.FirstPost, 2),
+        new(QuestCodes.MakeFriends5, "5 arkadaş edin", "Beş arkadaşlık kur.",
+            QuestMetrics.FriendsAccepted, 5, BadgeCodes.FirstFriend, 3),
+        new(QuestCodes.Host1, "Bir etkinlik tamamla", "Organize ettiğin bir etkinliği tamamla.",
+            QuestMetrics.EventsOrganizedCompleted, 1, BadgeCodes.HostHero, 4),
+        new(QuestCodes.Review3, "3 değerlendirme yaz", "Üç değerlendirme bırak.",
+            QuestMetrics.ReviewsCreated, 3, BadgeCodes.FirstReview, 5)
     };
 }

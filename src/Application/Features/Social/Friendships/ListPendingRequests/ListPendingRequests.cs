@@ -41,14 +41,48 @@ internal sealed class ListPendingRequestsQueryHandler
             .OrderByDescending(friendship => friendship.CreatedAt)
             .ToListAsync(cancellationToken);
 
+        if (friendships.Count == 0)
+        {
+            return Result<IReadOnlyList<FriendshipResponse>>.Success([]);
+        }
+
+        var otherUserIds = friendships
+            .Select(friendship =>
+                friendship.RequesterUserId == userId
+                    ? friendship.AddresseeUserId
+                    : friendship.RequesterUserId)
+            .Distinct()
+            .ToList();
+
+        var mutualCounts = await SocialQueries.CountMutualFriendsAsync(
+            _dbContext,
+            userId,
+            otherUserIds,
+            cancellationToken);
+        var sharedSports = await SocialQueries.GetSharedSportNamesAsync(
+            _dbContext,
+            userId,
+            otherUserIds,
+            cancellationToken);
+
         var responses = new List<FriendshipResponse>(friendships.Count);
 
         foreach (var friendship in friendships)
         {
-            responses.Add(await SocialQueries.ToFriendshipResponseAsync(
+            var baseResponse = await SocialQueries.ToFriendshipResponseAsync(
                 _dbContext,
                 friendship,
-                cancellationToken));
+                cancellationToken);
+
+            var otherUserId = friendship.RequesterUserId == userId
+                ? friendship.AddresseeUserId
+                : friendship.RequesterUserId;
+
+            responses.Add(baseResponse with
+            {
+                MutualFriendsCount = mutualCounts.GetValueOrDefault(otherUserId),
+                SharedSportNames = sharedSports.GetValueOrDefault(otherUserId) ?? []
+            });
         }
 
         return Result<IReadOnlyList<FriendshipResponse>>.Success(responses);

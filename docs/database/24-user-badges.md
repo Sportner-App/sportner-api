@@ -38,6 +38,8 @@ Badge definitions are stored in the `badges` table, while this table only record
 | user_id            | UUID        | No       | References users(id)  |
 | badge_id           | UUID        | No       | References badges(id) |
 | earned_at          | TIMESTAMPTZ | No       | Badge earned date     |
+| is_showcased       | BOOLEAN     | No       | Featured on profile (default false) |
+| showcase_order     | SMALLINT    | Yes      | 1–3 when showcased; otherwise null |
 | created_at         | TIMESTAMPTZ | No       | Created date          |
 | updated_at         | TIMESTAMPTZ | Yes      | Updated date          |
 | created_by_user_id | UUID        | Yes      | Audit                 |

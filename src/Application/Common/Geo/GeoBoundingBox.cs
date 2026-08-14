@@ -27,4 +27,27 @@ public static class GeoBoundingBox
             (decimal)Math.Max(-180.0, lng - lngDelta),
             (decimal)Math.Min(180.0, lng + lngDelta));
     }
+
+    /// <summary>Great-circle distance in kilometers.</summary>
+    public static double HaversineKm(
+        decimal latitude1,
+        decimal longitude1,
+        decimal latitude2,
+        decimal longitude2)
+    {
+        const double earthRadiusKm = 6371.0;
+        var lat1 = DegreesToRadians((double)latitude1);
+        var lat2 = DegreesToRadians((double)latitude2);
+        var dLat = DegreesToRadians((double)(latitude2 - latitude1));
+        var dLng = DegreesToRadians((double)(longitude2 - longitude1));
+
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+            + Math.Cos(lat1) * Math.Cos(lat2)
+            * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
+
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return earthRadiusKm * c;
+    }
+
+    private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 }

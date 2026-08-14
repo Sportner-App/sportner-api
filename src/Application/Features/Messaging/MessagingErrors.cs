@@ -52,6 +52,10 @@ internal static class MessagingErrors
         "Messaging.NotFriends",
         "You can only start a conversation with an accepted friend.");
 
+    internal static readonly Error Blocked = Error.Forbidden(
+        "Messaging.Blocked",
+        "This relationship is blocked.");
+
     internal static readonly Error CannotMessageSelf = Error.Validation(
         "Messaging.CannotMessageSelf",
         "You cannot create a direct conversation with yourself.");

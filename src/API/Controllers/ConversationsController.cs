@@ -8,6 +8,11 @@ using Sportner.Application.Features.Messaging.GetConversationById;
 using Sportner.Application.Features.Messaging.InviteConversationMember;
 using Sportner.Application.Features.Messaging.LeaveConversation;
 using Sportner.Application.Features.Messaging.ListMyConversations;
+using Sportner.Application.Features.Messaging.MarkConversationRead;
+using Sportner.Application.Features.Messaging.MuteConversation;
+using Sportner.Application.Features.Messaging.SearchMessages;
+using Sportner.Application.Features.Messaging.SearchMyConversations;
+using Sportner.Application.Features.Messaging.UnmuteConversation;
 
 namespace Sportner.API.Controllers;
 
@@ -29,6 +34,16 @@ public sealed class ConversationsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string q,
+        [FromQuery] int take = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(new SearchMyConversationsQuery(q, take), cancellationToken);
+        return result.ToActionResult();
+    }
+
     [HttpGet("{conversationId:guid}")]
     public async Task<IActionResult> GetById(
         Guid conversationId,
@@ -36,6 +51,20 @@ public sealed class ConversationsController : ApiControllerBase
     {
         var result = await Sender.Send(
             new GetConversationByIdQuery(conversationId),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{conversationId:guid}/messages/search")]
+    public async Task<IActionResult> SearchMessages(
+        Guid conversationId,
+        [FromQuery] string q,
+        [FromQuery] int take = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(
+            new SearchMessagesQuery(conversationId, q, take),
             cancellationToken);
 
         return result.ToActionResult();
@@ -95,9 +124,51 @@ public sealed class ConversationsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpPost("{conversationId:guid}/read")]
+    public async Task<IActionResult> MarkRead(
+        Guid conversationId,
+        [FromBody] MarkReadRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new MarkConversationReadCommand(conversationId, request.MessageId),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    [HttpPost("{conversationId:guid}/mute")]
+    public async Task<IActionResult> Mute(
+        Guid conversationId,
+        [FromBody] MuteRequest? request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new MuteConversationCommand(conversationId, request?.Until),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    [HttpPost("{conversationId:guid}/unmute")]
+    public async Task<IActionResult> Unmute(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UnmuteConversationCommand(conversationId),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
     public sealed record CreateDirectRequest(Guid OtherUserId);
 
     public sealed record CreateGroupRequest(string Title, IReadOnlyList<Guid>? MemberUserIds);
 
     public sealed record InviteMemberRequest(Guid UserId);
+
+    public sealed record MarkReadRequest(Guid MessageId);
+
+    public sealed record MuteRequest(DateTimeOffset? Until);
 }

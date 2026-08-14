@@ -4,10 +4,13 @@ using Sportner.API.Authorization;
 using Sportner.API.Common;
 using Sportner.Application.Features.Social.Friendships.AcceptFriendRequest;
 using Sportner.Application.Features.Social.Friendships.BlockUser;
+using Sportner.Application.Features.Social.Friendships.GetFriendSuggestions;
+using Sportner.Application.Features.Social.Friendships.GetMutualFriends;
 using Sportner.Application.Features.Social.Friendships.ListFriends;
 using Sportner.Application.Features.Social.Friendships.ListPendingRequests;
 using Sportner.Application.Features.Social.Friendships.RejectFriendRequest;
 using Sportner.Application.Features.Social.Friendships.RemoveFriendship;
+using Sportner.Application.Features.Social.Friendships.SearchFriends;
 using Sportner.Application.Features.Social.Friendships.SendFriendRequest;
 
 namespace Sportner.API.Controllers;
@@ -32,6 +35,35 @@ public sealed class FriendshipsController : ApiControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(new ListPendingRequestsQuery(outgoing), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("suggestions")]
+    public async Task<IActionResult> Suggestions(
+        [FromQuery] int limit = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(new GetFriendSuggestionsQuery(limit), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string q,
+        [FromQuery] int take = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(new SearchFriendsQuery(q, take), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("mutual/{userId:guid}")]
+    public async Task<IActionResult> MutualFriends(
+        Guid userId,
+        [FromQuery] int take = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(new GetMutualFriendsQuery(userId, take), cancellationToken);
         return result.ToActionResult();
     }
 

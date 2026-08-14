@@ -24,7 +24,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .WriteTo.Console());
 
 builder.Services.AddCustomCollection(builder.Configuration);
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomLocalization();

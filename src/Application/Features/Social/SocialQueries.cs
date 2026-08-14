@@ -60,7 +60,8 @@ internal static class SocialQueries
             {
                 profile.UserId,
                 profile.Username,
-                profile.FirstName
+                profile.FirstName,
+                profile.ProfileImageUrl
             })
             .ToListAsync(cancellationToken);
 
@@ -77,8 +78,139 @@ internal static class SocialQueries
             addressee?.FirstName,
             (short)friendship.Status,
             friendship.RespondedAt,
-            friendship.CreatedAt);
+            friendship.CreatedAt,
+            requester?.ProfileImageUrl,
+            addressee?.ProfileImageUrl);
     }
+
+    internal static async Task<Dictionary<Guid, int>> CountMutualFriendsAsync(
+        IApplicationDbContext dbContext,
+        Guid viewerUserId,
+        IReadOnlyCollection<Guid> otherUserIds,
+        CancellationToken cancellationToken)
+    {
+        var result = otherUserIds.ToDictionary(id => id, _ => 0);
+        if (otherUserIds.Count == 0)
+        {
+            return result;
+        }
+
+        var viewerFriends = await AcceptedFriendIds(dbContext, viewerUserId)
+            .ToListAsync(cancellationToken);
+
+        if (viewerFriends.Count == 0)
+        {
+            return result;
+        }
+
+        var viewerFriendSet = viewerFriends.ToHashSet();
+        var otherIdSet = otherUserIds.ToHashSet();
+
+        var edges = await dbContext.Friendships.AsNoTracking()
+            .Where(friendship =>
+                friendship.Status == FriendshipStatus.Accepted
+                && (otherIdSet.Contains(friendship.RequesterUserId)
+                    || otherIdSet.Contains(friendship.AddresseeUserId)))
+            .Select(friendship => new
+            {
+                friendship.RequesterUserId,
+                friendship.AddresseeUserId
+            })
+            .ToListAsync(cancellationToken);
+
+        foreach (var otherUserId in otherUserIds)
+        {
+            var mutual = 0;
+
+            foreach (var edge in edges)
+            {
+                Guid friendId;
+                if (edge.RequesterUserId == otherUserId)
+                {
+                    friendId = edge.AddresseeUserId;
+                }
+                else if (edge.AddresseeUserId == otherUserId)
+                {
+                    friendId = edge.RequesterUserId;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (friendId != viewerUserId && viewerFriendSet.Contains(friendId))
+                {
+                    mutual++;
+                }
+            }
+
+            result[otherUserId] = mutual;
+        }
+
+        return result;
+    }
+
+    internal static async Task<Dictionary<Guid, IReadOnlyList<string>>> GetSharedSportNamesAsync(
+        IApplicationDbContext dbContext,
+        Guid viewerUserId,
+        IReadOnlyCollection<Guid> otherUserIds,
+        CancellationToken cancellationToken)
+    {
+        var empty = (IReadOnlyList<string>)Array.Empty<string>();
+        var result = otherUserIds.ToDictionary(id => id, _ => empty);
+        if (otherUserIds.Count == 0)
+        {
+            return result;
+        }
+
+        var viewerSportIds = await dbContext.UserSports.AsNoTracking()
+            .Where(sport => sport.UserId == viewerUserId)
+            .Select(sport => sport.SportId)
+            .ToListAsync(cancellationToken);
+
+        if (viewerSportIds.Count == 0)
+        {
+            return result;
+        }
+
+        var viewerSportSet = viewerSportIds.ToHashSet();
+        var otherIdSet = otherUserIds.ToHashSet();
+
+        var sharedRows = await (
+                from userSport in dbContext.UserSports.AsNoTracking()
+                where otherIdSet.Contains(userSport.UserId)
+                    && viewerSportSet.Contains(userSport.SportId)
+                join sport in dbContext.Sports.AsNoTracking()
+                    on userSport.SportId equals sport.Id
+                select new { userSport.UserId, sport.Name })
+            .ToListAsync(cancellationToken);
+
+        foreach (var group in sharedRows.GroupBy(row => row.UserId))
+        {
+            result[group.Key] = group
+                .Select(row => row.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name)
+                .ToList();
+        }
+
+        return result;
+    }
+
+    internal static async Task<bool> AreAcceptedFriendsAsync(
+        IApplicationDbContext dbContext,
+        Guid firstUserId,
+        Guid secondUserId,
+        CancellationToken cancellationToken) =>
+        await dbContext.Friendships.AsNoTracking()
+            .AnyAsync(
+                friendship =>
+                    friendship.Status == FriendshipStatus.Accepted
+                    && ((friendship.RequesterUserId == firstUserId
+                            && friendship.AddresseeUserId == secondUserId)
+                        || (friendship.RequesterUserId == secondUserId
+                            && friendship.AddresseeUserId == firstUserId)),
+                cancellationToken);
 
     internal static async Task<PostResponse> ToPostResponseAsync(
         IApplicationDbContext dbContext,

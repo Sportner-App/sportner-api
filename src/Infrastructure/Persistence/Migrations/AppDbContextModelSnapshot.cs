@@ -107,6 +107,12 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("EarnedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsShowcased")
+                        .HasColumnType("boolean");
+
+                    b.Property<short?>("ShowcaseOrder")
+                        .HasColumnType("smallint");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -404,7 +410,16 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("JoinedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("LastReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastReadMessageId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("LeftAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("MutedUntil")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<short>("Role")
@@ -422,6 +437,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ConversationId");
+
+                    b.HasIndex("LastReadMessageId");
 
                     b.HasIndex("Role");
 
@@ -788,6 +805,121 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.ToTable("NotificationSettings");
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Quests.Quest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MetricCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("RewardBadgeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("SortOrder")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("TargetValue")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("MetricCode");
+
+                    b.HasIndex("RewardBadgeId");
+
+                    b.HasIndex("SortOrder");
+
+                    b.ToTable("Quests");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Quests.UserQuest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CurrentValue")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("QuestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "QuestId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("UserQuests");
+                });
+
             modelBuilder.Entity("Sportner.Domain.Reviews.Review", b =>
                 {
                     b.Property<Guid>("Id")
@@ -839,6 +971,127 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Social.Album", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CoverMediaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid?>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("Kind")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("MediaCount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("OwnerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("Visibility")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("Kind");
+
+                    b.HasIndex("OwnerUserId");
+
+                    b.HasIndex("Visibility");
+
+                    b.ToTable("Albums");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Social.AlbumMedia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlbumId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("DisplayOrder")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlbumId");
+
+                    b.HasIndex("UploadedByUserId");
+
+                    b.HasIndex("AlbumId", "DisplayOrder")
+                        .IsUnique();
+
+                    b.ToTable("AlbumMedia");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Social.Friendship", b =>
@@ -1662,6 +1915,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Sportner.Domain.Messaging.Message", null)
+                        .WithMany()
+                        .HasForeignKey("LastReadMessageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Sportner.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1746,6 +2004,30 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Quests.Quest", b =>
+                {
+                    b.HasOne("Sportner.Domain.Badges.Badge", null)
+                        .WithMany()
+                        .HasForeignKey("RewardBadgeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Quests.UserQuest", b =>
+                {
+                    b.HasOne("Sportner.Domain.Quests.Quest", null)
+                        .WithMany()
+                        .HasForeignKey("QuestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Sportner.Domain.Reviews.Review", b =>
                 {
                     b.HasOne("Sportner.Domain.Events.Event", null)
@@ -1763,6 +2045,34 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasOne("Sportner.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("ReviewerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Social.Album", b =>
+                {
+                    b.HasOne("Sportner.Domain.Events.Event", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Social.AlbumMedia", b =>
+                {
+                    b.HasOne("Sportner.Domain.Social.Album", null)
+                        .WithMany("Media")
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1915,6 +2225,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sportner.Domain.Messaging.Conversation", b =>
                 {
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Social.Album", b =>
+                {
+                    b.Navigation("Media");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Social.Post", b =>

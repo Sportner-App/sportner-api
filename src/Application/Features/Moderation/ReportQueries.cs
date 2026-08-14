@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Moderation;
+using Sportner.Domain.Social;
 
 namespace Sportner.Application.Features.Moderation;
 
@@ -47,6 +48,8 @@ internal static class ReportQueries
                 .AnyAsync(review => review.Id == entityId, cancellationToken),
             ReportEntityType.Message => await dbContext.Messages.AsNoTracking()
                 .AnyAsync(message => message.Id == entityId, cancellationToken),
+            ReportEntityType.Album => await dbContext.Albums.AsNoTracking()
+                .AnyAsync(album => album.Id == entityId, cancellationToken),
             _ => false
         };
 
@@ -79,8 +82,45 @@ internal static class ReportQueries
                 .AnyAsync(
                     message => message.Id == entityId && message.SenderUserId == reporterUserId,
                     cancellationToken),
+            ReportEntityType.Album => await IsOwnAlbumAsync(
+                dbContext,
+                reporterUserId,
+                entityId,
+                cancellationToken),
             _ => false
         };
+
+    private static async Task<bool> IsOwnAlbumAsync(
+        IApplicationDbContext dbContext,
+        Guid reporterUserId,
+        Guid albumId,
+        CancellationToken cancellationToken)
+    {
+        var album = await dbContext.Albums.AsNoTracking()
+            .Where(candidate => candidate.Id == albumId)
+            .Select(candidate => new { candidate.Kind, candidate.OwnerUserId, candidate.EventId })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (album is null)
+        {
+            return false;
+        }
+
+        if (album.Kind is AlbumKind.Profile)
+        {
+            return album.OwnerUserId == reporterUserId;
+        }
+
+        if (album.EventId is not { } eventId)
+        {
+            return false;
+        }
+
+        return await dbContext.Events.AsNoTracking()
+            .AnyAsync(
+                @event => @event.Id == eventId && @event.OrganizerUserId == reporterUserId,
+                cancellationToken);
+    }
 
     internal static async Task ApplyReviewSideEffectsAsync(
         IApplicationDbContext dbContext,

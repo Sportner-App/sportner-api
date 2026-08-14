@@ -18,6 +18,9 @@ Uygulama başlarken: “`docs/roadmap/0X-….md` ile başla” demen yeterli.
 | 07 | [07-product-depth.md](07-product-depth.md) | İleri badge, moderation yan etki, DM |
 | 08 | [08-scale-and-platform.md](08-scale-and-platform.md) | PostGIS, CI, SMS, rate limit |
 
+**V1 feature set tamam.** Ürün V2 playbook’ları: [`docs/v2/`](../v2/)
+(Friends/DM derinliği, Explore, recommendation, badge quests, albümler).
+
 ---
 
 ## Önerilen uygulama sırası

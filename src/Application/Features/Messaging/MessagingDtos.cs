@@ -6,7 +6,9 @@ public sealed record ConversationMemberResponse(
     string? FirstName,
     string? ProfileImageUrl,
     short Role,
-    DateTimeOffset JoinedAt);
+    DateTimeOffset JoinedAt,
+    DateTimeOffset? LastReadAt = null,
+    Guid? LastReadMessageId = null);
 
 public sealed record ConversationResponse(
     Guid Id,
@@ -17,7 +19,10 @@ public sealed record ConversationResponse(
     DateTimeOffset? ClosedAt,
     DateTimeOffset CreatedAt,
     short MyRole,
-    IReadOnlyList<ConversationMemberResponse> Members);
+    IReadOnlyList<ConversationMemberResponse> Members,
+    DateTimeOffset? MyMutedUntil = null,
+    Guid? MyLastReadMessageId = null,
+    DateTimeOffset? MyLastReadAt = null);
 
 public sealed record ConversationListItemResponse(
     Guid Id,
@@ -27,7 +32,14 @@ public sealed record ConversationListItemResponse(
     bool IsClosed,
     DateTimeOffset CreatedAt,
     DateTimeOffset? LastMessageAt,
-    string? LastMessagePreview);
+    string? LastMessagePreview,
+    int UnreadCount = 0,
+    bool IsMuted = false,
+    bool? IsFriend = null,
+    Guid? PeerUserId = null,
+    string? PeerUsername = null,
+    string? PeerFirstName = null,
+    string? PeerProfileImageUrl = null);
 
 public sealed record MessageResponse(
     Guid Id,

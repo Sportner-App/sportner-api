@@ -77,7 +77,9 @@ internal static class MessagingAccess
                     profile?.FirstName,
                     profile?.ProfileImageUrl,
                     (short)member.Role,
-                    member.JoinedAt);
+                    member.JoinedAt,
+                    member.LastReadAt,
+                    member.LastReadMessageId);
             })
             .ToList();
 
@@ -90,7 +92,10 @@ internal static class MessagingAccess
             conversation.ClosedAt,
             conversation.CreatedAt,
             (short)myMembership.Role,
-            members);
+            members,
+            myMembership.MutedUntil,
+            myMembership.LastReadMessageId,
+            myMembership.LastReadAt);
     }
 
     internal static async Task<Conversation?> FindDirectBetweenAsync(

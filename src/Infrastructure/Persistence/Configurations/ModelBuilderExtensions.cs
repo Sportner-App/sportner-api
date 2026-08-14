@@ -4,6 +4,7 @@ using Sportner.Domain.Events;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Quests;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
@@ -103,6 +104,10 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.PostId, entity.DisplayOrder })
             .IsUnique();
 
+        modelBuilder.Entity<AlbumMedia>()
+            .HasIndex(entity => new { entity.AlbumId, entity.DisplayOrder })
+            .IsUnique();
+
         modelBuilder.Entity<PostLike>()
             .HasIndex(entity => new { entity.PostId, entity.UserId })
             .IsUnique();
@@ -120,6 +125,14 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<UserBadge>()
             .HasIndex(entity => new { entity.UserId, entity.BadgeId })
+            .IsUnique();
+
+        modelBuilder.Entity<Quest>()
+            .HasIndex(entity => entity.Code)
+            .IsUnique();
+
+        modelBuilder.Entity<UserQuest>()
+            .HasIndex(entity => new { entity.UserId, entity.QuestId })
             .IsUnique();
 
         modelBuilder.Entity<Report>()
@@ -207,6 +220,13 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<PostMedia>().HasIndex(entity => entity.PostId);
 
+        modelBuilder.Entity<Album>().HasIndex(entity => entity.OwnerUserId);
+        modelBuilder.Entity<Album>().HasIndex(entity => entity.EventId);
+        modelBuilder.Entity<Album>().HasIndex(entity => entity.Kind);
+        modelBuilder.Entity<Album>().HasIndex(entity => entity.Visibility);
+        modelBuilder.Entity<AlbumMedia>().HasIndex(entity => entity.AlbumId);
+        modelBuilder.Entity<AlbumMedia>().HasIndex(entity => entity.UploadedByUserId);
+
         modelBuilder.Entity<PostLike>().HasIndex(entity => entity.PostId);
         modelBuilder.Entity<PostLike>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<PostLike>()
@@ -237,6 +257,16 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<UserBadge>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<UserBadge>().HasIndex(entity => entity.BadgeId);
         modelBuilder.Entity<UserBadge>().HasIndex(entity => entity.EarnedAt);
+
+        modelBuilder.Entity<Quest>().HasIndex(entity => entity.IsActive);
+        modelBuilder.Entity<Quest>().HasIndex(entity => entity.MetricCode);
+        modelBuilder.Entity<Quest>().HasIndex(entity => entity.SortOrder);
+        modelBuilder.Entity<Quest>().HasIndex(entity => entity.RewardBadgeId);
+
+        modelBuilder.Entity<UserQuest>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<UserQuest>().HasIndex(entity => entity.QuestId);
+        modelBuilder.Entity<UserQuest>().HasIndex(entity => entity.Status);
+        modelBuilder.Entity<UserQuest>().HasIndex(entity => new { entity.UserId, entity.Status });
 
         modelBuilder.Entity<Report>()
             .HasIndex(entity => new { entity.EntityType, entity.EntityId });
@@ -357,6 +387,22 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.MimeType)
             .HasMaxLength(100);
 
+        modelBuilder.Entity<Album>()
+            .Property(entity => entity.Title)
+            .HasMaxLength(150);
+        modelBuilder.Entity<Album>()
+            .Property(entity => entity.Description)
+            .HasMaxLength(1000);
+        modelBuilder.Entity<AlbumMedia>()
+            .Property(entity => entity.StoragePath)
+            .HasMaxLength(500);
+        modelBuilder.Entity<AlbumMedia>()
+            .Property(entity => entity.FileName)
+            .HasMaxLength(255);
+        modelBuilder.Entity<AlbumMedia>()
+            .Property(entity => entity.MimeType)
+            .HasMaxLength(100);
+
         modelBuilder.Entity<PostComment>()
             .Property(entity => entity.Content)
             .HasMaxLength(1000);
@@ -380,6 +426,19 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Badge>()
             .Property(entity => entity.IconPath)
             .HasMaxLength(500);
+
+        modelBuilder.Entity<Quest>()
+            .Property(entity => entity.Code)
+            .HasMaxLength(100);
+        modelBuilder.Entity<Quest>()
+            .Property(entity => entity.Title)
+            .HasMaxLength(150);
+        modelBuilder.Entity<Quest>()
+            .Property(entity => entity.Description)
+            .HasMaxLength(1000);
+        modelBuilder.Entity<Quest>()
+            .Property(entity => entity.MetricCode)
+            .HasMaxLength(100);
 
         modelBuilder.Entity<Report>()
             .Property(entity => entity.Description)
@@ -604,6 +663,12 @@ internal static class ModelBuilderExtensions
             .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<ConversationMember>()
+            .HasOne<Message>()
+            .WithMany()
+            .HasForeignKey(entity => entity.LastReadMessageId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Message>()
             .HasOne<Conversation>()
             .WithMany()
@@ -669,6 +734,30 @@ internal static class ModelBuilderExtensions
             .WithMany(entity => entity.Media)
             .HasForeignKey(entity => entity.PostId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Album>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Album>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EventId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AlbumMedia>()
+            .HasOne<Album>()
+            .WithMany(entity => entity.Media)
+            .HasForeignKey(entity => entity.AlbumId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AlbumMedia>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UploadedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<PostLike>()
             .HasOne<Post>()
@@ -740,6 +829,24 @@ internal static class ModelBuilderExtensions
             .HasOne<Badge>()
             .WithMany()
             .HasForeignKey(entity => entity.BadgeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Quest>()
+            .HasOne<Badge>()
+            .WithMany()
+            .HasForeignKey(entity => entity.RewardBadgeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserQuest>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserQuest>()
+            .HasOne<Quest>()
+            .WithMany()
+            .HasForeignKey(entity => entity.QuestId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Report>()

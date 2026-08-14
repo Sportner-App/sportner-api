@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 
@@ -20,19 +21,22 @@ internal sealed class AcceptFriendRequestCommandHandler
     private readonly TimeProvider _timeProvider;
     private readonly INotificationPublisher _notificationPublisher;
     private readonly IBadgeAwarder _badgeAwarder;
+    private readonly IQuestProgressTracker _questProgressTracker;
 
     public AcceptFriendRequestCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
         INotificationPublisher notificationPublisher,
-        IBadgeAwarder badgeAwarder)
+        IBadgeAwarder badgeAwarder,
+        IQuestProgressTracker questProgressTracker)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _notificationPublisher = notificationPublisher;
         _badgeAwarder = badgeAwarder;
+        _questProgressTracker = questProgressTracker;
     }
 
     public async Task<Result<FriendshipResponse>> Handle(
@@ -74,6 +78,16 @@ internal sealed class AcceptFriendRequestCommandHandler
                 await _badgeAwarder.TryAwardAsync(
                     participantId,
                     BadgeCodes.FirstFriend,
+                    cancellationToken);
+
+                await _badgeAwarder.EvaluateAfterFriendshipAcceptedAsync(
+                    participantId,
+                    cancellationToken);
+
+                await _questProgressTracker.ReportAsync(
+                    participantId,
+                    QuestMetrics.FriendsAccepted,
+                    1,
                     cancellationToken);
             }
 

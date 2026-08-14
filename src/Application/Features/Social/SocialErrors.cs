@@ -39,6 +39,10 @@ internal static class FriendshipErrors
     internal static readonly Error NotAccepted = Error.Conflict(
         "Friendship.NotAccepted",
         "Only an accepted friendship can be removed this way.");
+
+    internal static readonly Error NotVisible = Error.Forbidden(
+        "Friendship.NotVisible",
+        "Mutual friends are not available for this user.");
 }
 
 internal static class PostErrors

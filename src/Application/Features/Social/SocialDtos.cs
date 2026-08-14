@@ -10,7 +10,11 @@ public sealed record FriendshipResponse(
     string? AddresseeFirstName,
     short Status,
     DateTimeOffset? RespondedAt,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? RequesterProfileImageUrl = null,
+    string? AddresseeProfileImageUrl = null,
+    int? MutualFriendsCount = null,
+    IReadOnlyList<string>? SharedSportNames = null);
 
 public sealed record FriendListItemResponse(
     Guid FriendshipId,
@@ -19,6 +23,28 @@ public sealed record FriendListItemResponse(
     string? FirstName,
     string? ProfileImageUrl,
     DateTimeOffset FriendsSince);
+
+public sealed record FriendSuggestionItemResponse(
+    Guid UserId,
+    string? Username,
+    string? FirstName,
+    string? ProfileImageUrl,
+    string? City,
+    int MutualFriendsCount,
+    int SharedSportsCount,
+    bool SameCity,
+    IReadOnlyList<string> SharedSportNames);
+
+public sealed record MutualFriendItemResponse(
+    Guid UserId,
+    string? Username,
+    string? FirstName,
+    string? ProfileImageUrl);
+
+public sealed record MutualFriendsResponse(
+    Guid UserId,
+    int TotalCount,
+    IReadOnlyList<MutualFriendItemResponse> Items);
 
 public sealed record PostMediaResponse(
     Guid Id,

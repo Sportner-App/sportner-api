@@ -7,8 +7,8 @@ using Sportner.Application.Abstractions.Persistence;
 namespace Sportner.API.Hubs;
 
 /// <summary>
-/// Generic conversation realtime hub. Works for Event chat today and Direct/Group later —
-/// membership is always checked against <c>ConversationMembers</c>.
+/// Conversation realtime hub for Event / Direct / Group.
+/// Membership is always checked against <c>ConversationMembers</c>.
 /// </summary>
 [Authorize]
 public sealed class ConversationHub : Hub
@@ -36,23 +36,7 @@ public sealed class ConversationHub : Hub
             throw new HubException("Authentication is required.");
         }
 
-        var isMember = await _dbContext.ConversationMembers.AsNoTracking()
-            .AnyAsync(
-                member =>
-                    member.ConversationId == conversationId
-                    && member.UserId == userId
-                    && member.LeftAt == null,
-                Context.ConnectionAborted);
-
-        if (!isMember)
-        {
-            _logger.LogWarning(
-                "User {UserId} tried to join conversation {ConversationId} without membership.",
-                userId,
-                conversationId);
-
-            throw new HubException("You are not a member of this conversation.");
-        }
+        await EnsureMemberAsync(conversationId, userId);
 
         await Groups.AddToGroupAsync(
             Context.ConnectionId,
@@ -70,4 +54,44 @@ public sealed class ConversationHub : Hub
             Context.ConnectionId,
             GroupName(conversationId),
             Context.ConnectionAborted);
+
+    /// <summary>
+    /// Ephemeral typing indicator — not persisted. Client should stop after ~3s locally.
+    /// </summary>
+    public async Task Typing(Guid conversationId)
+    {
+        if (_currentUser.UserId is not { } userId)
+        {
+            throw new HubException("Authentication is required.");
+        }
+
+        await EnsureMemberAsync(conversationId, userId);
+
+        await Clients.OthersInGroup(GroupName(conversationId))
+            .SendAsync(
+                "UserTyping",
+                new { conversationId, userId },
+                Context.ConnectionAborted);
+    }
+
+    private async Task EnsureMemberAsync(Guid conversationId, Guid userId)
+    {
+        var isMember = await _dbContext.ConversationMembers.AsNoTracking()
+            .AnyAsync(
+                member =>
+                    member.ConversationId == conversationId
+                    && member.UserId == userId
+                    && member.LeftAt == null,
+                Context.ConnectionAborted);
+
+        if (!isMember)
+        {
+            _logger.LogWarning(
+                "User {UserId} tried to use conversation {ConversationId} without membership.",
+                userId,
+                conversationId);
+
+            throw new HubException("You are not a member of this conversation.");
+        }
+    }
 }

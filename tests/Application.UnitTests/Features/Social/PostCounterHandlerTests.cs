@@ -4,6 +4,7 @@ using Moq;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Storage;
+using Sportner.Application.Features.Quests;
 using Sportner.Application.Features.Social.Posts.CreatePost;
 using Sportner.Application.Features.Social.Posts.DeletePost;
 using Sportner.Application.Features.Social.Posts.LikePost;
@@ -51,7 +52,8 @@ public sealed class PostCounterHandlerTests
             new TestCurrentUser(author.Id),
             time,
             fileStorage.Object,
-            badgeAwarder.Object);
+            badgeAwarder.Object,
+            new Mock<IQuestProgressTracker>().Object);
 
         var created = await createHandler.Handle(
             new CreatePostCommand("Hello Sportner", Media: null),
