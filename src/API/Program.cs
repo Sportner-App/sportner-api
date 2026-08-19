@@ -55,6 +55,7 @@ app.MapControllers();
 app.MapHub<ConversationHub>("/hubs/event-chat");
 app.UseAppHealthChecks();
 
+await app.MigrateDatabaseAsync();
 await app.SeedDatabaseAsync();
 await app.SeedDemoDataAsync();
 
