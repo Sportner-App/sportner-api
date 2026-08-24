@@ -96,7 +96,13 @@ internal static class EventAccess
             return;
         }
 
-        conversation.AddMember(userId, utcNow);
+        var alreadyTracked = conversation.Members.Any(member => member.UserId == userId);
+        var member = conversation.AddMember(userId, utcNow);
+
+        if (!alreadyTracked)
+        {
+            dbContext.MarkAsAdded(member);
+        }
     }
 
     internal static async Task RemoveConversationMemberIfPresentAsync(

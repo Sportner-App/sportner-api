@@ -47,6 +47,8 @@ public sealed record MessageResponse(
     Guid SenderUserId,
     string? SenderUsername,
     string? SenderFirstName,
+    string? SenderLastName,
+    string? SenderProfileImageUrl,
     short MessageType,
     string? Content,
     string? MediaUrl,

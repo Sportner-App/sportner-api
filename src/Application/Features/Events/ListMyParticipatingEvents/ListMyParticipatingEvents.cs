@@ -43,9 +43,11 @@ internal sealed class ListMyParticipatingEventsQueryHandler
                 && participant.Status != ParticipantStatus.Cancelled)
             .Select(participant => participant.EventId);
 
-        var query = EventQueries.ProjectListItems(_dbContext)
-            .Where(item => eventIds.Contains(item.Id) && item.OrganizerUserId != userId)
-            .OrderByDescending(item => item.EventDate);
+        var events = _dbContext.Events.AsNoTracking()
+            .Where(@event => eventIds.Contains(@event.Id) && @event.OrganizerUserId != userId)
+            .OrderByDescending(@event => @event.EventDate);
+
+        var query = EventQueries.ProjectListItems(_dbContext, events);
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query

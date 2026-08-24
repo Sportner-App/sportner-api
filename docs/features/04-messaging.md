@@ -56,7 +56,7 @@ Depends on: [03-events.md](03-events.md) (event conversation on publish); Friend
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [x] | `ListMessages` | Query | `GET .../messages?before=&limit=` | Cursor; member only. |
+| [x] | `ListMessages` | Query | `GET .../messages?before=&limit=` | Cursor; member only. Sender snippet includes last name + profile image. |
 | [x] | `SearchMessages` | Query | `GET .../messages/search?q=` | Content contains; member only. |
 | [x] | `SendTextMessage` | Command | `POST .../messages` | + realtime `MessageCreated`; skip muted recipients. |
 | [x] | `SendMediaMessage` | Command | `POST .../messages/media` | + realtime; skip muted recipients. |

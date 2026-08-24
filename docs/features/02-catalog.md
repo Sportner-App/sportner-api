@@ -9,6 +9,7 @@ Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Admin policy f
 ## Progress
 
 - [x] List active sports (client) + get by slug
+- [x] List active sports supports `q` search + offset pagination (`page` / `pageSize`)
 - [x] Admin create / rename / reorder / activate / deactivate
 
 ---
@@ -25,7 +26,7 @@ Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Admin policy f
 
 | Status | Use case | Type | Endpoint | Auth | Domain / notes |
 | ------ | -------- | ---- | -------- | ---- | -------------- |
-| [x] | `ListActiveSports` | Query | `GET /api/sports` | `[Authorize]` | `IsActive` only; order by `DisplayOrder`. |
+| [x] | `ListActiveSports` | Query | `GET /api/sports` | `[Authorize]` | `IsActive` only; order by `DisplayOrder`. Optional `q` (min 2 chars, name/slug contains), `page`, `pageSize` → `PagedResult`. |
 | [x] | `GetSportBySlug` | Query | `GET /api/sports/{slug}` | `[Authorize]` | Active only; slug lookup is case-insensitive. 404 when missing/inactive. |
 | [x] | `CreateSport` | Command | `POST /api/sports` | Admin | Unique name + slug; optional icon. |
 | [x] | `RenameSport` | Command | `PUT /api/sports/{id}` | Admin | Rename; optional slug / icon update. |

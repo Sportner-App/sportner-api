@@ -87,7 +87,9 @@ internal sealed class ListMessagesQueryHandler
                 {
                     Message = message,
                     Username = profile != null ? profile.Username : null,
-                    FirstName = profile != null ? profile.FirstName : null
+                    FirstName = profile != null ? profile.FirstName : null,
+                    LastName = profile != null ? profile.LastName : null,
+                    ProfileImageUrl = profile != null ? profile.ProfileImageUrl : null
                 })
             .Take(limit + 1)
             .ToListAsync(cancellationToken);
@@ -97,7 +99,12 @@ internal sealed class ListMessagesQueryHandler
         window.Reverse();
 
         var items = window
-            .Select(row => MessageMapping.ToResponse(row.Message, row.Username, row.FirstName))
+            .Select(row => MessageMapping.ToResponse(
+                row.Message,
+                row.Username,
+                row.FirstName,
+                row.LastName,
+                row.ProfileImageUrl))
             .ToList();
 
         string? nextCursor = null;

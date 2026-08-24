@@ -35,13 +35,15 @@ internal sealed class ListParticipantsQueryHandler
 
         var isOrganizer = _currentUser.UserId == @event.OrganizerUserId;
 
-        // Non-organizers only see approved / attended / no-show participants.
+        // Cancelled / rejected are history — they are not current participants.
         var query =
             from participant in _dbContext.EventParticipants.AsNoTracking()
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on participant.UserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
             where participant.EventId == request.EventId
+                && participant.Status != ParticipantStatus.Cancelled
+                && participant.Status != ParticipantStatus.Rejected
             select new { participant, profile };
 
         if (!isOrganizer)

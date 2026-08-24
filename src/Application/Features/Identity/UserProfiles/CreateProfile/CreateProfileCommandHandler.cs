@@ -71,6 +71,9 @@ internal sealed class CreateProfileCommandHandler
 
         user.AttachUserProfile(newProfile);
 
+        // Client-generated Guids can be tracked as Modified by EF; force insert for new rows.
+        _dbContext.MarkAsAdded(newProfile);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var statistics = await ProfileQueries.GetStatisticsAsync(_dbContext, user.Id, cancellationToken);

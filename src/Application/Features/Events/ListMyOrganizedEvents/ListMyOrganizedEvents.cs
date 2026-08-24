@@ -33,9 +33,11 @@ internal sealed class ListMyOrganizedEventsQueryHandler
 
         var pagination = new PaginationRequest(request.Page, request.PageSize);
 
-        var query = EventQueries.ProjectListItems(_dbContext)
-            .Where(item => item.OrganizerUserId == userId)
-            .OrderByDescending(item => item.EventDate);
+        var events = _dbContext.Events.AsNoTracking()
+            .Where(@event => @event.OrganizerUserId == userId)
+            .OrderByDescending(@event => @event.EventDate);
+
+        var query = EventQueries.ProjectListItems(_dbContext, events);
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query

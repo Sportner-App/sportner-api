@@ -16,9 +16,16 @@ namespace Sportner.API.Controllers;
 public sealed class SportsController : ApiControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> ListActiveSports(CancellationToken cancellationToken)
+    public async Task<IActionResult> ListActiveSports(
+        [FromQuery] string? q,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken cancellationToken = default)
     {
-        var result = await Sender.Send(new ListActiveSportsQuery(), cancellationToken);
+        var result = await Sender.Send(
+            new ListActiveSportsQuery(q, page, pageSize),
+            cancellationToken);
+
         return result.ToActionResult();
     }
 

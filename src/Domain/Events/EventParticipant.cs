@@ -133,6 +133,36 @@ public class EventParticipant : AuditableEntity
         Touch(utcNow);
     }
 
+    public void ReopenAsPending(DateTimeOffset utcNow)
+    {
+        if (Status is not ParticipantStatus.Cancelled)
+        {
+            throw new DomainException("Only cancelled participants can re-apply.");
+        }
+
+        Status = ParticipantStatus.Pending;
+        JoinedAt = null;
+        LeftAt = null;
+        AttendedAt = null;
+        CanReview = false;
+        Touch(utcNow);
+    }
+
+    public void ReopenAsApproved(DateTimeOffset utcNow)
+    {
+        if (Status is not ParticipantStatus.Cancelled)
+        {
+            throw new DomainException("Only cancelled participants can be restored.");
+        }
+
+        Status = ParticipantStatus.Approved;
+        JoinedAt = utcNow;
+        LeftAt = null;
+        AttendedAt = null;
+        CanReview = false;
+        Touch(utcNow);
+    }
+
     public void ConfirmAttendance(DateTimeOffset utcNow)
     {
         if (Status is ParticipantStatus.Attended)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Events;
 
 namespace Sportner.Application.Features.Events;
 
@@ -94,9 +95,17 @@ internal static class EventQueries
             conversationId);
     }
 
+    /// <summary>
+    /// Filters must be applied on <paramref name="events"/> (entity), not on the
+    /// projected DTO — EF cannot translate Where/Contains after the occupied Count.
+    /// </summary>
     internal static IQueryable<EventListItemResponse> ProjectListItems(
-        IApplicationDbContext dbContext) =>
-        from @event in dbContext.Events.AsNoTracking()
+        IApplicationDbContext dbContext,
+        IQueryable<Event>? events = null)
+    {
+        var source = events ?? dbContext.Events.AsNoTracking();
+
+        return from @event in source
         join sport in dbContext.Sports.AsNoTracking() on @event.SportId equals sport.Id
         join profile in dbContext.UserProfiles.AsNoTracking()
             on @event.OrganizerUserId equals profile.UserId into profiles
@@ -120,4 +129,5 @@ internal static class EventQueries
                     || participant.Status == ParticipantStatus.Approved
                     || participant.Status == ParticipantStatus.Attended
                     || participant.Status == ParticipantStatus.NoShow)));
+    }
 }

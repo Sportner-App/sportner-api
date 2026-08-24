@@ -62,6 +62,13 @@ internal sealed class RegisterCommandHandler
         user.AttachUserProfile(profile);
 
         _dbContext.Users.Add(user);
+        // Client-generated Guids on 1:1 dependents can be tracked as Modified; force insert.
+        _dbContext.MarkAsAdded(profile);
+        if (user.Statistics is not null)
+        {
+            _dbContext.MarkAsAdded(user.Statistics);
+        }
+
         AddDefaultNotificationSettings(user.Id, utcNow);
 
         var accessToken = _jwtService.CreateAccessToken(user.Id);

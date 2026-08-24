@@ -43,6 +43,10 @@ internal sealed class RegisterDeviceCommandHandler
             return Result<DeviceResponse>.Failure(DeviceErrors.UserNotFound);
         }
 
+        var normalizedIdentifier = request.DeviceIdentifier.Trim();
+        var existed = user.Devices.Any(device =>
+            string.Equals(device.DeviceIdentifier, normalizedIdentifier, StringComparison.Ordinal));
+
         var device = user.RegisterDevice(
             (DevicePlatform)request.Platform,
             request.DeviceIdentifier,
@@ -51,6 +55,12 @@ internal sealed class RegisterDeviceCommandHandler
             request.AppVersion,
             request.OsVersion,
             request.PushToken);
+
+        // Client-generated Guids can be tracked as Modified by EF; force insert for new rows.
+        if (!existed)
+        {
+            _dbContext.MarkAsAdded(device);
+        }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

@@ -52,6 +52,9 @@ internal sealed class AddSavedLocationCommandHandler
             request.District,
             request.IsDefault);
 
+        // Client-generated Guids can be tracked as Modified by EF; force insert for new rows.
+        _dbContext.MarkAsAdded(location);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<SavedLocationResponse>.Success(location.ToResponse());

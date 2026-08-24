@@ -65,7 +65,9 @@ internal sealed class ApplyToEventCommandHandler
             return Result<ApplyToEventResponse>.Failure(EventErrors.NotAcceptingApplications);
         }
 
-        if (@event.Participants.Any(participant => participant.UserId == userId)
+        var existing = @event.Participants.FirstOrDefault(participant => participant.UserId == userId);
+
+        if ((existing is not null && existing.Status is not ParticipantStatus.Cancelled)
             || @event.Waitlist.Any(entry => entry.UserId == userId))
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.AlreadyApplied);
@@ -74,7 +76,7 @@ internal sealed class ApplyToEventCommandHandler
         var (participant, waitlistEntry) = @event.Apply(userId, _timeProvider.GetUtcNow());
 
         // Client-generated Guids can be tracked as Modified by EF; force insert for new rows.
-        if (participant is not null)
+        if (participant is not null && existing is null)
         {
             _dbContext.MarkAsAdded(participant);
         }

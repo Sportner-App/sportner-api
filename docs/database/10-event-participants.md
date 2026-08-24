@@ -97,7 +97,8 @@ The participant status changes throughout the event lifecycle, allowing the appl
 
 # Business Rules
 
-- A user can apply only once for the same event.
+- A user has at most one participant row per event (`UNIQUE(event_id, user_id)`).
+- Cancelled users may apply again; the existing row returns to Pending (or waitlist if the event is full).
 - Organizer approval is required before joining.
 - Organizer is automatically inserted as an approved participant.
 - Rejected users cannot apply again unless the organizer reopens applications.

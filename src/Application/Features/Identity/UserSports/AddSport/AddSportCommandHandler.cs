@@ -65,11 +65,14 @@ internal sealed class AddSportCommandHandler
             return Result<IReadOnlyList<UserSportResponse>>.Failure(UserSportErrors.AlreadyAdded);
         }
 
-        user.AddSport(
+        var userSport = user.AddSport(
             request.SportId,
             (SkillLevel)request.SkillLevel,
             _timeProvider.GetUtcNow(),
             request.IsPrimary);
+
+        // Client-generated Guids can be tracked as Modified by EF; force insert for new rows.
+        _dbContext.MarkAsAdded(userSport);
 
         await _badgeAwarder.EvaluateAfterUserSportChangedAsync(userId, cancellationToken);
 

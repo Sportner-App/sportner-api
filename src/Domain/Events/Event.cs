@@ -207,14 +207,16 @@ public class Event : AggregateRoot
             throw new DomainException("Organizer cannot apply to their own event.");
         }
 
-        if (_participants.Any(participant => participant.UserId == userId))
-        {
-            throw new DomainException("User is already associated with this event.");
-        }
-
         if (_waitlist.Any(entry => entry.UserId == userId))
         {
             throw new DomainException("User is already on the waiting list.");
+        }
+
+        var existing = _participants.FirstOrDefault(participant => participant.UserId == userId);
+
+        if (existing is not null && existing.Status is not ParticipantStatus.Cancelled)
+        {
+            throw new DomainException("User is already associated with this event.");
         }
 
         if (!HasAvailableCapacity())
@@ -230,6 +232,13 @@ public class Event : AggregateRoot
             Touch(utcNow);
 
             return (null, waitlistEntry);
+        }
+
+        if (existing is not null)
+        {
+            existing.ReopenAsPending(utcNow);
+            Touch(utcNow);
+            return (existing, null);
         }
 
         var participant = EventParticipant.CreatePending(Id, userId, utcNow);
@@ -313,8 +322,19 @@ public class Event : AggregateRoot
         _waitlist.Remove(waitlistEntry);
         ResequenceWaitlist(utcNow);
 
-        var participant = EventParticipant.CreateApproved(Id, userId, utcNow);
-        _participants.Add(participant);
+        var existing = _participants.FirstOrDefault(participant => participant.UserId == userId);
+        EventParticipant participant;
+
+        if (existing is not null)
+        {
+            existing.ReopenAsApproved(utcNow);
+            participant = existing;
+        }
+        else
+        {
+            participant = EventParticipant.CreateApproved(Id, userId, utcNow);
+            _participants.Add(participant);
+        }
 
         RefreshCapacityStatus(utcNow);
         Touch(utcNow);
