@@ -21,7 +21,7 @@ appsettings.Production.json      # same secret sections as Development (Render/D
 | ---- | ------------- |
 | API | `Cors`, `AllowedHosts`, `Recommendation` (heuristic weights; secret değil) |
 | Identity.Worker | `BackgroundJobs` (session cleanup) |
-| Events.Worker | `BackgroundJobs` (reminders + marathon badge) |
+| Events.Worker | `BackgroundJobs` (auto-complete + reminders + marathon badge) |
 | Notifications.Worker | `BackgroundJobs` (push outbox) |
 
 `Recommendation` defaults live in API `appsettings.json` (`People` / `Events` / `Posts` weights + candidate caps). Override via env (`Recommendation__People__MutualFriends=…`) if needed; no secrets.

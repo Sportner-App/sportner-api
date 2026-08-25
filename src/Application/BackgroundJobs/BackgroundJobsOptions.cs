@@ -18,6 +18,11 @@ public sealed class BackgroundJobsOptions
     /// <summary>Daily 03:00 UTC.</summary>
     public string SessionCleanupCron { get; set; } = "0 3 * * *";
 
+    /// <summary>Every 5 minutes — close events past eventDate + duration.</summary>
+    public string EventCompletionCron { get; set; } = "*/5 * * * *";
+
+    public int EventCompletionBatchSize { get; set; } = 50;
+
     /// <summary>Every 15 minutes.</summary>
     public string EventReminderCron { get; set; } = "*/15 * * * *";
 

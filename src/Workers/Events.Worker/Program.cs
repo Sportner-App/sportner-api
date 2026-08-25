@@ -25,6 +25,14 @@ try
     builder.Services.AddWorkerHostDefaults(builder.Configuration);
 
     builder.Services.AddCronJob(
+        "event-completion",
+        options => options.EventCompletionCron,
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IEventCompletionDispatcher>().DispatchAsync(ct);
+        });
+
+    builder.Services.AddCronJob(
         "event-reminder",
         options => options.EventReminderCron,
         async (provider, ct) =>
@@ -42,7 +50,7 @@ try
 
     var host = builder.Build();
 
-    Log.Information("Sportner.Events.Worker starting (event reminders + marathon badge sweep).");
+    Log.Information("Sportner.Events.Worker starting (auto-complete + reminders + marathon badge sweep).");
     await host.RunAsync();
 }
 catch (Exception ex)

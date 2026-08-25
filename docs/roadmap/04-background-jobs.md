@@ -67,6 +67,13 @@ OTP challenges: `IOtpChallengeStore` (process-local `InMemoryOtpChallengeStore`)
 - Cron: `*/15 * * * *`
 - Settings: `InAppEnabled=false` → publisher skip
 
+## 4.4b Job: Event auto-complete
+
+- Published/Full events whose `eventDate + durationMinutes` has passed → `Completed`
+- Same side effects as `CompleteEvent` (close conversation, organizer badges/quests)
+- Also runs lazily on `GET /api/events/{id}` so the API does not depend on the worker being up
+- Cron: `*/5 * * * *`
+
 ### Exit
 
 - [x] Reminder bir kez gider

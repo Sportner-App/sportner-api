@@ -42,7 +42,7 @@ Nested actions stay on the same controller for v1.
 | [x] | `UpdateEventCapacity` | Command | `PUT /api/events/{id}/capacity` | Cannot shrink below occupied count. |
 | [x] | `PublishEvent` | Command | `POST /api/events/{id}/publish` | Creates event conversation + owner member if missing; bumps `EventsOrganized` once. |
 | [x] | `CancelEvent` | Command | `POST /api/events/{id}/cancel` | Closes conversation; notifies approved/pending participants (`EventCancelled`); bumps cancelled counter. |
-| [x] | `CompleteEvent` | Command | `POST /api/events/{id}/complete` | After scheduled end; closes conversation. |
+| [x] | `CompleteEvent` | Command | `POST /api/events/{id}/complete` | Manual fallback. Auto-complete runs when `eventDate + duration` elapses (`EventCompletionDispatcher` + lazy on `GetEventById`). Closes conversation. |
 | [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport, organizer snippet, counts, my participation / waitlist, conversation id. |
 | [x] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Offset pagination. |
 | [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating?scope=` | Excludes self-organized; skips rejected/cancelled. Optional `scope=upcoming|past` (by start time). |

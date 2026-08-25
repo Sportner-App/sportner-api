@@ -3,8 +3,8 @@ using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Events;
 using Sportner.Application.Features.Quests;
-using Sportner.Domain.Common.Constants;
 
 namespace Sportner.Application.Features.Events.CompleteEvent;
 
@@ -36,12 +36,12 @@ internal sealed class CompleteEventCommandHandler
             async (@event, utcNow, ct) =>
             {
                 @event.Complete(utcNow);
-                await EventAccess.CloseEventConversationAsync(DbContext, @event.Id, utcNow, ct);
-                await _badgeAwarder.EvaluateAfterEventCompletedAsync(@event.OrganizerUserId, ct);
-                await _questProgressTracker.ReportAsync(
-                    @event.OrganizerUserId,
-                    QuestMetrics.EventsOrganizedCompleted,
-                    1,
+                await EventCompletion.ApplySideEffectsAsync(
+                    DbContext,
+                    @event,
+                    _badgeAwarder,
+                    _questProgressTracker,
+                    utcNow,
                     ct);
                 return Result.Success();
             },

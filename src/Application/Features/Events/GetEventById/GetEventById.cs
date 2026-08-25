@@ -1,4 +1,5 @@
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.BackgroundJobs;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
@@ -11,17 +12,24 @@ internal sealed class GetEventByIdQueryHandler : IQueryHandler<GetEventByIdQuery
 {
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
+    private readonly IEventCompletionDispatcher _eventCompletionDispatcher;
 
-    public GetEventByIdQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
+    public GetEventByIdQueryHandler(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        IEventCompletionDispatcher eventCompletionDispatcher)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
+        _eventCompletionDispatcher = eventCompletionDispatcher;
     }
 
     public async Task<Result<EventResponse>> Handle(
         GetEventByIdQuery request,
         CancellationToken cancellationToken)
     {
+        await _eventCompletionDispatcher.CompleteIfDueAsync(request.EventId, cancellationToken);
+
         var response = await EventQueries.GetDetailAsync(
             _dbContext,
             request.EventId,

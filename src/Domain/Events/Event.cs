@@ -191,6 +191,32 @@ public class Event : AggregateRoot
         Touch(utcNow);
     }
 
+    /// <summary>
+    /// Completes a published/full event once <c>eventDate + duration</c> has passed.
+    /// Returns <c>true</c> only when the status actually changes.
+    /// </summary>
+    public bool CompleteIfDue(DateTimeOffset utcNow)
+    {
+        if (Status is EventStatus.Completed or EventStatus.Cancelled or EventStatus.Draft)
+        {
+            return false;
+        }
+
+        if (Status is not (EventStatus.Published or EventStatus.Full))
+        {
+            return false;
+        }
+
+        if (utcNow < GetScheduledEnd())
+        {
+            return false;
+        }
+
+        Status = EventStatus.Completed;
+        Touch(utcNow);
+        return true;
+    }
+
     public (EventParticipant? Participant, EventWaitlist? WaitlistEntry) Apply(
         Guid userId,
         DateTimeOffset utcNow)

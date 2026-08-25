@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IQuestProgressTracker, QuestProgressTracker>();
         services.AddScoped<IExpiredSessionCleaner, ExpiredSessionCleaner>();
         services.AddScoped<IEventReminderDispatcher, EventReminderDispatcher>();
+        services.AddScoped<IEventCompletionDispatcher, EventCompletionDispatcher>();
         services.AddScoped<INotificationDeliveryDispatcher, NotificationDeliveryDispatcher>();
         // API overrides with SignalRChatRealtimeNotifier; workers/tests keep the no-op.
         services.AddSingleton<IChatRealtimeNotifier, NullChatRealtimeNotifier>();

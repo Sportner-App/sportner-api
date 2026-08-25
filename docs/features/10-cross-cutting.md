@@ -69,6 +69,7 @@ Hosts: **`Sportner.Identity.Worker`**, **`Sportner.Events.Worker`**, **`Sportner
 | --- | ------- | ------ |
 | Expired session cleanup | Revoked/expired sessions older than retention (~90 days) | Live |
 | OTP cleanup | Expired challenges in `IOtpChallengeStore` | Live |
+| Event auto-complete | Published/Full → Completed after `eventDate + duration` | Live |
 | Event reminders | `EventReminder` 24h + 1h; idempotent via `EventReminderDispatches` | Live |
 | Push delivery | `NotificationDeliveryOutbox` → `IPushSender` (`LoggingPushSender` day-1) | Live |
 | Badge rule sweeps | `MARATHON_RUNNER` daily via Events.Worker | Live |

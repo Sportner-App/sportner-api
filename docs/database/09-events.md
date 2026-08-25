@@ -231,7 +231,7 @@ Allowed actions:
 - Manage the waiting list
 - Update permitted event information
 - Cancel
-- Complete after the scheduled end
+- Completes automatically after the scheduled end (`event_date + duration_minutes`)
 
 ---
 
