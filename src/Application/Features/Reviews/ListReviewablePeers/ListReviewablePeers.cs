@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Reviews;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Reviews.ListReviewablePeers;
@@ -52,7 +53,7 @@ internal sealed class ListReviewablePeersQueryHandler
                     participant.EventId == request.EventId && participant.UserId == userId,
                 cancellationToken);
 
-        if (me is null || me.Status is not ParticipantStatus.Attended || !me.CanReview)
+        if (!ReviewEligibility.CanReviewEvent(@event, userId, me))
         {
             return Result<IReadOnlyList<ReviewablePeerResponse>>.Failure(ReviewErrors.NotEligible);
         }
@@ -78,6 +79,23 @@ internal sealed class ListReviewablePeersQueryHandler
                     profile != null ? profile.FirstName : null,
                     profile != null ? profile.ProfileImageUrl : null))
             .ToListAsync(cancellationToken);
+
+        if (userId != @event.OrganizerUserId
+            && !alreadyReviewedIds.Contains(@event.OrganizerUserId))
+        {
+            var organizer = await _dbContext.UserProfiles.AsNoTracking()
+                .FirstOrDefaultAsync(
+                    profile => profile.UserId == @event.OrganizerUserId,
+                    cancellationToken);
+
+            peers.Insert(
+                0,
+                new ReviewablePeerResponse(
+                    @event.OrganizerUserId,
+                    organizer?.Username,
+                    organizer?.FirstName,
+                    organizer?.ProfileImageUrl));
+        }
 
         return Result<IReadOnlyList<ReviewablePeerResponse>>.Success(peers);
     }

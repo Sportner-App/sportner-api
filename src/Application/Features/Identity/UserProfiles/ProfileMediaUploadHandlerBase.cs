@@ -51,12 +51,14 @@ internal abstract class ProfileMediaUploadHandlerBase : ProfileUpdateHandlerBase
             var extension = Path.GetExtension(fileName);
             var objectPath = $"{userId}/{Guid.NewGuid():N}{extension}";
 
-            storedPath = await _fileStorage.UploadAsync(
+            var uploadedPath = await _fileStorage.UploadAsync(
                 bucket,
                 objectPath,
                 content,
                 contentType,
                 cancellationToken);
+
+            storedPath = _fileStorage.GetPublicUrl(bucket, uploadedPath);
         }
 
         string? previousPath = null;

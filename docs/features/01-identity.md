@@ -95,7 +95,9 @@ OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 | [x] | `CompleteOnboarding` | Command | `POST /api/me/onboarding/complete` | `User.CompleteOnboarding` stamps `OnboardingCompletedAt`. Requires an existing profile (username + first name) → 409 `Onboarding.ProfileRequired`, and at least one sport with a skill level → 409 `Onboarding.SportRequired`. Idempotent: already-completed users get 204 and keep their original date. |
 
 Onboarding is the second step after login: the client collects profile and sport data through the
-existing profile / sports endpoints and calls this endpoint last to close the flow.
+existing profile / sports endpoints (including optional `PUT .../avatar` and `PUT .../intro-video`)
+and calls this endpoint last to close the flow. Media uploads store the public URL so clients can
+render the file without a second lookup.
 
 ### User sports
 

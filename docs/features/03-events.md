@@ -45,7 +45,7 @@ Nested actions stay on the same controller for v1.
 | [x] | `CompleteEvent` | Command | `POST /api/events/{id}/complete` | After scheduled end; closes conversation. |
 | [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport, organizer snippet, counts, my participation / waitlist, conversation id. |
 | [x] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Offset pagination. |
-| [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating` | Excludes self-organized; skips rejected/cancelled. |
+| [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating?scope=` | Excludes self-organized; skips rejected/cancelled. Optional `scope=upcoming|past` (by start time). |
 | [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring (V1 compat). |
 | [x] | `ExploreEvents` | Query | `GET /api/explore/events` | Ranked discover (V2); auth required; optional geo/sport/city; `limit`. |
 
@@ -56,7 +56,7 @@ Nested actions stay on the same controller for v1.
 | [x] | `ApplyToEvent` | Command | `POST /api/events/{id}/apply` | Pending participant or waitlist. Organizer blocked. Cancelled users may re-apply (same row). |
 | [x] | `ApproveParticipant` | Command | `POST /api/events/{id}/participants/{userId}/approve` | Adds conversation member; `EventsJoined`++; `EventRequestApproved` notification. |
 | [x] | `RejectParticipant` | Command | `POST /api/events/{id}/participants/{userId}/reject` | `EventRequestRejected` notification. |
-| [x] | `CancelParticipation` | Command | `POST /api/events/{id}/participants/me/cancel` | Removes conversation membership when present. |
+| [x] | `CancelParticipation` | Command | `POST /api/events/{id}/participants/me/cancel` | Removes conversation membership when present. Blocked after scheduled end / completed / cancelled. |
 | [x] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Current participants only (excludes cancelled/rejected). Organizer sees pending; others see approved/attended/no-show (+ own pending). |
 
 ### Waitlist

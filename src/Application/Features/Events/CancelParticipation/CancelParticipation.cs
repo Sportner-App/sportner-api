@@ -51,6 +51,11 @@ internal sealed class CancelParticipationCommandHandler : ICommandHandler<Cancel
         var wasApproved = participant.Status is ParticipantStatus.Approved;
         var utcNow = _timeProvider.GetUtcNow();
 
+        if (@event.HasEnded(utcNow))
+        {
+            return Result.Failure(EventErrors.ParticipationLocked);
+        }
+
         @event.CancelParticipation(userId, utcNow);
 
         if (wasApproved)

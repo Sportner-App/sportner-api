@@ -69,10 +69,11 @@ public sealed class EventsController : ApiControllerBase
     public async Task<IActionResult> ListMyParticipating(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
+        [FromQuery] string? scope = null,
         CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(
-            new ListMyParticipatingEventsQuery(page, pageSize),
+            new ListMyParticipatingEventsQuery(page, pageSize, scope),
             cancellationToken);
 
         return result.ToActionResult();

@@ -55,4 +55,8 @@ internal static class EventErrors
     internal static readonly Error CapacityFull = Error.Conflict(
         "Event.CapacityFull",
         "The event capacity is full.");
+
+    internal static readonly Error ParticipationLocked = Error.Conflict(
+        "Event.ParticipationLocked",
+        "Biten etkinlikten ayrılamazsın.");
 }

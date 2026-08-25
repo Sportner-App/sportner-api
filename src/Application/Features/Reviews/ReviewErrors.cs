@@ -22,7 +22,7 @@ internal static class ReviewErrors
 
     internal static readonly Error NotEligible = Error.Forbidden(
         "Review.NotEligible",
-        "Both participants must have attended the event to exchange reviews.");
+        "Reviews are limited to the organizer and participants marked as attended.");
 
     internal static readonly Error SelfReview = Error.Validation(
         "Review.SelfReview",

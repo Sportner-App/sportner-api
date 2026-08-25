@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Quests;
+using Sportner.Application.Features.Reviews;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Reviews;
@@ -89,11 +90,8 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
         var reviewed = participants.FirstOrDefault(participant =>
             participant.UserId == request.ReviewedUserId);
 
-        if (reviewer is null
-            || reviewed is null
-            || reviewer.Status is not ParticipantStatus.Attended
-            || reviewed.Status is not ParticipantStatus.Attended
-            || !reviewer.CanReview)
+        if (!ReviewEligibility.CanReviewEvent(@event, reviewerUserId, reviewer)
+            || !ReviewEligibility.CanBeReviewed(@event, request.ReviewedUserId, reviewed))
         {
             return Result<ReviewResponse>.Failure(ReviewErrors.NotEligible);
         }

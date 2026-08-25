@@ -283,7 +283,7 @@ public class Event : AggregateRoot
 
     public void CancelParticipation(Guid userId, DateTimeOffset utcNow)
     {
-        EnsureNotTerminalForParticipationChanges();
+        EnsureNotTerminalForParticipationChanges(utcNow);
 
         if (userId == OrganizerUserId)
         {
@@ -376,6 +376,10 @@ public class Event : AggregateRoot
         return MaxParticipants is null
             || OccupiedParticipantCount() < MaxParticipants.Value;
     }
+
+    public bool HasEnded(DateTimeOffset utcNow) =>
+        Status is EventStatus.Cancelled or EventStatus.Completed
+        || utcNow >= GetScheduledEnd();
 
     private DateTimeOffset GetScheduledEnd()
     {
@@ -484,16 +488,16 @@ public class Event : AggregateRoot
         }
     }
 
-    private void EnsureNotTerminalForParticipationChanges()
+    private void EnsureNotTerminalForParticipationChanges(DateTimeOffset utcNow)
     {
-        if (Status is EventStatus.Cancelled or EventStatus.Completed)
-        {
-            throw new DomainException("Participation cannot be changed for a completed or cancelled event.");
-        }
-
         if (Status is EventStatus.Draft)
         {
             throw new DomainException("Participation cannot be cancelled while the event is a draft.");
+        }
+
+        if (HasEnded(utcNow))
+        {
+            throw new DomainException("Participation cannot be changed after the event has ended.");
         }
     }
 
