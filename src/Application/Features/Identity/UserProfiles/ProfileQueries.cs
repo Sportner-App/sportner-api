@@ -91,9 +91,14 @@ internal static class ProfileQueries
 
         var sports = await GetSportsAsync(dbContext, profile.UserId, cancellationToken);
         var statistics = await GetStatisticsAsync(dbContext, profile.UserId, cancellationToken);
+        var friendship = await GetViewerFriendshipAsync(
+            dbContext,
+            requesterId,
+            profile.UserId,
+            cancellationToken);
 
         return Result<PublicProfileResponse>.Success(
-            ToPublicProfileResponse(profile, sports, statistics));
+            ToPublicProfileResponse(profile, sports, statistics, friendship));
     }
 
     internal static MyProfileResponse ToMyProfileResponse(
@@ -122,7 +127,8 @@ internal static class ProfileQueries
     internal static PublicProfileResponse ToPublicProfileResponse(
         UserProfile profile,
         IReadOnlyList<ProfileSportResponse> sports,
-        ProfileStatisticsResponse? statistics) =>
+        ProfileStatisticsResponse? statistics,
+        ProfileFriendshipResponse? friendship = null) =>
         new(
             profile.UserId,
             profile.Username,
@@ -135,5 +141,38 @@ internal static class ProfileQueries
             profile.AverageRating,
             profile.ReviewCount,
             sports,
-            statistics);
+            statistics,
+            friendship);
+
+    internal static async Task<ProfileFriendshipResponse?> GetViewerFriendshipAsync(
+        IApplicationDbContext dbContext,
+        Guid? viewerUserId,
+        Guid profileUserId,
+        CancellationToken cancellationToken)
+    {
+        if (viewerUserId is not { } viewerId || viewerId == profileUserId)
+        {
+            return null;
+        }
+
+        var friendship = await dbContext.Friendships.AsNoTracking()
+            .FirstOrDefaultAsync(
+                candidate =>
+                    (candidate.RequesterUserId == viewerId
+                        && candidate.AddresseeUserId == profileUserId)
+                    || (candidate.RequesterUserId == profileUserId
+                        && candidate.AddresseeUserId == viewerId),
+                cancellationToken);
+
+        if (friendship is null)
+        {
+            return null;
+        }
+
+        return new ProfileFriendshipResponse(
+            friendship.Id,
+            (short)friendship.Status,
+            friendship.RequesterUserId,
+            friendship.AddresseeUserId);
+    }
 }

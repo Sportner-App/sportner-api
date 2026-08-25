@@ -6,17 +6,17 @@ internal static class AuthErrors
 {
     internal static readonly Error InvalidCredentials = Error.Unauthorized(
         "Auth.InvalidCredentials",
-        "Invalid username or password.");
+        "Kullanıcı adı veya şifre hatalı.");
 
     internal static readonly Error UsernameTaken = Error.Conflict(
         "Auth.UsernameTaken",
-        "This username is already taken.");
+        "Bu kullanıcı adı zaten alınmış.");
 
     internal static readonly Error AccountNotAccessible = Error.Forbidden(
         "Auth.AccountNotAccessible",
-        "This account cannot sign in.");
+        "Bu hesapla giriş yapılamıyor.");
 
     internal static readonly Error InvalidRefreshToken = Error.Unauthorized(
         "Auth.InvalidRefreshToken",
-        "The refresh token is invalid, expired or revoked.");
+        "Oturum yenileme bilgisi geçersiz, süresi dolmuş veya iptal edilmiş.");
 }

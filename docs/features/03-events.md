@@ -57,7 +57,7 @@ Nested actions stay on the same controller for v1.
 | [x] | `ApproveParticipant` | Command | `POST /api/events/{id}/participants/{userId}/approve` | Adds conversation member; `EventsJoined`++; `EventRequestApproved` notification. |
 | [x] | `RejectParticipant` | Command | `POST /api/events/{id}/participants/{userId}/reject` | `EventRequestRejected` notification. |
 | [x] | `CancelParticipation` | Command | `POST /api/events/{id}/participants/me/cancel` | Removes conversation membership when present. Blocked after scheduled end / completed / cancelled. |
-| [x] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Current participants only (excludes cancelled/rejected). Organizer sees pending; others see approved/attended/no-show (+ own pending). |
+| [x] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Current participants only (excludes cancelled/rejected). Organizer sees pending (for approval); others see approved/attended/no-show only. Pending applicants are not roster members until approved. |
 
 ### Waitlist
 

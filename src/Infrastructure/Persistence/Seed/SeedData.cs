@@ -80,7 +80,7 @@ internal static class SeedData
             "badges/sports-explorer.png", BadgeCategory.Sports, BadgeRarity.Rare, 100, 6),
         new(BadgeCodes.EventMaster, "Etkinlik Ustası", "Çok sayıda etkinliğe katıldın.",
             "badges/event-master.png", BadgeCategory.Events, BadgeRarity.Epic, 250, 7),
-        new(BadgeCodes.MarathonRunner, "Maratoncu", "Uzun süreli bir aktivite serisini sürdürdün.",
+        new(BadgeCodes.MarathonRunner, "Maratoncu", "Uzun süreli bir etkinlik serisini sürdürdün.",
             "badges/marathon-runner.png", BadgeCategory.Streak, BadgeRarity.Legendary, 500, 8),
         new(BadgeCodes.SocialButterfly, "Sosyal Kelebek", "Geniş bir arkadaş çevresi kurdun.",
             "badges/social-butterfly.png", BadgeCategory.Social, BadgeRarity.Rare, 150, 9),

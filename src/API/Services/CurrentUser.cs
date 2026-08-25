@@ -17,8 +17,14 @@ public sealed class CurrentUser : ICurrentUser
         get
         {
             var principal = _httpContextAccessor.HttpContext?.User;
-            var value = principal?.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? principal?.FindFirstValue("sub");
+            if (principal is null)
+            {
+                return null;
+            }
+
+            var value = principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? principal.FindFirstValue("sub")
+                ?? principal.FindFirstValue("nameid");
 
             return Guid.TryParse(value, out var userId) ? userId : null;
         }

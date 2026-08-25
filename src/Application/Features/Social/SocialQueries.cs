@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Storage;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 
@@ -214,6 +215,7 @@ internal static class SocialQueries
 
     internal static async Task<PostResponse> ToPostResponseAsync(
         IApplicationDbContext dbContext,
+        IFileStorage fileStorage,
         Post post,
         Guid? viewerUserId,
         CancellationToken cancellationToken)
@@ -236,37 +238,20 @@ internal static class SocialQueries
 
         var media = post.Media
             .OrderBy(item => item.DisplayOrder)
-            .Select(item => new PostMediaResponse(
-                item.Id,
-                (short)item.MediaType,
-                item.StoragePath,
-                item.FileName,
-                item.MimeType,
-                item.FileSize,
-                item.Width,
-                item.Height,
-                item.DurationSeconds,
-                item.DisplayOrder))
+            .Select(item => ToPostMediaResponse(fileStorage, item))
             .ToList();
 
         // When media wasn't loaded on the aggregate, fall back to a query.
         if (media.Count == 0 && post.MediaCount > 0)
         {
-            media = await dbContext.PostMedia.AsNoTracking()
+            var stored = await dbContext.PostMedia.AsNoTracking()
                 .Where(item => item.PostId == post.Id)
                 .OrderBy(item => item.DisplayOrder)
-                .Select(item => new PostMediaResponse(
-                    item.Id,
-                    (short)item.MediaType,
-                    item.StoragePath,
-                    item.FileName,
-                    item.MimeType,
-                    item.FileSize,
-                    item.Width,
-                    item.Height,
-                    item.DurationSeconds,
-                    item.DisplayOrder))
                 .ToListAsync(cancellationToken);
+
+            media = stored
+                .Select(item => ToPostMediaResponse(fileStorage, item))
+                .ToList();
         }
 
         return new PostResponse(
@@ -282,5 +267,34 @@ internal static class SocialQueries
             likedByMe,
             post.CreatedAt,
             media);
+    }
+
+    private static PostMediaResponse ToPostMediaResponse(IFileStorage fileStorage, PostMedia item) =>
+        new(
+            item.Id,
+            (short)item.MediaType,
+            ToClientMediaUrl(fileStorage, item.StoragePath),
+            item.FileName,
+            item.MimeType,
+            item.FileSize,
+            item.Width,
+            item.Height,
+            item.DurationSeconds,
+            item.DisplayOrder);
+
+    private static string ToClientMediaUrl(IFileStorage fileStorage, string storedPath)
+    {
+        if (string.IsNullOrWhiteSpace(storedPath))
+        {
+            return storedPath;
+        }
+
+        if (storedPath.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || storedPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return storedPath;
+        }
+
+        return fileStorage.GetPublicUrl(StorageBuckets.PostMedia, storedPath);
     }
 }

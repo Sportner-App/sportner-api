@@ -156,6 +156,11 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<PostResponse>.Success(
-            await SocialQueries.ToPostResponseAsync(_dbContext, post, userId, cancellationToken));
+            await SocialQueries.ToPostResponseAsync(
+                _dbContext,
+                _fileStorage,
+                post,
+                userId,
+                cancellationToken));
     }
 }

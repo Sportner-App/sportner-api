@@ -67,6 +67,11 @@ internal sealed class RemovePostMediaCommandHandler
             cancellationToken);
 
         return Result<PostResponse>.Success(
-            await SocialQueries.ToPostResponseAsync(_dbContext, post, userId, cancellationToken));
+            await SocialQueries.ToPostResponseAsync(
+                _dbContext,
+                _fileStorage,
+                post,
+                userId,
+                cancellationToken));
     }
 }

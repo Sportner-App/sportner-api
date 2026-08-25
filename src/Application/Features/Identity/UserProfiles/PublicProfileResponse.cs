@@ -15,4 +15,14 @@ public sealed record PublicProfileResponse(
     decimal AverageRating,
     int ReviewCount,
     IReadOnlyList<ProfileSportResponse> Sports,
-    ProfileStatisticsResponse? Statistics);
+    ProfileStatisticsResponse? Statistics,
+    ProfileFriendshipResponse? Friendship = null);
+
+/// <summary>
+/// Viewer-relative friendship with the profile owner. Null when anonymous, self, or no row.
+/// </summary>
+public sealed record ProfileFriendshipResponse(
+    Guid FriendshipId,
+    short Status,
+    Guid RequesterUserId,
+    Guid AddresseeUserId);

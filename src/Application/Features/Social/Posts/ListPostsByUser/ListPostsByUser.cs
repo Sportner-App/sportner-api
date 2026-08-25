@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Social;
@@ -18,11 +19,16 @@ internal sealed class ListPostsByUserQueryHandler
 
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
+    private readonly IFileStorage _fileStorage;
 
-    public ListPostsByUserQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
+    public ListPostsByUserQueryHandler(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        IFileStorage fileStorage)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<CursorPagedResult<PostResponse>>> Handle(
@@ -89,6 +95,7 @@ internal sealed class ListPostsByUserQueryHandler
         {
             items.Add(await SocialQueries.ToPostResponseAsync(
                 _dbContext,
+                _fileStorage,
                 post,
                 _currentUser.UserId,
                 cancellationToken));

@@ -48,12 +48,11 @@ internal sealed class ListParticipantsQueryHandler
 
         if (!isOrganizer)
         {
+            // Pending applicants are not roster members until the organizer approves.
             query = query.Where(row =>
                 row.participant.Status == ParticipantStatus.Approved
                 || row.participant.Status == ParticipantStatus.Attended
-                || row.participant.Status == ParticipantStatus.NoShow
-                || row.participant.Status == ParticipantStatus.Pending
-                    && _currentUser.UserId == row.participant.UserId);
+                || row.participant.Status == ParticipantStatus.NoShow);
         }
 
         var items = await query

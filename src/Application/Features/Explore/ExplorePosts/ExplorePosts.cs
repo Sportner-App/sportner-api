@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Recommendations;
+using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Social;
 
@@ -26,15 +27,18 @@ internal sealed class ExplorePostsQueryHandler
     private readonly IRecommendationService _recommendationService;
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
+    private readonly IFileStorage _fileStorage;
 
     public ExplorePostsQueryHandler(
         IRecommendationService recommendationService,
         IApplicationDbContext dbContext,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IFileStorage fileStorage)
     {
         _recommendationService = recommendationService;
         _dbContext = dbContext;
         _currentUser = currentUser;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<IReadOnlyList<PostResponse>>> Handle(
@@ -74,6 +78,7 @@ internal sealed class ExplorePostsQueryHandler
 
             items.Add(await SocialQueries.ToPostResponseAsync(
                 _dbContext,
+                _fileStorage,
                 post,
                 viewerId,
                 cancellationToken));

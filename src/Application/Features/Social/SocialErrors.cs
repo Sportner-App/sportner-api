@@ -22,7 +22,7 @@ internal static class FriendshipErrors
 
     internal static readonly Error AlreadyExists = Error.Conflict(
         "Friendship.AlreadyExists",
-        "A friendship or request already exists between these users.");
+        "Bu kullanıcıyla zaten bir arkadaşlık veya bekleyen istek var.");
 
     internal static readonly Error Blocked = Error.Forbidden(
         "Friendship.Blocked",

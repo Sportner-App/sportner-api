@@ -2,6 +2,8 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
+using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Features.Explore.ExploreEvents;
 using Sportner.Application.Features.Explore.ExplorePeople;
 using Sportner.Application.Features.Explore.ExplorePosts;
@@ -144,7 +146,8 @@ public sealed class ExploreHandlerTests
         var handler = new ExplorePostsQueryHandler(
             CreateRecommendationService(db, time),
             db,
-            new TestCurrentUser(viewer.Id));
+            new TestCurrentUser(viewer.Id),
+            new Mock<IFileStorage>().Object);
 
         var result = await handler.Handle(new ExplorePostsQuery(20), CancellationToken.None);
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Social.Posts.GetPostById;
@@ -12,11 +13,16 @@ internal sealed class GetPostByIdQueryHandler : IQueryHandler<GetPostByIdQuery, 
 {
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
+    private readonly IFileStorage _fileStorage;
 
-    public GetPostByIdQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
+    public GetPostByIdQueryHandler(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        IFileStorage fileStorage)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<PostResponse>> Handle(
@@ -52,6 +58,7 @@ internal sealed class GetPostByIdQueryHandler : IQueryHandler<GetPostByIdQuery, 
         return Result<PostResponse>.Success(
             await SocialQueries.ToPostResponseAsync(
                 _dbContext,
+                _fileStorage,
                 post,
                 _currentUser.UserId,
                 cancellationToken));

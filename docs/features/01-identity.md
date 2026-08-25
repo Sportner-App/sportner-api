@@ -75,8 +75,8 @@ OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 | ------ | -------- | ---- | -------- | -------------- |
 | [x] | `CreateProfile` | Command | `POST /api/user-profiles/me` | `UserProfile.Create` + `User.AttachUserProfile`. Once per user → 409. Username stored lowercase so the unique index is effectively case-insensitive. |
 | [x] | `GetMyProfile` | Query | `GET /api/user-profiles/me` | Includes sports summary and read-only `UserStatistics`. |
-| [x] | `GetPublicProfile` | Query | `GET /api/user-profiles/{userId}` | Anonymous allowed. Private profile → 403, banned/deleted owner → 404. Never exposes phone or birth date. |
-| [x] | `GetProfileByUsername` | Query | `GET /api/user-profiles/by-username/{username}` | Same projection and visibility rules. |
+| [x] | `GetPublicProfile` | Query | `GET /api/user-profiles/{userId}` | Anonymous allowed. Private profile → 403, banned/deleted owner → 404. Never exposes phone or birth date. Authenticated viewers get optional `friendship` (id, status, requester/addressee) for the pair; null for self/anonymous/no row. |
+| [x] | `GetProfileByUsername` | Query | `GET /api/user-profiles/by-username/{username}` | Same projection and visibility rules, including viewer `friendship`. |
 | [x] | `UpdateUsername` | Command | `PUT /api/user-profiles/me/username` | 30-day cooldown and uniqueness checked in the handler → 409 instead of a domain exception. |
 | [x] | `UpdateDisplayName` | Command | `PUT /api/user-profiles/me/display-name` | |
 | [x] | `UpdateBio` | Command | `PUT /api/user-profiles/me/bio` | ≤500. |

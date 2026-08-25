@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Social.Posts.ReorderPostMedia;
@@ -15,15 +16,18 @@ internal sealed class ReorderPostMediaCommandHandler
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IFileStorage _fileStorage;
 
     public ReorderPostMediaCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IFileStorage fileStorage)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _fileStorage = fileStorage;
     }
 
     public async Task<Result<PostResponse>> Handle(
@@ -53,6 +57,11 @@ internal sealed class ReorderPostMediaCommandHandler
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<PostResponse>.Success(
-            await SocialQueries.ToPostResponseAsync(_dbContext, post, userId, cancellationToken));
+            await SocialQueries.ToPostResponseAsync(
+                _dbContext,
+                _fileStorage,
+                post,
+                userId,
+                cancellationToken));
     }
 }
