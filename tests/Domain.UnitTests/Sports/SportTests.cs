@@ -29,4 +29,28 @@ public sealed class SportTests
         sport.IsActive.Should().BeTrue();
         sport.CanBeUsed().Should().BeTrue();
     }
+
+    [Fact]
+    public void ChangeCoverImage_StoresNormalizedPath()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var sport = Sport.Create("Football", displayOrder: 1, now, slug: "football");
+
+        sport.ChangeCoverImage("  sport-covers/football.jpg  ", now.AddMinutes(1));
+
+        sport.CoverImageUrl.Should().Be("sport-covers/football.jpg");
+        sport.UpdatedAt.Should().Be(now.AddMinutes(1));
+    }
+
+    [Fact]
+    public void ChangeCoverImage_ClearsWhenEmpty()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var sport = Sport.Create("Football", displayOrder: 1, now, slug: "football");
+        sport.ChangeCoverImage("sport-covers/football.jpg", now.AddMinutes(1));
+
+        sport.ChangeCoverImage("   ", now.AddMinutes(2));
+
+        sport.CoverImageUrl.Should().BeNull();
+    }
 }

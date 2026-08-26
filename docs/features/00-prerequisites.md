@@ -63,7 +63,7 @@ Seed once after migration. Prefer an idempotent Infrastructure seeder (upsert by
 
 At least: Basketball, Football, Volleyball, Tennis, Table Tennis, Running, Cycling, Swimming, Fitness, Hiking, Boxing, Pilates, Yoga, CrossFit, Badminton.
 
-Each row: `Name`, URL-safe `Slug`, `DisplayOrder`, `IsActive = true`, optional `IconUrl`.
+Each row: `Name`, URL-safe `Slug`, `DisplayOrder`, `IsActive = true`, optional `IconUrl` and `CoverImageUrl`.
 
 ### Badges (`BadgeCodes` + `docs/database/23-badges.md`)
 

@@ -11,6 +11,7 @@ Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Admin policy f
 - [x] List active sports (client) + get by slug
 - [x] List active sports supports `q` search + offset pagination (`page` / `pageSize`)
 - [x] Admin create / rename / reorder / activate / deactivate
+- [x] Admin cover image upload (`sport-covers` bucket)
 
 ---
 
@@ -33,6 +34,7 @@ Depends on: seed from [00-prerequisites.md](00-prerequisites.md). Admin policy f
 | [x] | `ChangeSportDisplayOrder` | Command | `PUT /api/sports/{id}/display-order` | Admin | Non-negative order. |
 | [x] | `DeactivateSport` | Command | `POST /api/sports/{id}/deactivate` | Admin | Soft deactivate — never hard-delete; events keep FK Restrict. |
 | [x] | `ActivateSport` | Command | `POST /api/sports/{id}/activate` | Admin | Re-enable selection. |
+| [x] | `UpdateSportCoverImage` | Command | `PUT /api/sports/{id}/cover-image` | Admin | Multipart upload to the `sport-covers` bucket via `IFileStorage`; stores the path. Empty body clears it. |
 
 ---
 

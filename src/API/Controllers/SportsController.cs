@@ -9,6 +9,7 @@ using Sportner.Application.Features.Catalog.Sports.DeactivateSport;
 using Sportner.Application.Features.Catalog.Sports.GetSportBySlug;
 using Sportner.Application.Features.Catalog.Sports.ListActiveSports;
 using Sportner.Application.Features.Catalog.Sports.RenameSport;
+using Sportner.Application.Features.Catalog.Sports.UpdateSportCoverImage;
 
 namespace Sportner.API.Controllers;
 
@@ -76,6 +77,22 @@ public sealed class SportsController : ApiControllerBase
     {
         var result = await Sender.Send(
             new ChangeSportDisplayOrderCommand(sportId, request.DisplayOrder),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPut("{sportId:guid}/cover-image")]
+    [Authorize(Policy = AuthorizationPolicies.Admin)]
+    public async Task<IActionResult> UpdateCoverImage(
+        Guid sportId,
+        IFormFile? file,
+        CancellationToken cancellationToken)
+    {
+        await using var content = file?.OpenReadStream();
+
+        var result = await Sender.Send(
+            new UpdateSportCoverImageCommand(sportId, content, file?.ContentType, file?.FileName),
             cancellationToken);
 
         return result.ToActionResult();

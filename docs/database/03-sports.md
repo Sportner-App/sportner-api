@@ -36,6 +36,7 @@ This table acts as a shared reference for user skills and events.
 | name               | VARCHAR(100) | No       | Sport name                        |
 | slug               | VARCHAR(100) | No       | URL-friendly identifier           |
 | icon_url           | TEXT         | Yes      | Sport icon path                   |
+| cover_image_url    | TEXT         | Yes      | Cover photo path (`sport-covers`) |
 | display_order      | INTEGER      | No       | Display order                     |
 | is_active          | BOOLEAN      | No       | Whether the sport can be selected |
 | created_at         | TIMESTAMPTZ  | No       | Created date                      |
@@ -71,6 +72,7 @@ This table acts as a shared reference for user skills and events.
 - Users can only select active sports.
 - Events can only be created using active sports.
 - Sports are managed only by administrators.
+- Cover photos are stored in Supabase Storage bucket `sport-covers`. PostgreSQL stores only the path.
 
 ---
 

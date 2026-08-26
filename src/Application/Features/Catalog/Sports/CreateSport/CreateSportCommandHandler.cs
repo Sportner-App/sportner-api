@@ -51,9 +51,6 @@ internal sealed class CreateSportCommandHandler
         _dbContext.Sports.Add(sport);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result<SportResponse>.Success(ToResponse(sport));
+        return Result<SportResponse>.Success(SportResponse.From(sport));
     }
-
-    private static SportResponse ToResponse(Sport sport) =>
-        new(sport.Id, sport.Name, sport.Slug, sport.IconUrl, sport.DisplayOrder);
 }

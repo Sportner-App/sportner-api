@@ -1,3 +1,5 @@
+using Sportner.Domain.Sports;
+
 namespace Sportner.Application.Features.Catalog.Sports;
 
 public sealed record SportResponse(
@@ -5,4 +7,15 @@ public sealed record SportResponse(
     string Name,
     string Slug,
     string? IconUrl,
-    int DisplayOrder);
+    string? CoverImageUrl,
+    int DisplayOrder)
+{
+    public static SportResponse From(Sport sport) =>
+        new(
+            sport.Id,
+            sport.Name,
+            sport.Slug,
+            sport.IconUrl,
+            sport.CoverImageUrl,
+            sport.DisplayOrder);
+}

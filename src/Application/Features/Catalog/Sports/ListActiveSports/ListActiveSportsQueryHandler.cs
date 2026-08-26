@@ -47,6 +47,7 @@ internal sealed class ListActiveSportsQueryHandler
                 sport.Name,
                 sport.Slug,
                 sport.IconUrl,
+                sport.CoverImageUrl,
                 sport.DisplayOrder))
             .ToListAsync(cancellationToken);
 

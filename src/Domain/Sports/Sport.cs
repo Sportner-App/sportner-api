@@ -21,6 +21,8 @@ public class Sport : AggregateRoot
 
     public string? IconUrl { get; private set; }
 
+    public string? CoverImageUrl { get; private set; }
+
     public int DisplayOrder { get; private set; }
 
     public bool IsActive { get; private set; }
@@ -43,7 +45,8 @@ public class Sport : AggregateRoot
             Id = Guid.NewGuid(),
             Name = normalizedName,
             Slug = normalizedSlug,
-            IconUrl = NormalizeOptionalIconUrl(iconUrl),
+            IconUrl = NormalizeOptionalStoragePath(iconUrl),
+            CoverImageUrl = null,
             DisplayOrder = NormalizeDisplayOrder(displayOrder),
             IsActive = isActive,
             CreatedAt = utcNow
@@ -100,7 +103,13 @@ public class Sport : AggregateRoot
 
     public void ChangeIcon(string? iconUrl, DateTimeOffset utcNow)
     {
-        IconUrl = NormalizeOptionalIconUrl(iconUrl);
+        IconUrl = NormalizeOptionalStoragePath(iconUrl);
+        Touch(utcNow);
+    }
+
+    public void ChangeCoverImage(string? coverImageUrl, DateTimeOffset utcNow)
+    {
+        CoverImageUrl = NormalizeOptionalStoragePath(coverImageUrl);
         Touch(utcNow);
     }
 
@@ -220,13 +229,13 @@ public class Sport : AggregateRoot
         return displayOrder;
     }
 
-    private static string? NormalizeOptionalIconUrl(string? iconUrl)
+    private static string? NormalizeOptionalStoragePath(string? path)
     {
-        if (string.IsNullOrWhiteSpace(iconUrl))
+        if (string.IsNullOrWhiteSpace(path))
         {
             return null;
         }
 
-        return iconUrl.Trim();
+        return path.Trim();
     }
 }

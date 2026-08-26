@@ -51,13 +51,13 @@ Optional later job: reconcile counters from source tables.
 
 ## File storage cleanup
 
-When deleting posts, media, messages, avatars:
+When deleting posts, media, messages, avatars, sport covers:
 
 1. Remove/update DB rows in the transaction.
 2. Delete Supabase Storage objects **after** successful commit via `StorageCleanup.TryDelete*`.
 3. Orphan retry remains a Phase 9 job.
 
-Covered today: post delete/remove media, avatar/intro replace-or-clear, chat media redact.
+Covered today: post delete/remove media, avatar/intro replace-or-clear, sport cover replace-or-clear, chat media redact.
 
 ---
 

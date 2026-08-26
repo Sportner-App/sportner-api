@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
-using Sportner.Domain.Sports;
 
 namespace Sportner.Application.Features.Catalog.Sports.DeactivateSport;
 
@@ -35,9 +34,6 @@ internal sealed class DeactivateSportCommandHandler
         sport.Deactivate(_timeProvider.GetUtcNow());
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result<SportResponse>.Success(ToResponse(sport));
+        return Result<SportResponse>.Success(SportResponse.From(sport));
     }
-
-    private static SportResponse ToResponse(Sport sport) =>
-        new(sport.Id, sport.Name, sport.Slug, sport.IconUrl, sport.DisplayOrder);
 }

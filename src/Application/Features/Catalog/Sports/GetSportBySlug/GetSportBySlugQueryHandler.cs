@@ -28,6 +28,7 @@ internal sealed class GetSportBySlugQueryHandler : IQueryHandler<GetSportBySlugQ
                 candidate.Name,
                 candidate.Slug,
                 candidate.IconUrl,
+                candidate.CoverImageUrl,
                 candidate.DisplayOrder))
             .FirstOrDefaultAsync(cancellationToken);
 

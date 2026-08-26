@@ -15,4 +15,8 @@ internal static class SportErrors
     internal static readonly Error SlugTaken = Error.Conflict(
         "Sport.SlugTaken",
         "A sport with this slug already exists.");
+
+    internal static readonly Error InvalidMedia = Error.Validation(
+        "Sport.InvalidMedia",
+        "The uploaded file is missing or has an unsupported content type.");
 }
