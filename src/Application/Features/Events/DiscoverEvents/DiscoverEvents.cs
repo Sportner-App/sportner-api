@@ -81,6 +81,7 @@ internal sealed class DiscoverEventsQueryHandler
                 @event.SportId,
                 sport.Name,
                 sport.Slug,
+                sport.CoverImageUrl,
                 @event.OrganizerUserId,
                 profile != null ? profile.Username : null,
                 @event.Title,

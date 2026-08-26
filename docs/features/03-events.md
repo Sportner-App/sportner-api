@@ -43,11 +43,11 @@ Nested actions stay on the same controller for v1.
 | [x] | `PublishEvent` | Command | `POST /api/events/{id}/publish` | Creates event conversation + owner member if missing; bumps `EventsOrganized` once. |
 | [x] | `CancelEvent` | Command | `POST /api/events/{id}/cancel` | Closes conversation; notifies approved/pending participants (`EventCancelled`); bumps cancelled counter. |
 | [x] | `CompleteEvent` | Command | `POST /api/events/{id}/complete` | Manual fallback. Auto-complete runs when `eventDate + duration` elapses (`EventCompletionDispatcher` + lazy on `GetEventById`). Closes conversation. |
-| [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport, organizer snippet, counts, my participation / waitlist, conversation id. |
+| [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport (`sportName`, `sportSlug`, `sportCoverImageUrl`), organizer snippet, counts, my participation / waitlist, conversation id. |
 | [x] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Offset pagination. |
 | [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating?scope=` | Excludes self-organized; skips rejected/cancelled. Optional `scope=upcoming|past` (by start time). |
-| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring (V1 compat). |
-| [x] | `ExploreEvents` | Query | `GET /api/explore/events` | Ranked discover (V2); auth required; optional geo/sport/city; `limit`. |
+| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring (V1 compat). List items include `sportCoverImageUrl`. |
+| [x] | `ExploreEvents` | Query | `GET /api/explore/events` | Ranked discover (V2); auth required; optional geo/sport/city; `limit`. Same sport cover field as list/detail. |
 
 ### Participation
 

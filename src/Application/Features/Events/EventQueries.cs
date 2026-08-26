@@ -23,7 +23,7 @@ internal static class EventQueries
 
         var sport = await dbContext.Sports.AsNoTracking()
             .Where(candidate => candidate.Id == @event.SportId)
-            .Select(candidate => new { candidate.Name, candidate.Slug })
+            .Select(candidate => new { candidate.Name, candidate.Slug, candidate.CoverImageUrl })
             .FirstAsync(cancellationToken);
 
         var organizer = await dbContext.UserProfiles.AsNoTracking()
@@ -78,6 +78,7 @@ internal static class EventQueries
             @event.SportId,
             sport.Name,
             sport.Slug,
+            sport.CoverImageUrl,
             organizer,
             @event.Title,
             @event.Description,
@@ -115,6 +116,7 @@ internal static class EventQueries
             @event.SportId,
             sport.Name,
             sport.Slug,
+            sport.CoverImageUrl,
             @event.OrganizerUserId,
             profile != null ? profile.Username : null,
             @event.Title,

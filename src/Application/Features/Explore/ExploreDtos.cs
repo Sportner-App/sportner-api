@@ -17,6 +17,7 @@ public sealed record ExploreEventItemResponse(
     Guid SportId,
     string SportName,
     string SportSlug,
+    string? SportCoverImageUrl,
     Guid OrganizerUserId,
     string? OrganizerUsername,
     string Title,
