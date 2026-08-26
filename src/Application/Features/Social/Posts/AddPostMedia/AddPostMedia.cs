@@ -4,7 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
-using Sportner.Domain.Common.Enums;
+using Sportner.Application.Features.Social;
 
 namespace Sportner.Application.Features.Social.Posts.AddPostMedia;
 
@@ -17,17 +17,6 @@ public sealed record AddPostMediaCommand(
 
 internal sealed class AddPostMediaCommandHandler : ICommandHandler<AddPostMediaCommand, PostResponse>
 {
-    private static readonly Dictionary<string, MediaType> AllowedContentTypes = new(
-        StringComparer.OrdinalIgnoreCase)
-    {
-        ["image/jpeg"] = MediaType.Image,
-        ["image/png"] = MediaType.Image,
-        ["image/webp"] = MediaType.Image,
-        ["video/mp4"] = MediaType.Video,
-        ["video/quicktime"] = MediaType.Video,
-        ["video/webm"] = MediaType.Video
-    };
-
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
@@ -54,7 +43,11 @@ internal sealed class AddPostMediaCommandHandler : ICommandHandler<AddPostMediaC
             return Result<PostResponse>.Failure(PostErrors.NotAuthenticated);
         }
 
-        if (!AllowedContentTypes.TryGetValue(request.ContentType, out var mediaType)
+        if (!PostMediaContentTypes.TryResolve(
+                request.ContentType,
+                request.FileName,
+                out var contentType,
+                out var mediaType)
             || request.FileSize <= 0)
         {
             return Result<PostResponse>.Failure(PostErrors.InvalidMedia);
@@ -75,21 +68,21 @@ internal sealed class AddPostMediaCommandHandler : ICommandHandler<AddPostMediaC
         }
 
         var utcNow = _timeProvider.GetUtcNow();
-        var extension = Path.GetExtension(request.FileName);
+        var extension = PostMediaContentTypes.ResolveExtension(request.FileName, contentType);
         var objectPath = $"{userId}/{post.Id}/{Guid.NewGuid():N}{extension}";
 
         var storedPath = await _fileStorage.UploadAsync(
             StorageBuckets.PostMedia,
             objectPath,
             request.Content,
-            request.ContentType,
+            contentType,
             cancellationToken);
 
         post.AddMedia(
             mediaType,
             storedPath,
             request.FileName,
-            request.ContentType,
+            contentType,
             request.FileSize,
             utcNow);
 
