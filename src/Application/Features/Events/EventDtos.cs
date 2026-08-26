@@ -46,7 +46,10 @@ public sealed record EventListItemResponse(
     int OccupiedParticipantCount);
 
 public sealed record ParticipantResponse(
-    Guid UserId,
+    Guid Id,
+    Guid? UserId,
+    short Kind,
+    bool IsGuest,
     string? Username,
     string? FirstName,
     string? LastName,

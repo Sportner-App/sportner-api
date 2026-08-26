@@ -406,9 +406,10 @@ internal sealed class RecommendationService : IRecommendationService
         var participantRows = await _dbContext.EventParticipants.AsNoTracking()
             .Where(participant =>
                 eventIds.Contains(participant.EventId)
+                && participant.UserId != null
                 && (participant.Status == ParticipantStatus.Approved
                     || participant.Status == ParticipantStatus.Attended))
-            .Select(participant => new { participant.EventId, participant.UserId })
+            .Select(participant => new { participant.EventId, UserId = participant.UserId!.Value })
             .ToListAsync(cancellationToken);
 
         var participantsByEvent = participantRows

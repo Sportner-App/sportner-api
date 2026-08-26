@@ -58,10 +58,17 @@ internal sealed class ListParticipantsQueryHandler
         var items = await query
             .OrderBy(row => row.participant.CreatedAt)
             .Select(row => new ParticipantResponse(
+                row.participant.Id,
                 row.participant.UserId,
+                (short)row.participant.Kind,
+                row.participant.Kind == ParticipantKind.Guest,
                 row.profile != null ? row.profile.Username : null,
-                row.profile != null ? row.profile.FirstName : null,
-                row.profile != null ? row.profile.LastName : null,
+                row.participant.Kind == ParticipantKind.Guest
+                    ? row.participant.GuestFirstName
+                    : row.profile != null ? row.profile.FirstName : null,
+                row.participant.Kind == ParticipantKind.Guest
+                    ? row.participant.GuestLastName
+                    : row.profile != null ? row.profile.LastName : null,
                 row.profile != null ? row.profile.ProfileImageUrl : null,
                 (short)row.participant.Status,
                 row.participant.JoinedAt,

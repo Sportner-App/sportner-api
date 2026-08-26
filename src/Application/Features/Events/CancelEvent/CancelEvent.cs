@@ -42,10 +42,11 @@ internal sealed class CancelEventCommandHandler
 
                     var recipients = @event.Participants
                         .Where(participant =>
-                            participant.UserId != @event.OrganizerUserId
+                            participant.UserId is { } userId
+                            && userId != @event.OrganizerUserId
                             && participant.Status is ParticipantStatus.Pending
                                 or ParticipantStatus.Approved)
-                        .Select(participant => participant.UserId)
+                        .Select(participant => participant.UserId!.Value)
                         .Distinct();
 
                     foreach (var recipientId in recipients)
@@ -71,9 +72,10 @@ internal sealed class CancelEventCommandHandler
                     // Approved attendees had EventsJoined bumped on approve/promote — reverse it.
                     var approvedAttendeeIds = @event.Participants
                         .Where(participant =>
-                            participant.UserId != @event.OrganizerUserId
+                            participant.UserId is { } userId
+                            && userId != @event.OrganizerUserId
                             && participant.Status is ParticipantStatus.Approved)
-                        .Select(participant => participant.UserId)
+                        .Select(participant => participant.UserId!.Value)
                         .Distinct()
                         .ToList();
 

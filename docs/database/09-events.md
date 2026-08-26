@@ -170,7 +170,8 @@ This means pending applications temporarily reserve event capacity.
 Example for an event with `max_participants = 10`:
 
 - Organizer occupies one slot.
-- The first nine user applications create pending participant records.
+- Two organizer-assigned guests occupy two more slots (7 remain for the public).
+- The first seven user applications create pending participant records.
 - The next application enters the waiting list.
 - Rejecting or cancelling a pending application frees one slot.
 - Cancelling an approved participation also frees one slot.

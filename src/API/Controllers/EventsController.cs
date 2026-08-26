@@ -4,6 +4,7 @@ using Sportner.API.Authorization;
 using Sportner.API.Common;
 using Sportner.Application.Features.Events.ApplyToEvent;
 using Sportner.Application.Features.Events.ApproveParticipant;
+using Sportner.Application.Features.Events.AssignEventParticipants;
 using Sportner.Application.Features.Events.CancelEvent;
 using Sportner.Application.Features.Events.CancelParticipation;
 using Sportner.Application.Features.Events.CompleteEvent;
@@ -21,6 +22,7 @@ using Sportner.Application.Features.Events.MarkNoShow;
 using Sportner.Application.Features.Events.PromoteFromWaitlist;
 using Sportner.Application.Features.Events.PublishEvent;
 using Sportner.Application.Features.Events.RejectParticipant;
+using Sportner.Application.Features.Events.RemoveAssignedParticipant;
 using Sportner.Application.Features.Events.UpdateEventCapacity;
 using Sportner.Application.Features.Events.UpdateEventDetails;
 using Sportner.Application.Features.Events.UpdateEventLocation;
@@ -261,6 +263,32 @@ public sealed class EventsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpPost("{eventId:guid}/participants/assign")]
+    public async Task<IActionResult> AssignParticipants(
+        Guid eventId,
+        [FromBody] AssignParticipantsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new AssignEventParticipantsCommand(eventId, request.Guests, request.FriendUserIds),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("{eventId:guid}/participants/{participantId:guid}")]
+    public async Task<IActionResult> RemoveAssignedParticipant(
+        Guid eventId,
+        Guid participantId,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new RemoveAssignedParticipantCommand(eventId, participantId),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
     [HttpPost("{eventId:guid}/participants/{userId:guid}/approve")]
     public async Task<IActionResult> ApproveParticipant(
         Guid eventId,
@@ -357,6 +385,10 @@ public sealed class EventsController : ApiControllerBase
     public sealed record UpdateEventLocationRequest(decimal Latitude, decimal Longitude, string Address);
 
     public sealed record UpdateCapacityRequest(int? MaxParticipants);
+
+    public sealed record AssignParticipantsRequest(
+        IReadOnlyList<GuestAssignmentRequest>? Guests,
+        IReadOnlyList<Guid>? FriendUserIds);
 
     public sealed record CreateEventAlbumBody(
         string Title,

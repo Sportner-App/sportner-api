@@ -64,6 +64,15 @@ Unless explicitly stated otherwise, all enum values are stored as `SMALLINT` in 
 
 ---
 
+# Participant Kind
+
+| Value | Name       |
+| ----: | ---------- |
+|     0 | Registered |
+|     1 | Guest      |
+
+---
+
 # Conversation Type
 
 | Value | Name   |

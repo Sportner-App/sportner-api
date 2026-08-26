@@ -69,12 +69,13 @@ internal sealed class ListReviewablePeersQueryHandler
                     on participant.UserId equals profile.UserId into profiles
                 from profile in profiles.DefaultIfEmpty()
                 where participant.EventId == request.EventId
+                    && participant.UserId != null
                     && participant.UserId != userId
                     && participant.Status == ParticipantStatus.Attended
-                    && !alreadyReviewedIds.Contains(participant.UserId)
+                    && !alreadyReviewedIds.Contains(participant.UserId.Value)
                 orderby profile != null ? profile.Username : participant.UserId.ToString()
                 select new ReviewablePeerResponse(
-                    participant.UserId,
+                    participant.UserId!.Value,
                     profile != null ? profile.Username : null,
                     profile != null ? profile.FirstName : null,
                     profile != null ? profile.ProfileImageUrl : null))

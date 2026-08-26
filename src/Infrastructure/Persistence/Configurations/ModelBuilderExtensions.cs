@@ -61,7 +61,8 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<EventParticipant>()
             .HasIndex(entity => new { entity.EventId, entity.UserId })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"UserId\" IS NOT NULL");
 
         modelBuilder.Entity<EventWaitlist>()
             .HasIndex(entity => new { entity.EventId, entity.UserId })
@@ -187,6 +188,7 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.EventId);
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.Status);
+        modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.Kind);
 
         modelBuilder.Entity<EventWaitlist>().HasIndex(entity => entity.EventId);
         modelBuilder.Entity<EventWaitlist>().HasIndex(entity => entity.UserId);
@@ -364,6 +366,13 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.Longitude)
             .HasPrecision(9, 6);
 
+        modelBuilder.Entity<EventParticipant>()
+            .Property(entity => entity.GuestFirstName)
+            .HasMaxLength(50);
+        modelBuilder.Entity<EventParticipant>()
+            .Property(entity => entity.GuestLastName)
+            .HasMaxLength(50);
+
         modelBuilder.Entity<Conversation>()
             .Property(entity => entity.Title)
             .HasMaxLength(100);
@@ -497,6 +506,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>().Property(entity => entity.Status)
             .HasColumnType("smallint");
         modelBuilder.Entity<EventParticipant>().Property(entity => entity.Status)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<EventParticipant>().Property(entity => entity.Kind)
             .HasColumnType("smallint");
         modelBuilder.Entity<Conversation>().Property(entity => entity.Type)
             .HasColumnType("smallint");

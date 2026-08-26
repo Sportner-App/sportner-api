@@ -128,8 +128,9 @@ internal sealed class BadgeAwarder : IBadgeAwarder
             join @event in _dbContext.Events.AsNoTracking()
                 on participant.EventId equals @event.Id
             where participant.Status == ParticipantStatus.Attended
+                  && participant.UserId != null
                   && @event.EventDate >= lookback
-            select participant.UserId)
+            select participant.UserId!.Value)
             .Distinct()
             .ToListAsync(cancellationToken);
 

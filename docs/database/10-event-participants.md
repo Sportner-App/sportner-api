@@ -36,7 +36,10 @@ The participant status changes throughout the event lifecycle, allowing the appl
 | ------------------ | ----------- | -------- | ------------------------------------------ |
 | id                 | UUID        | No       | Primary Key                                |
 | event_id           | UUID        | No       | References events(id)                      |
-| user_id            | UUID        | No       | References users(id)                       |
+| user_id            | UUID        | Yes      | References users(id). Null for guest rows  |
+| kind               | SMALLINT    | No       | Registered (0) or Guest (1)                |
+| guest_first_name   | TEXT        | Yes      | Optional display name for guests           |
+| guest_last_name    | TEXT        | Yes      | Optional display name for guests           |
 | status             | SMALLINT    | No       | Participation status                       |
 | joined_at          | TIMESTAMPTZ | Yes      | Approval date                              |
 | attended_at        | TIMESTAMPTZ | Yes      | Attendance confirmation date               |
@@ -55,12 +58,13 @@ The participant status changes throughout the event lifecycle, allowing the appl
 - INDEX(event_id)
 - INDEX(user_id)
 - INDEX(status)
+- INDEX(kind)
 
 ---
 
 # Unique Constraints
 
-- UNIQUE(event_id, user_id)
+- UNIQUE(event_id, user_id) WHERE user_id IS NOT NULL
 
 ---
 
@@ -95,12 +99,27 @@ The participant status changes throughout the event lifecycle, allowing the appl
 
 ---
 
+# Participant Kind
+
+| Value | Name       |
+| ----- | ---------- |
+| 0     | Registered |
+| 1     | Guest      |
+
+`ParticipantStatus` is the lifecycle. `ParticipantKind` is the identity type. Do not store "anonymous" as a status.
+
+---
+
 # Business Rules
 
-- A user has at most one participant row per event (`UNIQUE(event_id, user_id)`).
+- A registered user has at most one participant row per event (`UNIQUE(event_id, user_id)` where `user_id` is not null).
+- Guest rows have `user_id = null`, `kind = Guest`, and optional `guest_first_name` / `guest_last_name`.
+- Guests are created as Approved by the organizer and occupy capacity immediately.
+- Guests cannot review, join chat, receive notifications, or be marked Attended / NoShow.
+- The organizer may assign accepted friends as Approved participants (draft, published, or full when slots remain).
 - Cancelled users may apply again; the existing row returns to Pending (or waitlist if the event is full).
-- Organizer approval is required before joining.
-- Organizer is automatically inserted as an approved participant.
+- Organizer approval is required before a registered user joins by applying.
+- Organizer is automatically inserted as an approved registered participant.
 - Rejected users cannot apply again unless the organizer reopens applications.
 - If the participant limit is reached, new applications are stored in the waiting list instead.
 - Only attendees can review other participants.

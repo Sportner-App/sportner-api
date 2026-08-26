@@ -35,6 +35,20 @@ internal sealed class PublishEventCommandHandler
 
                 if (wasDraft && @event.Status is EventStatus.Published or EventStatus.Full)
                 {
+                    foreach (var participant in @event.Participants.Where(item =>
+                                 item.UserId is { } userId
+                                 && userId != @event.OrganizerUserId
+                                 && item.Status is ParticipantStatus.Approved
+                                     or ParticipantStatus.Attended))
+                    {
+                        await EventAccess.AddConversationMemberIfPresentAsync(
+                            DbContext,
+                            @event.Id,
+                            participant.UserId!.Value,
+                            utcNow,
+                            ct);
+                    }
+
                     var statistics = await DbContext.UserStatistics
                         .FirstOrDefaultAsync(
                             candidate => candidate.UserId == @event.OrganizerUserId,

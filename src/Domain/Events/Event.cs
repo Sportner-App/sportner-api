@@ -368,6 +368,78 @@ public class Event : AggregateRoot
         return participant;
     }
 
+    public IReadOnlyList<EventParticipant> AssignParticipants(
+        IReadOnlyList<GuestAssignment> guests,
+        IReadOnlyList<Guid> friendUserIds,
+        DateTimeOffset utcNow)
+    {
+        EnsureCanAssignParticipants();
+
+        var guestList = guests ?? [];
+        var friendIds = (friendUserIds ?? [])
+            .Where(userId => userId != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        if (guestList.Count == 0 && friendIds.Count == 0)
+        {
+            throw new DomainException("At least one guest or friend must be assigned.");
+        }
+
+        if (friendIds.Contains(OrganizerUserId))
+        {
+            throw new DomainException("Organizer participation cannot be assigned again.");
+        }
+
+        var additionalSlots = guestList.Count + friendIds.Count(NeedsNewCapacitySlot);
+
+        if (MaxParticipants is not null
+            && OccupiedParticipantCount() + additionalSlots > MaxParticipants.Value)
+        {
+            throw new DomainException("Event capacity is full.");
+        }
+
+        var assigned = new List<EventParticipant>(guestList.Count + friendIds.Count);
+
+        foreach (var guest in guestList)
+        {
+            assigned.Add(AddGuest(guest, utcNow));
+        }
+
+        foreach (var userId in friendIds)
+        {
+            assigned.Add(AddAssignedFriend(userId, utcNow));
+        }
+
+        RefreshCapacityStatus(utcNow);
+        Touch(utcNow);
+
+        return assigned;
+    }
+
+    public EventParticipant RemoveAssignedParticipant(Guid participantId, DateTimeOffset utcNow)
+    {
+        EnsureCanAssignParticipants();
+
+        var participant = FindParticipantById(participantId);
+
+        if (participant.UserId == OrganizerUserId)
+        {
+            throw new DomainException("Organizer participation cannot be cancelled.");
+        }
+
+        var occupiedCapacity = participant.OccupiesCapacity();
+        participant.Cancel(utcNow);
+
+        if (occupiedCapacity)
+        {
+            RefreshCapacityStatus(utcNow);
+        }
+
+        Touch(utcNow);
+        return participant;
+    }
+
     public void ConfirmAttendance(Guid userId, DateTimeOffset utcNow)
     {
         if (Status is not EventStatus.Completed)
@@ -461,9 +533,78 @@ public class Event : AggregateRoot
         }
     }
 
+    private EventParticipant AddGuest(GuestAssignment guest, DateTimeOffset utcNow)
+    {
+        var participant = EventParticipant.CreateGuest(
+            Id,
+            utcNow,
+            guest.FirstName,
+            guest.LastName);
+
+        _participants.Add(participant);
+        return participant;
+    }
+
+    private EventParticipant AddAssignedFriend(Guid userId, DateTimeOffset utcNow)
+    {
+        var waitlistEntry = _waitlist.FirstOrDefault(entry => entry.UserId == userId);
+
+        if (waitlistEntry is not null)
+        {
+            _waitlist.Remove(waitlistEntry);
+            ResequenceWaitlist(utcNow);
+        }
+
+        var existing = _participants.FirstOrDefault(participant => participant.UserId == userId);
+
+        if (existing is not null)
+        {
+            if (existing.Status is ParticipantStatus.Pending)
+            {
+                existing.Approve(utcNow);
+                return existing;
+            }
+
+            if (existing.Status is ParticipantStatus.Cancelled)
+            {
+                existing.ReopenAsApproved(utcNow);
+                return existing;
+            }
+
+            throw new DomainException("User is already associated with this event.");
+        }
+
+        var participant = EventParticipant.CreateApproved(Id, userId, utcNow);
+        _participants.Add(participant);
+        return participant;
+    }
+
+    private bool NeedsNewCapacitySlot(Guid userId)
+    {
+        var existing = _participants.FirstOrDefault(participant => participant.UserId == userId);
+        return existing is null || !existing.OccupiesCapacity();
+    }
+
     private EventParticipant FindParticipant(Guid userId)
     {
         var participant = _participants.FirstOrDefault(item => item.UserId == userId);
+
+        if (participant is null)
+        {
+            throw new DomainException("Participant was not found.");
+        }
+
+        if (participant.EventId != Id)
+        {
+            throw new DomainException("Participant does not belong to this event.");
+        }
+
+        return participant;
+    }
+
+    private EventParticipant FindParticipantById(Guid participantId)
+    {
+        var participant = _participants.FirstOrDefault(item => item.Id == participantId);
 
         if (participant is null)
         {
@@ -511,6 +652,14 @@ public class Event : AggregateRoot
         if (Status is not (EventStatus.Published or EventStatus.Full))
         {
             throw new DomainException("Applications cannot be managed in the current event status.");
+        }
+    }
+
+    private void EnsureCanAssignParticipants()
+    {
+        if (Status is not (EventStatus.Draft or EventStatus.Published or EventStatus.Full))
+        {
+            throw new DomainException("Participants cannot be assigned in the current event status.");
         }
     }
 

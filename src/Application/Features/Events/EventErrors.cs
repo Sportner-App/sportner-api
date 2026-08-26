@@ -59,4 +59,16 @@ internal static class EventErrors
     internal static readonly Error ParticipationLocked = Error.Conflict(
         "Event.ParticipationLocked",
         "Biten etkinlikten ayrılamazsın.");
+
+    internal static readonly Error AssignmentEmpty = Error.Validation(
+        "Event.AssignmentEmpty",
+        "At least one guest or friend must be assigned.");
+
+    internal static readonly Error NotFriends = Error.Forbidden(
+        "Event.NotFriends",
+        "Only accepted friends can be added to the event.");
+
+    internal static readonly Error FriendAlreadyAssociated = Error.Conflict(
+        "Event.FriendAlreadyAssociated",
+        "One of the selected friends is already associated with this event.");
 }

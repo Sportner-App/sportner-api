@@ -6,13 +6,21 @@ namespace Sportner.Domain.Events;
 
 public class EventParticipant : AuditableEntity
 {
+    public const int GuestNameMaxLength = 50;
+
     private EventParticipant()
     {
     }
 
     public Guid EventId { get; private set; }
 
-    public Guid UserId { get; private set; }
+    public Guid? UserId { get; private set; }
+
+    public ParticipantKind Kind { get; private set; }
+
+    public string? GuestFirstName { get; private set; }
+
+    public string? GuestLastName { get; private set; }
 
     public ParticipantStatus Status { get; private set; }
 
@@ -23,6 +31,10 @@ public class EventParticipant : AuditableEntity
     public DateTimeOffset? LeftAt { get; private set; }
 
     public bool CanReview { get; private set; }
+
+    public bool IsGuest => Kind is ParticipantKind.Guest;
+
+    public bool IsRegistered => Kind is ParticipantKind.Registered && UserId is not null;
 
     public static EventParticipant CreateOrganizer(
         Guid eventId,
@@ -36,6 +48,7 @@ public class EventParticipant : AuditableEntity
             Id = Guid.NewGuid(),
             EventId = eventId,
             UserId = userId,
+            Kind = ParticipantKind.Registered,
             Status = ParticipantStatus.Approved,
             JoinedAt = utcNow,
             CanReview = false,
@@ -55,6 +68,7 @@ public class EventParticipant : AuditableEntity
             Id = Guid.NewGuid(),
             EventId = eventId,
             UserId = userId,
+            Kind = ParticipantKind.Registered,
             Status = ParticipantStatus.Pending,
             CanReview = false,
             CreatedAt = utcNow
@@ -73,6 +87,33 @@ public class EventParticipant : AuditableEntity
             Id = Guid.NewGuid(),
             EventId = eventId,
             UserId = userId,
+            Kind = ParticipantKind.Registered,
+            Status = ParticipantStatus.Approved,
+            JoinedAt = utcNow,
+            CanReview = false,
+            CreatedAt = utcNow
+        };
+    }
+
+    public static EventParticipant CreateGuest(
+        Guid eventId,
+        DateTimeOffset utcNow,
+        string? firstName = null,
+        string? lastName = null)
+    {
+        if (eventId == Guid.Empty)
+        {
+            throw new DomainException("Event id is required.");
+        }
+
+        return new EventParticipant
+        {
+            Id = Guid.NewGuid(),
+            EventId = eventId,
+            UserId = null,
+            Kind = ParticipantKind.Guest,
+            GuestFirstName = NormalizeGuestName(firstName),
+            GuestLastName = NormalizeGuestName(lastName),
             Status = ParticipantStatus.Approved,
             JoinedAt = utcNow,
             CanReview = false,
@@ -105,6 +146,11 @@ public class EventParticipant : AuditableEntity
             return;
         }
 
+        if (IsGuest)
+        {
+            throw new DomainException("Guest participants cannot be rejected.");
+        }
+
         if (Status is not ParticipantStatus.Pending)
         {
             throw new DomainException("Only pending participants can be rejected.");
@@ -135,6 +181,11 @@ public class EventParticipant : AuditableEntity
 
     public void ReopenAsPending(DateTimeOffset utcNow)
     {
+        if (IsGuest)
+        {
+            throw new DomainException("Guest participants cannot re-apply.");
+        }
+
         if (Status is not ParticipantStatus.Cancelled)
         {
             throw new DomainException("Only cancelled participants can re-apply.");
@@ -150,6 +201,11 @@ public class EventParticipant : AuditableEntity
 
     public void ReopenAsApproved(DateTimeOffset utcNow)
     {
+        if (IsGuest)
+        {
+            throw new DomainException("Guest participants cannot be restored as registered users.");
+        }
+
         if (Status is not ParticipantStatus.Cancelled)
         {
             throw new DomainException("Only cancelled participants can be restored.");
@@ -170,6 +226,11 @@ public class EventParticipant : AuditableEntity
             return;
         }
 
+        if (IsGuest)
+        {
+            throw new DomainException("Guest participants cannot be marked as attended.");
+        }
+
         if (Status is not ParticipantStatus.Approved)
         {
             throw new DomainException("Only approved participants can be marked as attended.");
@@ -186,6 +247,11 @@ public class EventParticipant : AuditableEntity
         if (Status is ParticipantStatus.NoShow)
         {
             return;
+        }
+
+        if (IsGuest)
+        {
+            throw new DomainException("Guest participants cannot be marked as no-show.");
         }
 
         if (Status is not ParticipantStatus.Approved)
@@ -222,5 +288,22 @@ public class EventParticipant : AuditableEntity
         {
             throw new DomainException("User id is required.");
         }
+    }
+
+    private static string? NormalizeGuestName(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var normalized = value.Trim();
+
+        if (normalized.Length > GuestNameMaxLength)
+        {
+            throw new DomainException($"Guest name cannot exceed {GuestNameMaxLength} characters.");
+        }
+
+        return normalized;
     }
 }

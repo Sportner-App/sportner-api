@@ -81,9 +81,10 @@ internal sealed class EventReminderDispatcher : IEventReminderDispatcher
                     .AsNoTracking()
                     .Where(participant =>
                         participant.EventId == @event.Id
+                        && participant.UserId != null
                         && participant.UserId != @event.OrganizerUserId
                         && participant.Status == ParticipantStatus.Approved)
-                    .Select(participant => participant.UserId)
+                    .Select(participant => participant.UserId!.Value)
                     .ToListAsync(cancellationToken);
 
                 foreach (var userId in participantUserIds)
