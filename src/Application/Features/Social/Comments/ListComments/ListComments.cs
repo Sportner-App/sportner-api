@@ -80,6 +80,7 @@ internal sealed class ListCommentsQueryHandler
                 row.comment.UserId,
                 row.profile != null ? row.profile.Username : null,
                 row.profile != null ? row.profile.FirstName : null,
+                row.profile != null ? row.profile.ProfileImageUrl : null,
                 row.comment.ParentCommentId,
                 row.comment.Content,
                 row.comment.LikeCount,

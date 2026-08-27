@@ -54,6 +54,7 @@ internal sealed class ListWaitlistQueryHandler
                     profile != null ? profile.Username : null,
                     profile != null ? profile.FirstName : null,
                     profile != null ? profile.LastName : null,
+                    profile != null ? profile.ProfileImageUrl : null,
                     entry.Position,
                     entry.CreatedAt))
             .ToListAsync(cancellationToken);

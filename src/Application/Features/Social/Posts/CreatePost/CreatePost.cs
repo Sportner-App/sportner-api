@@ -7,8 +7,8 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Quests;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Constants;
-using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 
 namespace Sportner.Application.Features.Social.Posts.CreatePost;
@@ -35,17 +35,6 @@ public sealed class CreatePostCommandValidator : AbstractValidator<CreatePostCom
 
 internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostCommand, PostResponse>
 {
-    private static readonly Dictionary<string, MediaType> AllowedContentTypes = new(
-        StringComparer.OrdinalIgnoreCase)
-    {
-        ["image/jpeg"] = MediaType.Image,
-        ["image/png"] = MediaType.Image,
-        ["image/webp"] = MediaType.Image,
-        ["video/mp4"] = MediaType.Video,
-        ["video/quicktime"] = MediaType.Video,
-        ["video/webm"] = MediaType.Video
-    };
-
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
@@ -95,7 +84,12 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
         {
             foreach (var item in request.Media)
             {
-                if (!AllowedContentTypes.ContainsKey(item.ContentType) || item.FileSize <= 0)
+                if (!PostMediaContentTypes.TryResolve(
+                        item.ContentType,
+                        item.FileName,
+                        out _,
+                        out _)
+                    || item.FileSize <= 0)
                 {
                     return Result<PostResponse>.Failure(PostErrors.InvalidMedia);
                 }
@@ -109,22 +103,27 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
         {
             foreach (var item in request.Media)
             {
-                var mediaType = AllowedContentTypes[item.ContentType];
-                var extension = Path.GetExtension(item.FileName);
+                PostMediaContentTypes.TryResolve(
+                    item.ContentType,
+                    item.FileName,
+                    out var contentType,
+                    out var mediaType);
+
+                var extension = PostMediaContentTypes.ResolveExtension(item.FileName, contentType);
                 var objectPath = $"{userId}/{post.Id}/{Guid.NewGuid():N}{extension}";
 
                 var storedPath = await _fileStorage.UploadAsync(
                     StorageBuckets.PostMedia,
                     objectPath,
                     item.Content,
-                    item.ContentType,
+                    contentType,
                     cancellationToken);
 
                 post.AddMedia(
                     mediaType,
                     storedPath,
                     item.FileName,
-                    item.ContentType,
+                    contentType,
                     item.FileSize,
                     utcNow);
             }

@@ -7,6 +7,7 @@ using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Features.Explore.ExploreEvents;
 using Sportner.Application.Features.Explore.ExplorePeople;
 using Sportner.Application.Features.Explore.ExplorePosts;
+using Sportner.Application.Features.Identity.UserProfiles.DiscoverUsers;
 using Sportner.Application.Services.Recommendations;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
@@ -21,6 +22,37 @@ namespace Sportner.Application.UnitTests.Features.Explore;
 public sealed class ExploreHandlerTests
 {
     [Fact]
+    public async Task DiscoverUsers_ReturnsPublicDirectory_AndExcludesViewerAndBlockedUsers()
+    {
+        await using var db = InMemoryDb.Create();
+        var now = new DateTimeOffset(2026, 8, 27, 12, 0, 0, TimeSpan.Zero);
+
+        var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
+        var friend = CreateUserWithProfile(db, "friend", "Friend", now, city: "İstanbul");
+        friend.UserProfile!.UpdateAvatar("avatars/friend.jpg", now);
+        var blocked = CreateUserWithProfile(db, "blocked", "Blocked", now);
+
+        Accept(db, viewer.Id, friend.Id, now);
+        var block = Friendship.CreateRequest(viewer.Id, blocked.Id, now);
+        block.Block(viewer.Id, now);
+        db.Friendships.Add(block);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverUsersQueryHandler(db, new TestCurrentUser(viewer.Id));
+        var result = await handler.Handle(
+            new DiscoverUsersQuery(Page: 1, PageSize: 20),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        var page = result.Value!;
+        page.Items.Should().NotContain(item => item.UserId == viewer.Id);
+        page.Items.Should().NotContain(item => item.UserId == blocked.Id);
+        page.Items.Should().ContainSingle(item =>
+            item.UserId == friend.Id && item.ProfileImageUrl == "avatars/friend.jpg");
+        page.TotalCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task ExplorePeople_RequiresAuth_AndReturnsRanked()
     {
         await using var db = InMemoryDb.Create();
@@ -29,6 +61,7 @@ public sealed class ExploreHandlerTests
 
         var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now, city: "Ankara");
         var peer = CreateUserWithProfile(db, "peer", "Peer", now, city: "Ankara");
+        peer.UserProfile!.UpdateAvatar("avatars/peer.jpg", now);
         await db.SaveChangesAsync();
 
         var unauth = new ExplorePeopleQueryHandler(
@@ -46,7 +79,10 @@ public sealed class ExploreHandlerTests
         var result = await handler.Handle(new ExplorePeopleQuery(Limit: 10), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotContain(item => item.UserId == viewer.Id);
         result.Value.Should().Contain(item => item.UserId == peer.Id);
+        result.Value.Single(item => item.UserId == peer.Id).ProfileImageUrl
+            .Should().Be("avatars/peer.jpg");
     }
 
     [Fact]
