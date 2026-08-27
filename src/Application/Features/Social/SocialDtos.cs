@@ -78,6 +78,7 @@ public sealed record CommentResponse(
     Guid UserId,
     string? Username,
     string? FirstName,
+    string? ProfileImageUrl,
     Guid? ParentCommentId,
     string Content,
     int LikeCount,

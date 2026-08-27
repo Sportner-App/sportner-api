@@ -64,6 +64,7 @@ public sealed record WaitlistEntryResponse(
     string? Username,
     string? FirstName,
     string? LastName,
+    string? ProfileImageUrl,
     int Position,
     DateTimeOffset CreatedAt);
 

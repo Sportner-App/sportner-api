@@ -58,7 +58,10 @@ internal sealed class ExplorePeopleQueryHandler
             fetchLimit,
             cancellationToken);
 
-        IEnumerable<Scored<RecommendedPerson>> filtered = scored;
+        // Recommendation providers must exclude the viewer, but keep the API
+        // boundary defensive so the signed-in user can never recommend itself.
+        IEnumerable<Scored<RecommendedPerson>> filtered = scored
+            .Where(entry => entry.Item.UserId != viewerId);
 
         if (request.SportId is { } sportId)
         {

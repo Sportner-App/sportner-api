@@ -100,7 +100,12 @@ internal sealed class CreateCommentCommandHandler
     {
         var profile = await dbContext.UserProfiles.AsNoTracking()
             .Where(candidate => candidate.UserId == comment.UserId)
-            .Select(candidate => new { candidate.Username, candidate.FirstName })
+            .Select(candidate => new
+            {
+                candidate.Username,
+                candidate.FirstName,
+                candidate.ProfileImageUrl
+            })
             .FirstOrDefaultAsync(cancellationToken);
 
         return new CommentResponse(
@@ -109,6 +114,7 @@ internal sealed class CreateCommentCommandHandler
             comment.UserId,
             profile?.Username,
             profile?.FirstName,
+            profile?.ProfileImageUrl,
             comment.ParentCommentId,
             comment.Content,
             comment.LikeCount,
