@@ -61,7 +61,26 @@ internal static class SeedData
         new("Pilates", "pilates", 12),
         new("Yoga", "yoga", 13),
         new("CrossFit", "crossfit", 14),
-        new("Badminton", "badminton", 15)
+        new("Badminton", "badminton", 15),
+        new("Padel", "padel", 16),
+        new("Pickleball", "pickleball", 17),
+        new("Squash", "squash", 18),
+        new("Hentbol", "hentbol", 19),
+        new("Plaj Voleybolu", "plaj-voleybolu", 20),
+        new("Kickboks", "kickboks", 21),
+        new("Judo", "judo", 22),
+        new("Jiu-Jitsu", "jiu-jitsu", 23),
+        new("Karate", "karate", 24),
+        new("Tırmanış", "tirmanis", 25),
+        new("Kayak", "kayak", 26),
+        new("Snowboard", "snowboard", 27),
+        new("Bowling", "bowling", 28),
+        new("Dans", "dans", 29),
+        new("Golf", "golf", 30),
+        new("Okçuluk", "okculuk", 31),
+        new("Dalış", "dalis", 32),
+        new("Yelken", "yelken", 33),
+        new("Rugby", "rugby", 34)
     };
 
     internal static readonly IReadOnlyList<BadgeSeed> Badges = new BadgeSeed[]

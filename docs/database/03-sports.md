@@ -78,21 +78,40 @@ This table acts as a shared reference for user skills and events.
 
 # Initial Seed Data
 
-- Basketball
-- Football
-- Volleyball
-- Tennis
-- Table Tennis
-- Running
-- Cycling
-- Swimming
+- Basketbol
+- Futbol
+- Voleybol
+- Tenis
+- Masa Tenisi
+- Koşu
+- Bisiklet
+- Yüzme
 - Fitness
-- Hiking
-- Boxing
+- Doğa Yürüyüşü
+- Boks
 - Pilates
 - Yoga
 - CrossFit
 - Badminton
+- Padel
+- Pickleball
+- Squash
+- Hentbol
+- Plaj Voleybolu
+- Kickboks
+- Judo
+- Jiu-Jitsu
+- Karate
+- Tırmanış
+- Kayak
+- Snowboard
+- Bowling
+- Dans
+- Golf
+- Okçuluk
+- Dalış
+- Yelken
+- Rugby
 
 Additional sports can be added without schema changes.
 
