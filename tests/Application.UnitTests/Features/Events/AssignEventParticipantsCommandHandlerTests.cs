@@ -67,12 +67,12 @@ public sealed class AssignEventParticipantsCommandHandlerTests
         var result = await handler.Handle(
             new AssignEventParticipantsCommand(
                 @event.Id,
-                [new GuestAssignmentRequest("Ali", "Yılmaz"), new GuestAssignmentRequest(null, null)],
+                [new GuestAssignmentRequest("Ali", "Yılmaz"), new GuestAssignmentRequest("Veli", "Kaya")],
                 [friend.Id]),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue(because: string.Join("; ", result.Errors.Select(error => error.Message)));
-        result.Value!.OccupiedParticipantCount.Should().Be(4);
+        result.Value!.OccupiedParticipantCount.Should().Be(3);
 
         var guests = await db.EventParticipants.AsNoTracking()
             .Where(row => row.EventId == @event.Id && row.Kind == ParticipantKind.Guest)
@@ -84,7 +84,7 @@ public sealed class AssignEventParticipantsCommandHandlerTests
         var assignedFriend = await db.EventParticipants.AsNoTracking()
             .SingleAsync(row => row.EventId == @event.Id && row.UserId == friend.Id);
 
-        assignedFriend.Status.Should().Be(ParticipantStatus.Approved);
+        assignedFriend.Status.Should().Be(ParticipantStatus.Invited);
         assignedFriend.Kind.Should().Be(ParticipantKind.Registered);
 
         publisher.Verify(
@@ -98,6 +98,26 @@ public sealed class AssignEventParticipantsCommandHandlerTests
                 organizer.Id,
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Theory]
+    [InlineData(null, "Yılmaz")]
+    [InlineData("", "Yılmaz")]
+    [InlineData("   ", "Yılmaz")]
+    [InlineData("Ali", null)]
+    [InlineData("Ali", "")]
+    [InlineData("Ali", "   ")]
+    public void Validator_Fails_WhenGuestNameIsIncomplete(
+        string? firstName,
+        string? lastName)
+    {
+        var validator = new AssignEventParticipantsCommandValidator();
+        var command = new AssignEventParticipantsCommand(
+            Guid.NewGuid(),
+            [new GuestAssignmentRequest(firstName, lastName)],
+            []);
+
+        validator.Validate(command).IsValid.Should().BeFalse();
     }
 
     [Fact]

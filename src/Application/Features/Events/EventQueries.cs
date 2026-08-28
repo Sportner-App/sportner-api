@@ -41,8 +41,7 @@ internal static class EventQueries
             .CountAsync(
                 participant =>
                     participant.EventId == eventId
-                    && (participant.Status == ParticipantStatus.Pending
-                        || participant.Status == ParticipantStatus.Approved
+                    && (participant.Status == ParticipantStatus.Approved
                         || participant.Status == ParticipantStatus.Attended
                         || participant.Status == ParticipantStatus.NoShow),
                 cancellationToken);
@@ -127,8 +126,7 @@ internal static class EventQueries
             (short)@event.Status,
             dbContext.EventParticipants.Count(participant =>
                 participant.EventId == @event.Id
-                && (participant.Status == ParticipantStatus.Pending
-                    || participant.Status == ParticipantStatus.Approved
+                && (participant.Status == ParticipantStatus.Approved
                     || participant.Status == ParticipantStatus.Attended
                     || participant.Status == ParticipantStatus.NoShow)));
     }

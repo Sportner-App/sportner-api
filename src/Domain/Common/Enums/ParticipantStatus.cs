@@ -7,5 +7,6 @@ public enum ParticipantStatus : short
     Rejected = 2,
     Cancelled = 3,
     Attended = 4,
-    NoShow = 5
+    NoShow = 5,
+    Invited = 6
 }

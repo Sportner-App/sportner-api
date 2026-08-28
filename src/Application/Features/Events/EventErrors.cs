@@ -56,6 +56,10 @@ internal static class EventErrors
         "Event.CapacityFull",
         "The event capacity is full.");
 
+    internal static readonly Error InvitationNotFound = Error.NotFound(
+        "Event.InvitationNotFound",
+        "An active invitation was not found for this event.");
+
     internal static readonly Error ParticipationLocked = Error.Conflict(
         "Event.ParticipationLocked",
         "Biten etkinlikten ayrılamazsın.");

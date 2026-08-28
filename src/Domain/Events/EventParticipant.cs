@@ -95,6 +95,25 @@ public class EventParticipant : AuditableEntity
         };
     }
 
+    public static EventParticipant CreateInvited(
+        Guid eventId,
+        Guid userId,
+        DateTimeOffset utcNow)
+    {
+        EnsureIds(eventId, userId);
+
+        return new EventParticipant
+        {
+            Id = Guid.NewGuid(),
+            EventId = eventId,
+            UserId = userId,
+            Kind = ParticipantKind.Registered,
+            Status = ParticipantStatus.Invited,
+            CanReview = false,
+            CreatedAt = utcNow
+        };
+    }
+
     public static EventParticipant CreateGuest(
         Guid eventId,
         DateTimeOffset utcNow,
@@ -112,8 +131,8 @@ public class EventParticipant : AuditableEntity
             EventId = eventId,
             UserId = null,
             Kind = ParticipantKind.Guest,
-            GuestFirstName = NormalizeGuestName(firstName),
-            GuestLastName = NormalizeGuestName(lastName),
+            GuestFirstName = NormalizeRequiredGuestName(firstName, "first"),
+            GuestLastName = NormalizeRequiredGuestName(lastName, "last"),
             Status = ParticipantStatus.Approved,
             JoinedAt = utcNow,
             CanReview = false,
@@ -168,9 +187,11 @@ public class EventParticipant : AuditableEntity
             return;
         }
 
-        if (Status is not (ParticipantStatus.Pending or ParticipantStatus.Approved))
+        if (Status is not (ParticipantStatus.Pending
+            or ParticipantStatus.Approved
+            or ParticipantStatus.Invited))
         {
-            throw new DomainException("Only pending or approved participants can cancel.");
+            throw new DomainException("Only pending, invited or approved participants can cancel.");
         }
 
         Status = ParticipantStatus.Cancelled;
@@ -215,6 +236,47 @@ public class EventParticipant : AuditableEntity
         JoinedAt = utcNow;
         LeftAt = null;
         AttendedAt = null;
+        CanReview = false;
+        Touch(utcNow);
+    }
+
+    public void ReopenAsInvited(DateTimeOffset utcNow)
+    {
+        if (IsGuest || Status is not ParticipantStatus.Cancelled)
+        {
+            throw new DomainException("Only cancelled registered participants can be invited again.");
+        }
+
+        Status = ParticipantStatus.Invited;
+        JoinedAt = null;
+        LeftAt = null;
+        AttendedAt = null;
+        CanReview = false;
+        Touch(utcNow);
+    }
+
+    public void AcceptInvitation(DateTimeOffset utcNow)
+    {
+        if (Status is not ParticipantStatus.Invited)
+        {
+            throw new DomainException("Only invited participants can accept an invitation.");
+        }
+
+        Status = ParticipantStatus.Approved;
+        JoinedAt = utcNow;
+        CanReview = false;
+        Touch(utcNow);
+    }
+
+    public void DeclineInvitation(DateTimeOffset utcNow)
+    {
+        if (Status is not ParticipantStatus.Invited)
+        {
+            throw new DomainException("Only invited participants can decline an invitation.");
+        }
+
+        Status = ParticipantStatus.Cancelled;
+        LeftAt = utcNow;
         CanReview = false;
         Touch(utcNow);
     }
@@ -266,8 +328,7 @@ public class EventParticipant : AuditableEntity
 
     public bool OccupiesCapacity()
     {
-        return Status is ParticipantStatus.Pending
-            or ParticipantStatus.Approved
+        return Status is ParticipantStatus.Approved
             or ParticipantStatus.Attended
             or ParticipantStatus.NoShow;
     }
@@ -290,11 +351,11 @@ public class EventParticipant : AuditableEntity
         }
     }
 
-    private static string? NormalizeGuestName(string? value)
+    private static string NormalizeRequiredGuestName(string? value, string field)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return null;
+            throw new DomainException($"Guest {field} name is required.");
         }
 
         var normalized = value.Trim();

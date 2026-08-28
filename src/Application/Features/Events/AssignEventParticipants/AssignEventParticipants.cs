@@ -30,12 +30,14 @@ public sealed class AssignEventParticipantsCommandValidator
             .ChildRules(guest =>
             {
                 guest.RuleFor(item => item.FirstName)
-                    .MaximumLength(EventParticipant.GuestNameMaxLength)
-                    .When(item => item.FirstName is not null);
+                    .Must(value => !string.IsNullOrWhiteSpace(value))
+                    .WithMessage("Guest first name is required.")
+                    .MaximumLength(EventParticipant.GuestNameMaxLength);
 
                 guest.RuleFor(item => item.LastName)
-                    .MaximumLength(EventParticipant.GuestNameMaxLength)
-                    .When(item => item.LastName is not null);
+                    .Must(value => !string.IsNullOrWhiteSpace(value))
+                    .WithMessage("Guest last name is required.")
+                    .MaximumLength(EventParticipant.GuestNameMaxLength);
             })
             .When(command => command.Guests is not null);
 
@@ -72,6 +74,7 @@ internal sealed class AssignEventParticipantsCommandHandler
                     .Where(userId => userId != Guid.Empty)
                     .Distinct()
                     .ToList();
+                var inviterName = "Arkadaşın";
 
                 if (guests.Count == 0 && friendIds.Count == 0)
                 {
@@ -85,6 +88,19 @@ internal sealed class AssignEventParticipantsCommandHandler
 
                 if (friendIds.Count > 0)
                 {
+                    var organizerProfile = await DbContext.UserProfiles.AsNoTracking()
+                        .Where(profile => profile.UserId == @event.OrganizerUserId)
+                        .Select(profile => new { profile.FirstName, profile.LastName, profile.Username })
+                        .FirstOrDefaultAsync(ct);
+
+                    if (organizerProfile is not null)
+                    {
+                        var fullName = $"{organizerProfile.FirstName} {organizerProfile.LastName}".Trim();
+                        inviterName = !string.IsNullOrWhiteSpace(fullName)
+                            ? fullName
+                            : organizerProfile.Username ?? inviterName;
+                    }
+
                     var acceptedFriendIds = await SocialQueries.AcceptedFriendIds(DbContext, @event.OrganizerUserId)
                         .ToListAsync(ct);
 
@@ -141,23 +157,26 @@ internal sealed class AssignEventParticipantsCommandHandler
                         continue;
                     }
 
-                    await EventAccess.AddConversationMemberIfPresentAsync(
-                        DbContext,
-                        @event.Id,
-                        userId,
-                        utcNow,
-                        ct);
+                    if (participant.Status is ParticipantStatus.Approved)
+                    {
+                        await EventAccess.AddConversationMemberIfPresentAsync(
+                            DbContext,
+                            @event.Id,
+                            userId,
+                            utcNow,
+                            ct);
 
-                    var statistics = await DbContext.UserStatistics
-                        .FirstOrDefaultAsync(candidate => candidate.UserId == userId, ct);
+                        var statistics = await DbContext.UserStatistics
+                            .FirstOrDefaultAsync(candidate => candidate.UserId == userId, ct);
 
-                    statistics?.IncreaseEventsJoined(utcNow);
+                        statistics?.IncreaseEventsJoined(utcNow);
+                    }
 
                     await _notificationPublisher.PublishAsync(
                         userId,
                         NotificationType.EventInvitation,
-                        "Etkinliğe eklendin",
-                        $"\"{@event.Title}\" etkinliğine eklendin.",
+                        $"{inviterName} seni davet ediyor",
+                        $"\"{@event.Title}\" etkinliğine davet edildin.",
                         NotificationEntityType.Event,
                         @event.Id,
                         @event.OrganizerUserId,

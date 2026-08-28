@@ -92,8 +92,7 @@ internal sealed class DiscoverEventsQueryHandler
                 (short)@event.Status,
                 _dbContext.EventParticipants.Count(participant =>
                     participant.EventId == @event.Id
-                    && (participant.Status == ParticipantStatus.Pending
-                        || participant.Status == ParticipantStatus.Approved
+                    && (participant.Status == ParticipantStatus.Approved
                         || participant.Status == ParticipantStatus.Attended
                         || participant.Status == ParticipantStatus.NoShow)));
 

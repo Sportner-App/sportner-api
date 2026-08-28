@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Sportner.API.Authorization;
 using Sportner.API.Common;
 using Sportner.Application.Features.Events.ApplyToEvent;
+using Sportner.Application.Features.Events.AcceptEventInvitation;
+using Sportner.Application.Features.Events.DeclineEventInvitation;
 using Sportner.Application.Features.Events.ApproveParticipant;
 using Sportner.Application.Features.Events.AssignEventParticipants;
 using Sportner.Application.Features.Events.CancelEvent;
@@ -251,6 +253,20 @@ public sealed class EventsController : ApiControllerBase
     public async Task<IActionResult> Apply(Guid eventId, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new ApplyToEventCommand(eventId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{eventId:guid}/invitations/me/accept")]
+    public async Task<IActionResult> AcceptInvitation(Guid eventId, CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new AcceptEventInvitationCommand(eventId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{eventId:guid}/invitations/me/decline")]
+    public async Task<IActionResult> DeclineInvitation(Guid eventId, CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new DeclineEventInvitationCommand(eventId), cancellationToken);
         return result.ToActionResult();
     }
 

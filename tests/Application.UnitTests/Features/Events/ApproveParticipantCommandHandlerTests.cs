@@ -84,4 +84,51 @@ public sealed class ApproveParticipantCommandHandlerTests
             .SingleAsync(row => row.UserId == applicant.Id);
         member.LeftAt.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Handle_Fails_WhenApprovingWouldExceedCapacity()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 24, 5, 0, 0, TimeSpan.Zero));
+
+        var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+        var firstApplicant = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+        var secondApplicant = TestUsers.CreateActive("+905553333333", time.GetUtcNow());
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var @event = DomainEvent.Create(
+            organizer.Id,
+            sport.Id,
+            "Halı saha",
+            time.GetUtcNow().AddHours(4),
+            durationMinutes: 90,
+            latitude: 41m,
+            longitude: 29m,
+            address: "Istanbul",
+            time.GetUtcNow(),
+            maxParticipants: 2);
+
+        @event.Publish(time.GetUtcNow());
+        @event.Apply(firstApplicant.Id, time.GetUtcNow());
+        @event.Apply(secondApplicant.Id, time.GetUtcNow());
+        @event.ApproveParticipant(firstApplicant.Id, time.GetUtcNow());
+
+        db.Users.AddRange(organizer, firstApplicant, secondApplicant);
+        db.Sports.Add(sport);
+        db.Events.Add(@event);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        var handler = new ApproveParticipantCommandHandler(
+            db,
+            new TestCurrentUser(organizer.Id),
+            time,
+            Mock.Of<INotificationPublisher>());
+
+        var result = await handler.Handle(
+            new ApproveParticipantCommand(@event.Id, secondApplicant.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Code == "Event.CapacityFull");
+    }
 }

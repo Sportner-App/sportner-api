@@ -37,6 +37,11 @@ internal sealed class ApproveParticipantCommandHandler
                     return Result.Failure(EventErrors.ParticipantNotFound);
                 }
 
+                if (!@event.HasAvailableCapacity())
+                {
+                    return Result.Failure(EventErrors.CapacityFull);
+                }
+
                 @event.ApproveParticipant(request.UserId, utcNow);
 
                 await EventAccess.AddConversationMemberIfPresentAsync(

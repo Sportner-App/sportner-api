@@ -120,8 +120,21 @@ internal sealed class CreateReportCommandHandler : ICommandHandler<CreateReportC
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var response = await ReportQueries.Project(_dbContext)
-            .FirstAsync(candidate => candidate.Id == report.Id, cancellationToken);
+        var response = new ReportResponse(
+            report.Id,
+            report.ReporterUserId,
+            (short)report.EntityType,
+            report.EntityId,
+            report.ReportReasonId,
+            reason.Code,
+            reason.Name,
+            report.Description,
+            (short)report.Status,
+            report.ReviewedByUserId,
+            report.ReviewedAt,
+            report.ResolutionNote,
+            report.CreatedAt,
+            report.UpdatedAt);
 
         return Result<ReportResponse>.Success(response);
     }

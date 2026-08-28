@@ -19,6 +19,56 @@ namespace Sportner.Application.UnitTests.Features.Moderation;
 public sealed class ReportHandlerTests
 {
     [Fact]
+    public async Task CreateReport_Succeeds_ForEvent_AndReturnsCreatedReport()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 8, 0, 0, TimeSpan.Zero));
+        var reporter = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+        var organizer = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+        var sport = Sport.Create("Yoga", 1, time.GetUtcNow(), "yoga");
+        var @event = DomainEvent.Create(
+            organizer.Id,
+            sport.Id,
+            "Session",
+            time.GetUtcNow().AddHours(1),
+            durationMinutes: 45,
+            latitude: 41m,
+            longitude: 29m,
+            address: "Istanbul",
+            time.GetUtcNow());
+        var reason = ReportReason.Create("SPAM", "Spam", null, 1, time.GetUtcNow());
+
+        db.Users.AddRange(reporter, organizer);
+        db.Sports.Add(sport);
+        db.Events.Add(@event);
+        db.ReportReasons.Add(reason);
+        await db.SaveChangesAsync();
+
+        var handler = new CreateReportCommandHandler(
+            db,
+            new TestCurrentUser(reporter.Id),
+            time);
+
+        var result = await handler.Handle(
+            new CreateReportCommand(
+                (short)ReportEntityType.Event,
+                @event.Id,
+                reason.Id,
+                null),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue(
+            because: string.Join("; ", result.Errors.Select(error => error.Code)));
+        result.Value.Should().NotBeNull();
+        result.Value!.EntityType.Should().Be((short)ReportEntityType.Event);
+        result.Value.EntityId.Should().Be(@event.Id);
+        result.Value.ReportReasonId.Should().Be(reason.Id);
+        result.Value.ReportReasonCode.Should().Be(reason.Code);
+        result.Value.ReportReasonName.Should().Be(reason.Name);
+        db.Reports.Should().ContainSingle(report => report.Id == result.Value.Id);
+    }
+
+    [Fact]
     public async Task CreateReport_Fails_OnDuplicate()
     {
         await using var db = InMemoryDb.Create();

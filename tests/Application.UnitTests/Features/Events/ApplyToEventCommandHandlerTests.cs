@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Sportner.Application.Features.Events.ApplyToEvent;
 using Sportner.Application.UnitTests.Infrastructure;
@@ -59,6 +60,11 @@ public sealed class ApplyToEventCommandHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value!.JoinedWaitlist.Should().BeFalse();
         result.Value.ParticipantStatus.Should().Be((short)ParticipantStatus.Pending);
+
+        var loadedEvent = await db.Events
+            .Include(candidate => candidate.Participants)
+            .SingleAsync(candidate => candidate.Id == eventId);
+        loadedEvent.OccupiedParticipantCount().Should().Be(1);
     }
 
     [Fact]

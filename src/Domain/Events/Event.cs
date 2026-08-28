@@ -285,6 +285,11 @@ public class Event : AggregateRoot
             throw new DomainException("Only pending participants can be approved.");
         }
 
+        if (!HasAvailableCapacity())
+        {
+            throw new DomainException("Event capacity is full.");
+        }
+
         participant.Approve(utcNow);
         RefreshCapacityStatus(utcNow);
         Touch(utcNow);
@@ -304,6 +309,29 @@ public class Event : AggregateRoot
             RefreshCapacityStatus(utcNow);
         }
 
+        Touch(utcNow);
+    }
+
+    public void AcceptInvitation(Guid userId, DateTimeOffset utcNow)
+    {
+        EnsureNotTerminalForParticipationChanges(utcNow);
+
+        if (!HasAvailableCapacity())
+        {
+            throw new DomainException("Event capacity is full.");
+        }
+
+        var participant = FindParticipant(userId);
+        participant.AcceptInvitation(utcNow);
+        RefreshCapacityStatus(utcNow);
+        Touch(utcNow);
+    }
+
+    public void DeclineInvitation(Guid userId, DateTimeOffset utcNow)
+    {
+        EnsureNotTerminalForParticipationChanges(utcNow);
+        var participant = FindParticipant(userId);
+        participant.DeclineInvitation(utcNow);
         Touch(utcNow);
     }
 
@@ -384,6 +412,13 @@ public class Event : AggregateRoot
         if (guestList.Count == 0 && friendIds.Count == 0)
         {
             throw new DomainException("At least one guest or friend must be assigned.");
+        }
+
+        if (guestList.Any(guest =>
+                string.IsNullOrWhiteSpace(guest.FirstName)
+                || string.IsNullOrWhiteSpace(guest.LastName)))
+        {
+            throw new DomainException("Guest first and last name are required.");
         }
 
         if (friendIds.Contains(OrganizerUserId))
@@ -567,14 +602,14 @@ public class Event : AggregateRoot
 
             if (existing.Status is ParticipantStatus.Cancelled)
             {
-                existing.ReopenAsApproved(utcNow);
+                existing.ReopenAsInvited(utcNow);
                 return existing;
             }
 
             throw new DomainException("User is already associated with this event.");
         }
 
-        var participant = EventParticipant.CreateApproved(Id, userId, utcNow);
+        var participant = EventParticipant.CreateInvited(Id, userId, utcNow);
         _participants.Add(participant);
         return participant;
     }
