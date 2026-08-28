@@ -7,6 +7,7 @@ using Sportner.API.Extensions.Localization;
 using Sportner.API.Extensions.RateLimiting;
 using Sportner.API.Extensions.Seeding;
 using Sportner.API.Extensions.Swagger;
+using Sportner.API.BackgroundServices;
 using Sportner.API.Hubs;
 using Sportner.API.Middleware;
 using Sportner.API.Realtime;
@@ -30,6 +31,7 @@ builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomLocalization();
 builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
 builder.Services.AddCustomRateLimiting();
+builder.Services.AddHostedService<ApiNotificationDeliveryService>();
 // Overrides Application's NullChatRealtimeNotifier — must register after AddApplication.
 builder.Services.AddSingleton<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
 
