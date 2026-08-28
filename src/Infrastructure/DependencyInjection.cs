@@ -42,7 +42,11 @@ public static class DependencyInjection
         services.AddAuthenticationServices(configuration);
         services.AddStorageServices(configuration);
         services.AddScoped<INotificationPublisher, InAppNotificationPublisher>();
-        services.AddSingleton<IPushSender, LoggingPushSender>();
+        services.AddHttpClient<IPushSender, ExpoPushSender>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        });
 
         services.AddHealthChecks();
 
