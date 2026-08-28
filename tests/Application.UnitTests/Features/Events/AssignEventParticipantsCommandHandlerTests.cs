@@ -8,6 +8,7 @@ using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
+using Sportner.Domain.Users;
 using DomainEvent = Sportner.Domain.Events.Event;
 
 namespace Sportner.Application.UnitTests.Features.Events;
@@ -22,6 +23,9 @@ public sealed class AssignEventParticipantsCommandHandlerTests
 
         var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
         var friend = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+        var friendProfile = UserProfile.Create(friend.Id, "friend-user", "Friend", time.GetUtcNow());
+        friendProfile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), time.GetUtcNow());
+        friend.AttachUserProfile(friendProfile);
         var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
         var friendship = Friendship.CreateRequest(organizer.Id, friend.Id, time.GetUtcNow());
         friendship.Accept(time.GetUtcNow());

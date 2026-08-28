@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sportner.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Sportner.Infrastructure.Persistence;
 namespace Sportner.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260828165854_AddEventParticipationAgeRange")]
+    partial class AddEventParticipationAgeRange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,61 +283,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("EventParticipants");
-                });
-
-            modelBuilder.Entity("Sportner.Domain.Events.EventParticipantRemoval", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<Guid>("OrganizerUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ParticipantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("RemovedUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ReportReasonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("OrganizerUserId");
-
-                    b.HasIndex("ParticipantId")
-                        .IsUnique();
-
-                    b.HasIndex("RemovedUserId");
-
-                    b.HasIndex("ReportReasonId");
-
-                    b.ToTable("EventParticipantRemovals");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Events.EventReminderDispatch", b =>
@@ -1944,38 +1892,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Sportner.Domain.Events.EventParticipantRemoval", b =>
-                {
-                    b.HasOne("Sportner.Domain.Events.Event", null)
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Sportner.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("OrganizerUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Sportner.Domain.Events.EventParticipant", null)
-                        .WithMany()
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Sportner.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("RemovedUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Sportner.Domain.Moderation.ReportReason", null)
-                        .WithMany()
-                        .HasForeignKey("ReportReasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sportner.Domain.Events.EventReminderDispatch", b =>

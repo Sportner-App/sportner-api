@@ -73,6 +73,16 @@ internal sealed class ApplyToEventCommandHandler
             return Result<ApplyToEventResponse>.Failure(EventErrors.AlreadyApplied);
         }
 
+        var birthDate = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(profile => profile.UserId == userId)
+            .Select(profile => profile.BirthDate)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (birthDate is null || !@event.IsParticipantAgeEligible(birthDate.Value))
+        {
+            return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
+        }
+
         var (participant, waitlistEntry) = @event.Apply(userId, _timeProvider.GetUtcNow());
 
         // Client-generated Guids can be tracked as Modified by EF; force insert for new rows.

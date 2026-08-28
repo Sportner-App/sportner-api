@@ -11,4 +11,6 @@ public sealed record CreateEventCommand(
     decimal Latitude,
     decimal Longitude,
     string Address,
-    int? MaxParticipants) : ICommand<EventResponse>;
+    int? MaxParticipants,
+    int MinParticipantAge,
+    int MaxParticipantAge) : ICommand<EventResponse>;

@@ -72,7 +72,9 @@ internal sealed class CreateEventCommandHandler
             request.Address,
             utcNow,
             request.Description,
-            request.MaxParticipants);
+            request.MaxParticipants,
+            request.MinParticipantAge,
+            request.MaxParticipantAge);
 
         _dbContext.Events.Add(@event);
         await _dbContext.SaveChangesAsync(cancellationToken);

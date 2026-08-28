@@ -51,6 +51,16 @@ internal sealed class AcceptEventInvitationCommandHandler
             return Result<EventResponse>.Failure(EventErrors.CapacityFull);
         }
 
+        var birthDate = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(profile => profile.UserId == userId)
+            .Select(profile => profile.BirthDate)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (birthDate is null || !@event.IsParticipantAgeEligible(birthDate.Value))
+        {
+            return Result<EventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         @event.AcceptInvitation(userId, utcNow);
         await EventAccess.AddConversationMemberIfPresentAsync(

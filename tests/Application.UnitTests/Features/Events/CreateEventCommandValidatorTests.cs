@@ -17,7 +17,19 @@ public sealed class CreateEventCommandValidatorTests
             Latitude: 41.015137m,
             Longitude: 28.979530m,
             Address: "Kadıköy Spor Salonu, İstanbul",
-            MaxParticipants: 6);
+            MaxParticipants: 6,
+            MinParticipantAge: 18,
+            MaxParticipantAge: 60);
+
+    [Fact]
+    public void Validate_Fails_WhenMinimumAgeExceedsMaximumAge()
+    {
+        _validator.Validate(ValidCommand() with
+        {
+            MinParticipantAge = 61,
+            MaxParticipantAge = 60
+        }).IsValid.Should().BeFalse();
+    }
 
     [Fact]
     public void Validate_Passes_ForValidCommand()

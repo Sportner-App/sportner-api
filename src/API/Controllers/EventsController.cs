@@ -45,12 +45,25 @@ public sealed class EventsController : ApiControllerBase
         [FromQuery] decimal? lat,
         [FromQuery] decimal? lng,
         [FromQuery] double? radiusKm,
+        [FromQuery] int? minAge,
+        [FromQuery] int? maxAge,
+        [FromQuery] short? gender,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(
-            new DiscoverEventsQuery(sportId, city, lat, lng, radiusKm, page, pageSize),
+            new DiscoverEventsQuery(
+                sportId,
+                city,
+                lat,
+                lng,
+                radiusKm,
+                minAge,
+                maxAge,
+                gender,
+                page,
+                pageSize),
             cancellationToken);
 
         return result.ToActionResult();
@@ -165,7 +178,9 @@ public sealed class EventsController : ApiControllerBase
             request.Latitude,
             request.Longitude,
             request.Address,
-            request.MaxParticipants);
+            request.MaxParticipants,
+            request.MinParticipantAge,
+            request.MaxParticipantAge);
 
         var result = await Sender.Send(command, cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -292,18 +307,25 @@ public sealed class EventsController : ApiControllerBase
         return result.ToActionResult();
     }
 
-    [HttpDelete("{eventId:guid}/participants/{participantId:guid}")]
+    [HttpPost("{eventId:guid}/participants/{participantId:guid}/remove")]
     public async Task<IActionResult> RemoveAssignedParticipant(
         Guid eventId,
         Guid participantId,
+        [FromBody] RemoveParticipantRequest request,
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new RemoveAssignedParticipantCommand(eventId, participantId),
+            new RemoveAssignedParticipantCommand(
+                eventId,
+                participantId,
+                request.ReportReasonId,
+                request.Note),
             cancellationToken);
 
         return result.ToActionResult();
     }
+
+    public sealed record RemoveParticipantRequest(Guid ReportReasonId, string? Note);
 
     [HttpPost("{eventId:guid}/participants/{userId:guid}/approve")]
     public async Task<IActionResult> ApproveParticipant(
@@ -392,7 +414,9 @@ public sealed class EventsController : ApiControllerBase
         decimal Latitude,
         decimal Longitude,
         string Address,
-        int? MaxParticipants);
+        int? MaxParticipants,
+        int MinParticipantAge,
+        int MaxParticipantAge);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 

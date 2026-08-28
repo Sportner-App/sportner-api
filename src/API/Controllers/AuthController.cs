@@ -26,6 +26,8 @@ public sealed class AuthController : ApiControllerBase
             request.Password,
             request.FirstName,
             request.LastName,
+            request.Gender,
+            request.BirthDate,
             IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
             UserAgent: HttpContext.Request.Headers.UserAgent.ToString());
 
@@ -86,7 +88,9 @@ public sealed class AuthController : ApiControllerBase
         string Username,
         string Password,
         string FirstName,
-        string? LastName);
+        string? LastName,
+    short? Gender,
+        DateOnly BirthDate);
 
     public sealed record LoginRequest(string Username, string Password);
 

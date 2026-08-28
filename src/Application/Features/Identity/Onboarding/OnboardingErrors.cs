@@ -19,4 +19,12 @@ internal static class OnboardingErrors
     internal static readonly Error SportRequired = Error.Conflict(
         "Onboarding.SportRequired",
         "At least one sport with a skill level must be selected before onboarding can be completed.");
+
+    internal static readonly Error PersonalDetailsRequired = Error.Conflict(
+        "Onboarding.PersonalDetailsRequired",
+        "Gender and birth date are required before onboarding can be completed.");
+
+    internal static readonly Error AvatarRequired = Error.Conflict(
+        "Onboarding.AvatarRequired",
+        "A profile photo is required before onboarding can be completed.");
 }

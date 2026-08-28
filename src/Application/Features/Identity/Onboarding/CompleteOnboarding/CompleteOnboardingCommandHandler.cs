@@ -56,6 +56,16 @@ internal sealed class CompleteOnboardingCommandHandler : ICommandHandler<Complet
             return Result.Failure(OnboardingErrors.SportRequired);
         }
 
+        if (user.UserProfile.Gender is null || user.UserProfile.BirthDate is null)
+        {
+            return Result.Failure(OnboardingErrors.PersonalDetailsRequired);
+        }
+
+        if (string.IsNullOrWhiteSpace(user.UserProfile.ProfileImageUrl))
+        {
+            return Result.Failure(OnboardingErrors.AvatarRequired);
+        }
+
         user.CompleteOnboarding(_timeProvider.GetUtcNow());
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -4,7 +4,7 @@ namespace Sportner.Application.Features.Identity.Auth.Register;
 
 internal sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {
-    public RegisterCommandValidator()
+    public RegisterCommandValidator(TimeProvider timeProvider)
     {
         RuleFor(command => command.Username)
             .NotEmpty()
@@ -24,5 +24,17 @@ internal sealed class RegisterCommandValidator : AbstractValidator<RegisterComma
         RuleFor(command => command.LastName)
             .MaximumLength(50)
             .When(command => !string.IsNullOrWhiteSpace(command.LastName));
+
+        RuleFor(command => command.Gender)
+            .NotNull()
+            .InclusiveBetween((short)0, (short)2);
+
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        RuleFor(command => command.BirthDate)
+            .NotEmpty()
+            .LessThanOrEqualTo(today.AddYears(-13))
+            .WithMessage("Users must be at least 13 years old.")
+            .GreaterThanOrEqualTo(today.AddYears(-120))
+            .WithMessage("Birth date is not plausible.");
     }
 }

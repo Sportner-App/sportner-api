@@ -117,6 +117,18 @@ internal sealed class AssignEventParticipantsCommandHandler
                         return Result.Failure(EventErrors.UserNotFound);
                     }
 
+                    var friendBirthDates = await DbContext.UserProfiles.AsNoTracking()
+                        .Where(profile => friendIds.Contains(profile.UserId))
+                        .Select(profile => profile.BirthDate)
+                        .ToListAsync(ct);
+
+                    if (friendBirthDates.Count != friendIds.Count
+                        || friendBirthDates.Any(birthDate =>
+                            birthDate is null || !@event.IsParticipantAgeEligible(birthDate.Value)))
+                    {
+                        return Result.Failure(EventErrors.ParticipantAgeNotEligible);
+                    }
+
                     var alreadyAssociated = @event.Participants.Any(participant =>
                         participant.UserId is { } userId
                         && friendIds.Contains(userId)

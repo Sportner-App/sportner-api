@@ -22,6 +22,8 @@ public sealed record EventResponse(
     decimal Longitude,
     string Address,
     int? MaxParticipants,
+    int MinParticipantAge,
+    int MaxParticipantAge,
     short Status,
     int OccupiedParticipantCount,
     int WaitlistCount,
@@ -42,6 +44,8 @@ public sealed record EventListItemResponse(
     int DurationMinutes,
     string Address,
     int? MaxParticipants,
+    int MinParticipantAge,
+    int MaxParticipantAge,
     short Status,
     int OccupiedParticipantCount);
 

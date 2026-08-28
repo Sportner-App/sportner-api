@@ -7,6 +7,7 @@ using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Sports;
+using Sportner.Domain.Users;
 using DomainEvent = Sportner.Domain.Events.Event;
 
 namespace Sportner.Application.UnitTests.Features.Events;
@@ -20,6 +21,7 @@ public sealed class EventInvitationCommandHandlerTests
         var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 28, 12, 0, 0, TimeSpan.Zero));
         var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
         var invitee = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+        invitee.AttachUserProfile(CreateEligibleProfile(invitee.Id, time.GetUtcNow()));
         var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
         var @event = CreateEvent(organizer.Id, sport.Id, time);
         @event.AssignParticipants([], [invitee.Id], time.GetUtcNow());
@@ -89,5 +91,12 @@ public sealed class EventInvitationCommandHandlerTests
             maxParticipants: 10);
         @event.Publish(time.GetUtcNow());
         return @event;
+    }
+
+    private static UserProfile CreateEligibleProfile(Guid userId, DateTimeOffset utcNow)
+    {
+        var profile = UserProfile.Create(userId, $"user-{userId:N}"[..30], "User", utcNow);
+        profile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), utcNow);
+        return profile;
     }
 }

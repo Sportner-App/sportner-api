@@ -44,6 +44,10 @@ internal static class EventErrors
         "Event.ParticipantNotFound",
         "The participant was not found.");
 
+    internal static readonly Error RemovalReasonNotFound = Error.Validation(
+        "Event.RemovalReasonNotFound",
+        "A valid participant removal reason is required.");
+
     internal static readonly Error WaitlistEntryNotFound = Error.NotFound(
         "Event.WaitlistEntryNotFound",
         "The waitlist entry was not found.");
@@ -55,6 +59,10 @@ internal static class EventErrors
     internal static readonly Error CapacityFull = Error.Conflict(
         "Event.CapacityFull",
         "The event capacity is full.");
+
+    internal static readonly Error ParticipantAgeNotEligible = Error.Forbidden(
+        "Event.ParticipantAgeNotEligible",
+        "Your age is outside the participation age range for this event.");
 
     internal static readonly Error InvitationNotFound = Error.NotFound(
         "Event.InvitationNotFound",

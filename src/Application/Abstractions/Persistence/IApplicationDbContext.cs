@@ -26,6 +26,7 @@ public interface IApplicationDbContext
     DbSet<EventParticipant> EventParticipants { get; }
     DbSet<EventWaitlist> EventWaitlists { get; }
     DbSet<EventReminderDispatch> EventReminderDispatches { get; }
+    DbSet<EventParticipantRemoval> EventParticipantRemovals { get; }
     DbSet<Conversation> Conversations { get; }
     DbSet<ConversationMember> ConversationMembers { get; }
     DbSet<Message> Messages { get; }

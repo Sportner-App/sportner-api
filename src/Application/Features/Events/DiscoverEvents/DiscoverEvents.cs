@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Geo;
@@ -15,8 +16,30 @@ public sealed record DiscoverEventsQuery(
     decimal? Latitude = null,
     decimal? Longitude = null,
     double? RadiusKm = null,
+    int? MinParticipantAge = null,
+    int? MaxParticipantAge = null,
+    short? OrganizerGender = null,
     int Page = 1,
     int PageSize = 20) : IQuery<PagedResult<EventListItemResponse>>;
+
+public sealed class DiscoverEventsQueryValidator : AbstractValidator<DiscoverEventsQuery>
+{
+    public DiscoverEventsQueryValidator()
+    {
+        RuleFor(query => query.MinParticipantAge)
+            .InclusiveBetween(13, 120)
+            .When(query => query.MinParticipantAge is not null);
+        RuleFor(query => query.MaxParticipantAge)
+            .InclusiveBetween(13, 120)
+            .When(query => query.MaxParticipantAge is not null);
+        RuleFor(query => query.MaxParticipantAge)
+            .GreaterThanOrEqualTo(query => query.MinParticipantAge)
+            .When(query => query.MinParticipantAge is not null && query.MaxParticipantAge is not null);
+        RuleFor(query => query.OrganizerGender)
+            .InclusiveBetween((short)0, (short)2)
+            .When(query => query.OrganizerGender is not null);
+    }
+}
 
 internal sealed class DiscoverEventsQueryHandler
     : IQueryHandler<DiscoverEventsQuery, PagedResult<EventListItemResponse>>
@@ -56,6 +79,22 @@ internal sealed class DiscoverEventsQueryHandler
             events = events.Where(@event => @event.Address.ToLower().Contains(lowered));
         }
 
+        if (request.MinParticipantAge is { } minAge)
+        {
+            events = events.Where(@event => @event.MaxParticipantAge >= minAge);
+        }
+
+        if (request.MaxParticipantAge is { } maxAge)
+        {
+            events = events.Where(@event => @event.MinParticipantAge <= maxAge);
+        }
+
+        if (request.OrganizerGender is { } gender)
+        {
+            events = events.Where(@event => _dbContext.UserProfiles.Any(profile =>
+                profile.UserId == @event.OrganizerUserId && profile.Gender == gender));
+        }
+
         if (request.Latitude is { } lat
             && request.Longitude is { } lng
             && request.RadiusKm is { } radiusKm
@@ -89,6 +128,8 @@ internal sealed class DiscoverEventsQueryHandler
                 @event.DurationMinutes,
                 @event.Address,
                 @event.MaxParticipants,
+                @event.MinParticipantAge,
+                @event.MaxParticipantAge,
                 (short)@event.Status,
                 _dbContext.EventParticipants.Count(participant =>
                     participant.EventId == @event.Id

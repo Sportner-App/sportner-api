@@ -87,6 +87,8 @@ internal static class EventQueries
             @event.Longitude,
             @event.Address,
             @event.MaxParticipants,
+            @event.MinParticipantAge,
+            @event.MaxParticipantAge,
             (short)@event.Status,
             occupied,
             waitlistCount,
@@ -123,6 +125,8 @@ internal static class EventQueries
             @event.DurationMinutes,
             @event.Address,
             @event.MaxParticipants,
+            @event.MinParticipantAge,
+            @event.MaxParticipantAge,
             (short)@event.Status,
             dbContext.EventParticipants.Count(participant =>
                 participant.EventId == @event.Id

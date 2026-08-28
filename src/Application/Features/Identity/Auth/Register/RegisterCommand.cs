@@ -7,5 +7,7 @@ public sealed record RegisterCommand(
     string Password,
     string FirstName,
     string? LastName,
+    short? Gender,
+    DateOnly BirthDate,
     string? IpAddress,
     string? UserAgent) : ICommand<AuthenticationResponse>;

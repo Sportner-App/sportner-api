@@ -28,7 +28,7 @@ public sealed class PasswordAuthCommandHandlerTests
             TimeProvider.System);
 
         var result = await handler.Handle(
-            new RegisterCommand("AhmetX", "Password1!", "Ahmet", "Yilmaz", null, null),
+            new RegisterCommand("AhmetX", "Password1!", "Ahmet", "Yilmaz", 0, new DateOnly(2000, 1, 1), null, null),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -57,7 +57,7 @@ public sealed class PasswordAuthCommandHandlerTests
             TimeProvider.System);
 
         await register.Handle(
-            new RegisterCommand("player1", "Password1!", "Player", null, null, null),
+            new RegisterCommand("player1", "Password1!", "Player", null, 1, new DateOnly(2000, 1, 1), null, null),
             CancellationToken.None);
 
         db.ChangeTracker.Clear();
@@ -97,7 +97,7 @@ public sealed class PasswordAuthCommandHandlerTests
             TimeProvider.System);
 
         await register.Handle(
-            new RegisterCommand("player2", "Password1!", "Player", null, null, null),
+            new RegisterCommand("player2", "Password1!", "Player", null, 2, new DateOnly(2000, 1, 1), null, null),
             CancellationToken.None);
 
         var login = new LoginCommandHandler(

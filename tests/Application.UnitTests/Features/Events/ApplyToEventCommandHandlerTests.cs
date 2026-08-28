@@ -5,6 +5,7 @@ using Sportner.Application.Features.Events.ApplyToEvent;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Sports;
+using Sportner.Domain.Users;
 using DomainEvent = Sportner.Domain.Events.Event;
 
 namespace Sportner.Application.UnitTests.Features.Events;
@@ -24,6 +25,7 @@ public sealed class ApplyToEventCommandHandlerTests
         {
             var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
             var applicant = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+            applicant.AttachUserProfile(CreateEligibleProfile(applicant.Id, time.GetUtcNow()));
             var sport = Sport.Create("Football", 1, time.GetUtcNow(), "football");
 
             var @event = DomainEvent.Create(
@@ -80,6 +82,7 @@ public sealed class ApplyToEventCommandHandlerTests
         {
             var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
             var applicant = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+            applicant.AttachUserProfile(CreateEligibleProfile(applicant.Id, time.GetUtcNow()));
             var sport = Sport.Create("Football", 1, time.GetUtcNow(), "football");
 
             var @event = DomainEvent.Create(
@@ -131,6 +134,7 @@ public sealed class ApplyToEventCommandHandlerTests
         {
             var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
             var applicant = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+            applicant.AttachUserProfile(CreateEligibleProfile(applicant.Id, time.GetUtcNow()));
             var sport = Sport.Create("Football", 1, time.GetUtcNow(), "football");
 
             var @event = DomainEvent.Create(
@@ -170,5 +174,12 @@ public sealed class ApplyToEventCommandHandlerTests
         result.IsSuccess.Should().BeTrue(because: string.Join("; ", result.Errors.Select(e => e.Message)));
         result.Value!.JoinedWaitlist.Should().BeFalse();
         result.Value.ParticipantStatus.Should().Be((short)ParticipantStatus.Pending);
+    }
+
+    private static UserProfile CreateEligibleProfile(Guid userId, DateTimeOffset utcNow)
+    {
+        var profile = UserProfile.Create(userId, $"user-{userId:N}"[..30], "User", utcNow);
+        profile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), utcNow);
+        return profile;
     }
 }

@@ -45,6 +45,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<EventReminderDispatch> EventReminderDispatches => Set<EventReminderDispatch>();
 
+    public DbSet<EventParticipantRemoval> EventParticipantRemovals => Set<EventParticipantRemoval>();
+
     public DbSet<Conversation> Conversations => Set<Conversation>();
 
     public DbSet<ConversationMember> ConversationMembers => Set<ConversationMember>();

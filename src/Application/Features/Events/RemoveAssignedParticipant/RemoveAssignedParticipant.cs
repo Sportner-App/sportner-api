@@ -1,14 +1,33 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Events;
 
 namespace Sportner.Application.Features.Events.RemoveAssignedParticipant;
 
-public sealed record RemoveAssignedParticipantCommand(Guid EventId, Guid ParticipantId)
+public sealed record RemoveAssignedParticipantCommand(
+    Guid EventId,
+    Guid ParticipantId,
+    Guid ReportReasonId,
+    string? Note)
     : ICommand<EventResponse>;
+
+public sealed class RemoveAssignedParticipantCommandValidator
+    : FluentValidation.AbstractValidator<RemoveAssignedParticipantCommand>
+{
+    public RemoveAssignedParticipantCommandValidator()
+    {
+        RuleFor(command => command.EventId).NotEmpty();
+        RuleFor(command => command.ParticipantId).NotEmpty();
+        RuleFor(command => command.ReportReasonId).NotEmpty();
+        RuleFor(command => command.Note)
+            .MaximumLength(EventParticipantRemoval.NoteMaxLength);
+    }
+}
 
 internal sealed class RemoveAssignedParticipantCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<RemoveAssignedParticipantCommand, EventResponse>
@@ -41,10 +60,29 @@ internal sealed class RemoveAssignedParticipantCommandHandler
                     return Result.Failure(EventErrors.NotOrganizer);
                 }
 
+                var reasonExists = await DbContext.ReportReasons.AsNoTracking()
+                    .AnyAsync(reason =>
+                        reason.Id == request.ReportReasonId && reason.IsActive,
+                        ct);
+
+                if (!reasonExists)
+                {
+                    return Result.Failure(EventErrors.RemovalReasonNotFound);
+                }
+
                 var userId = participant.UserId;
                 var wasApproved = participant.Status is ParticipantStatus.Approved;
 
                 @event.RemoveAssignedParticipant(request.ParticipantId, utcNow);
+
+                DbContext.EventParticipantRemovals.Add(EventParticipantRemoval.Create(
+                    @event.Id,
+                    participant.Id,
+                    @event.OrganizerUserId,
+                    userId,
+                    request.ReportReasonId,
+                    request.Note,
+                    utcNow));
 
                 if (userId is { } registeredUserId)
                 {

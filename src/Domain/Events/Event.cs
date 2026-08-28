@@ -33,6 +33,10 @@ public class Event : AggregateRoot
 
     public int? MaxParticipants { get; private set; }
 
+    public int MinParticipantAge { get; private set; }
+
+    public int MaxParticipantAge { get; private set; }
+
     public EventStatus Status { get; private set; }
 
     public IReadOnlyCollection<EventParticipant> Participants => _participants.AsReadOnly();
@@ -50,7 +54,9 @@ public class Event : AggregateRoot
         string address,
         DateTimeOffset utcNow,
         string? description = null,
-        int? maxParticipants = null)
+        int? maxParticipants = null,
+        int minParticipantAge = 18,
+        int maxParticipantAge = 60)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -75,14 +81,33 @@ public class Event : AggregateRoot
             Longitude = NormalizeLongitude(longitude),
             Address = NormalizeAddress(address),
             MaxParticipants = NormalizeMaxParticipants(maxParticipants),
+            MinParticipantAge = NormalizeParticipantAge(minParticipantAge, nameof(minParticipantAge)),
+            MaxParticipantAge = NormalizeParticipantAge(maxParticipantAge, nameof(maxParticipantAge)),
             Status = EventStatus.Draft,
             CreatedAt = utcNow
         };
+
+        if (@event.MinParticipantAge > @event.MaxParticipantAge)
+        {
+            throw new DomainException("Minimum participant age cannot exceed maximum participant age.");
+        }
 
         @event._participants.Add(
             EventParticipant.CreateOrganizer(@event.Id, organizerUserId, utcNow));
 
         return @event;
+    }
+
+    public bool IsParticipantAgeEligible(DateOnly birthDate)
+    {
+        var eventDay = DateOnly.FromDateTime(EventDate.UtcDateTime);
+        var age = eventDay.Year - birthDate.Year;
+        if (birthDate > eventDay.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age >= MinParticipantAge && age <= MaxParticipantAge;
     }
 
     public void UpdateDetails(string title, string? description, DateTimeOffset utcNow)
@@ -806,6 +831,16 @@ public class Event : AggregateRoot
         }
 
         return maxParticipants;
+    }
+
+    private static int NormalizeParticipantAge(int age, string parameterName)
+    {
+        if (age is < 13 or > 120)
+        {
+            throw new DomainException($"{parameterName} must be between 13 and 120.");
+        }
+
+        return age;
     }
 
 }

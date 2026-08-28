@@ -76,6 +76,10 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.EventId, entity.UserId, entity.WindowMinutes })
             .IsUnique();
 
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .HasIndex(entity => entity.ParticipantId)
+            .IsUnique();
+
         modelBuilder.Entity<Conversation>()
             .HasIndex(entity => entity.EventId)
             .IsUnique();
@@ -193,6 +197,12 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<EventWaitlist>().HasIndex(entity => entity.EventId);
         modelBuilder.Entity<EventWaitlist>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<EventWaitlist>().HasIndex(entity => entity.Position);
+
+        modelBuilder.Entity<EventParticipantRemoval>().HasIndex(entity => entity.EventId);
+        modelBuilder.Entity<EventParticipantRemoval>().HasIndex(entity => entity.OrganizerUserId);
+        modelBuilder.Entity<EventParticipantRemoval>().HasIndex(entity => entity.RemovedUserId);
+        modelBuilder.Entity<EventParticipantRemoval>().HasIndex(entity => entity.ReportReasonId);
+        modelBuilder.Entity<EventParticipantRemoval>().HasIndex(entity => entity.CreatedAt);
 
         modelBuilder.Entity<Conversation>().HasIndex(entity => entity.Type);
         modelBuilder.Entity<Conversation>().HasIndex(entity => entity.IsClosed);
@@ -372,6 +382,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<EventParticipant>()
             .Property(entity => entity.GuestLastName)
             .HasMaxLength(50);
+
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .Property(entity => entity.Note)
+            .HasMaxLength(EventParticipantRemoval.NoteMaxLength);
 
         modelBuilder.Entity<Conversation>()
             .Property(entity => entity.Title)
@@ -642,6 +656,36 @@ internal static class ModelBuilderExtensions
             .HasOne<User>()
             .WithMany()
             .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .HasOne<EventParticipant>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ParticipantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.RemovedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventParticipantRemoval>()
+            .HasOne<ReportReason>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ReportReasonId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<EventReminderDispatch>()
