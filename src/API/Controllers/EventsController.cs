@@ -14,6 +14,7 @@ using Sportner.Application.Features.Events.CancelParticipation;
 using Sportner.Application.Features.Events.CompleteEvent;
 using Sportner.Application.Features.Events.ConfirmAttendance;
 using Sportner.Application.Features.Events.CreateEvent;
+using Sportner.Application.Features.Events.CreateRecurringEvents;
 using Sportner.Application.Features.Events.DiscoverEvents;
 using Sportner.Application.Features.Events.GetEventById;
 using Sportner.Application.Features.Albums.CreateEventAlbum;
@@ -44,6 +45,7 @@ namespace Sportner.API.Controllers;
 public sealed class EventsController : ApiControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> Discover(
         [FromQuery] Guid? sportId,
         [FromQuery] string? city,
@@ -104,6 +106,7 @@ public sealed class EventsController : ApiControllerBase
     }
 
     [HttpGet("{eventId:guid}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid eventId, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new GetEventByIdQuery(eventId), cancellationToken);
@@ -207,6 +210,20 @@ public sealed class EventsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpPost("recurring")]
+    [Authorize(Policy = AuthorizationPolicies.CanCreateContent)]
+    public async Task<IActionResult> CreateRecurring(
+        [FromBody] CreateRecurringEventsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new CreateRecurringEventsCommand(
+            request.SportId, request.Title, request.Description, request.EventDate,
+            request.DurationMinutes, request.Latitude, request.Longitude, request.Address,
+            request.MaxParticipants, request.MinParticipantAge, request.MaxParticipantAge,
+            request.IntervalWeeks, request.OccurrenceCount), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status201Created);
+    }
+
     [HttpPut("{eventId:guid}/schedule")]
     public async Task<IActionResult> UpdateSchedule(
         Guid eventId,
@@ -294,6 +311,7 @@ public sealed class EventsController : ApiControllerBase
     }
 
     [HttpGet("{eventId:guid}/participants")]
+    [AllowAnonymous]
     public async Task<IActionResult> ListParticipants(
         Guid eventId,
         CancellationToken cancellationToken)
@@ -471,6 +489,12 @@ public sealed class EventsController : ApiControllerBase
         int MinParticipantAge,
         int MaxParticipantAge,
         short? SkillLevel = null);
+
+    public sealed record CreateRecurringEventsRequest(
+        Guid SportId, string Title, string? Description, DateTimeOffset EventDate,
+        int DurationMinutes, decimal Latitude, decimal Longitude, string Address,
+        int? MaxParticipants, int MinParticipantAge, int MaxParticipantAge,
+        int IntervalWeeks, int OccurrenceCount);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 
