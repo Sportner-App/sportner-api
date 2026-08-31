@@ -71,11 +71,20 @@ internal sealed class LikePostCommandHandler : ICommandHandler<LikePostCommand>
         _dbContext.PostLikes.Add(PostLike.Create(post.Id, userId, utcNow));
         post.IncrementLikeCount(utcNow);
 
+        var username = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(profile => profile.UserId == userId)
+            .Select(profile => profile.Username)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var likeCopy = !string.IsNullOrWhiteSpace(username)
+            ? $"{username} kullanıcısı fotoğrafını beğendi"
+            : "Bir kullanıcı fotoğrafını beğendi";
+
         await _notificationPublisher.PublishAsync(
             post.UserId,
             NotificationType.PostLiked,
-            "Gönderin beğenildi",
-            "Birisi gönderini beğendi.",
+            likeCopy,
+            likeCopy,
             NotificationEntityType.Post,
             post.Id,
             userId,
