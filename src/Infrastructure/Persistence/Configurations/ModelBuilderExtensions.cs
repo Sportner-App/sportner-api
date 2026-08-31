@@ -199,6 +199,13 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.Latitude, entity.Longitude });
         modelBuilder.Entity<Event>().HasIndex(entity => entity.SkillLevel);
 
+        modelBuilder.Entity<EventQuestion>()
+            .HasIndex(entity => new { entity.EventId, entity.CreatedAt });
+        modelBuilder.Entity<EventQuestion>()
+            .HasIndex(entity => new { entity.EventId, entity.ParentId });
+        modelBuilder.Entity<EventQuestion>().HasIndex(entity => entity.ParentId);
+        modelBuilder.Entity<EventQuestion>().HasIndex(entity => entity.AuthorUserId);
+
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.EventId);
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.Status);
@@ -396,6 +403,10 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.Longitude)
             .HasPrecision(9, 6);
 
+        modelBuilder.Entity<EventQuestion>()
+            .Property(entity => entity.Content)
+            .HasMaxLength(EventQuestion.MaxContentLength);
+
         modelBuilder.Entity<EventParticipant>()
             .Property(entity => entity.GuestFirstName)
             .HasMaxLength(50);
@@ -529,6 +540,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<PostComment>()
             .Property(entity => entity.IsHidden)
             .HasDefaultValue(false);
+
+        modelBuilder.Entity<EventQuestion>()
+            .Property(entity => entity.ReplyCount)
+            .HasDefaultValue(0);
     }
 
     private static void ConfigureSmallIntColumns(ModelBuilder modelBuilder)
@@ -659,6 +674,32 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.SportId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventQuestion>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EventId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventQuestion>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.AuthorUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EventQuestion>()
+            .HasOne<EventQuestion>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ParentId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+
+        modelBuilder.Entity<EventQuestion>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ReplyToUserId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
 
         modelBuilder.Entity<EventParticipant>()
             .HasOne<Event>()

@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<UserDevice> UserDevices { get; }
     DbSet<UserSavedLocation> UserSavedLocations { get; }
     DbSet<Event> Events { get; }
+    DbSet<EventQuestion> EventQuestions { get; }
     DbSet<EventParticipant> EventParticipants { get; }
     DbSet<EventWaitlist> EventWaitlists { get; }
     DbSet<EventReminderDispatch> EventReminderDispatches { get; }

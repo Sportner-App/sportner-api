@@ -15,5 +15,7 @@ public enum NotificationType : short
     BadgeEarned = 10,
     NewMessage = 11,
     System = 12,
-    QuestCompleted = 13
+    QuestCompleted = 13,
+    EventQuestionAsked = 14,
+    EventQuestionReplied = 15
 }

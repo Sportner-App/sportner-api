@@ -165,6 +165,7 @@ public class PersistenceModelTests
             (typeof(UserSavedLocation), nameof(UserSavedLocation.City), 100),
             (typeof(UserSavedLocation), nameof(UserSavedLocation.District), 100),
             (typeof(Event), nameof(Event.Title), 150),
+            (typeof(EventQuestion), nameof(EventQuestion.Content), 1000),
             (typeof(Conversation), nameof(Conversation.Title), 100),
             (typeof(Message), nameof(Message.MediaMimeType), 100),
             (typeof(Review), nameof(Review.Comment), 1000),

@@ -226,6 +226,7 @@ Tables
 events
 event_participants
 event_waitlist
+event_questions
 ```
 
 ---

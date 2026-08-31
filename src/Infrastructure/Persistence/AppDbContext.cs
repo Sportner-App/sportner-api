@@ -40,6 +40,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Event> Events => Set<Event>();
 
+    public DbSet<EventQuestion> EventQuestions => Set<EventQuestion>();
+
     public DbSet<EventParticipant> EventParticipants => Set<EventParticipant>();
 
     public DbSet<EventWaitlist> EventWaitlists => Set<EventWaitlist>();

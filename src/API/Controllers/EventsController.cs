@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Sportner.API.Authorization;
+using Sportner.API.Extensions.RateLimiting;
 using Sportner.API.Common;
 using Sportner.Application.Features.Events.ApplyToEvent;
 using Sportner.Application.Features.Events.AcceptEventInvitation;
@@ -29,6 +31,9 @@ using Sportner.Application.Features.Events.UpdateEventCapacity;
 using Sportner.Application.Features.Events.UpdateEventDetails;
 using Sportner.Application.Features.Events.UpdateEventLocation;
 using Sportner.Application.Features.Events.UpdateEventSchedule;
+using Sportner.Application.Features.Events.EventQuestions.AskEventQuestion;
+using Sportner.Application.Features.Events.EventQuestions.ListEventQuestions;
+using Sportner.Application.Features.Events.EventQuestions.ReplyToEventQuestion;
 using Sportner.Application.Features.Messaging.GetConversationByEvent;
 using Sportner.Application.Features.Reviews.ListReviewablePeers;
 using Sportner.Application.Features.Reviews.ListReviewsForEvent;
@@ -408,6 +413,51 @@ public sealed class EventsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpGet("{eventId:guid}/questions")]
+    public async Task<IActionResult> ListQuestions(
+        Guid eventId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(
+            new ListEventQuestionsQuery(eventId, page, pageSize),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{eventId:guid}/questions")]
+    [Authorize(Policy = AuthorizationPolicies.CanCreateContent)]
+    [EnableRateLimiting(RateLimitingExtensions.EventQnAPolicy)]
+    public async Task<IActionResult> AskQuestion(
+        Guid eventId,
+        [FromBody] AskEventQuestionBody request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new AskEventQuestionCommand(eventId, request.Content),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status201Created);
+    }
+
+    [HttpPost("{eventId:guid}/questions/{questionId:guid}/replies")]
+    [Authorize(Policy = AuthorizationPolicies.CanCreateContent)]
+    [EnableRateLimiting(RateLimitingExtensions.EventQnAPolicy)]
+    public async Task<IActionResult> ReplyToQuestion(
+        Guid eventId,
+        Guid questionId,
+        [FromBody] AskEventQuestionBody request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new ReplyToEventQuestionCommand(eventId, questionId, request.Content),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status201Created);
+    }
+
     public sealed record CreateEventRequest(
         Guid SportId,
         string Title,
@@ -438,4 +488,6 @@ public sealed class EventsController : ApiControllerBase
         string Title,
         string? Description,
         short? Visibility);
+
+    public sealed record AskEventQuestionBody(string Content);
 }

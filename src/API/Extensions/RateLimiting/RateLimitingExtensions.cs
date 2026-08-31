@@ -8,6 +8,7 @@ public static class RateLimitingExtensions
     public const string AuthPolicy = "auth";
     public const string ReportPolicy = "reports";
     public const string FeedbackPolicy = "feedback";
+    public const string EventQnAPolicy = "event-qna";
 
     public static IServiceCollection AddCustomRateLimiting(this IServiceCollection services)
     {
@@ -45,6 +46,18 @@ public static class RateLimitingExtensions
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = 8,
+                        Window = TimeSpan.FromHours(1),
+                        QueueLimit = 0
+                    }));
+
+            options.AddPolicy(EventQnAPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.FindFirst("sub")?.Value
+                        ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                        ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20,
                         Window = TimeSpan.FromHours(1),
                         QueueLimit = 0
                     }));
