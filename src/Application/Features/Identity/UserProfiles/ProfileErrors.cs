@@ -31,4 +31,8 @@ internal static class ProfileErrors
     internal static readonly Error InvalidMedia = Error.Validation(
         "Profile.InvalidMedia",
         "The uploaded file is missing or has an unsupported content type.");
+
+    internal static readonly Error InvalidCity = Error.Validation(
+        "Profile.InvalidCity",
+        "The selected city is not in the supported city catalog.");
 }

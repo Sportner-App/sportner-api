@@ -57,6 +57,21 @@ internal sealed class CreateProfileCommandHandler
         }
 
         var utcNow = _timeProvider.GetUtcNow();
+        string? canonicalCity = null;
+
+        if (!string.IsNullOrWhiteSpace(request.City))
+        {
+            var requestedCity = request.City.Trim();
+            canonicalCity = await _dbContext.Cities
+                .Where(city => city.Name == requestedCity)
+                .Select(city => city.Name)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (canonicalCity is null)
+            {
+                return Result<MyProfileResponse>.Failure(ProfileErrors.InvalidCity);
+            }
+        }
 
         var newProfile = UserProfile.Create(
             user.Id,
@@ -67,7 +82,7 @@ internal sealed class CreateProfileCommandHandler
             request.IsProfilePublic);
 
         newProfile.UpdateBio(request.Bio, utcNow);
-        newProfile.UpdateLocation(request.City, utcNow);
+        newProfile.UpdateLocation(canonicalCity, utcNow);
 
         user.AttachUserProfile(newProfile);
 

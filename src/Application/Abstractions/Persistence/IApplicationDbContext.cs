@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
+using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -17,6 +18,7 @@ public interface IApplicationDbContext
 {
     DbSet<User> Users { get; }
     DbSet<UserProfile> UserProfiles { get; }
+    DbSet<City> Cities { get; }
     DbSet<Sport> Sports { get; }
     DbSet<UserSport> UserSports { get; }
     DbSet<UserStatistics> UserStatistics { get; }

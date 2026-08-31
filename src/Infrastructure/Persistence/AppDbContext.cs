@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
+using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -25,6 +26,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users => Set<User>();
 
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+
+    public DbSet<City> Cities => Set<City>();
 
     public DbSet<Sport> Sports => Set<Sport>();
 

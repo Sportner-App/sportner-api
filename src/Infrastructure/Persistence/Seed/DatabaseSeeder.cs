@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sportner.Domain.Badges;
+using Sportner.Domain.Locations;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Quests;
 using Sportner.Domain.Sports;
@@ -33,6 +34,7 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
         var utcNow = _timeProvider.GetUtcNow();
         var added = 0;
 
+        added += await SeedCitiesAsync(utcNow, cancellationToken);
         added += await SeedSportsAsync(utcNow, cancellationToken);
         added += await SeedBadgesAsync(utcNow, cancellationToken);
         added += await SeedQuestsAsync(utcNow, cancellationToken);
@@ -50,6 +52,27 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
         _logger.LogInformation(
             "Database seeding completed. {Count} new reference rows added, existing rows synchronized.",
             added);
+    }
+
+    private async Task<int> SeedCitiesAsync(DateTimeOffset utcNow, CancellationToken cancellationToken)
+    {
+        var existingCities = await _dbContext.Cities.ToListAsync(cancellationToken);
+        var byPlateCode = existingCities.ToDictionary(city => city.PlateCode);
+        var added = 0;
+
+        foreach (var seed in SeedData.Cities)
+        {
+            if (byPlateCode.TryGetValue(seed.PlateCode, out var current))
+            {
+                current.Rename(seed.Name, utcNow);
+                continue;
+            }
+
+            _dbContext.Cities.Add(City.Create(seed.PlateCode, seed.Name, utcNow));
+            added++;
+        }
+
+        return added;
     }
 
     private async Task<int> SeedSportsAsync(DateTimeOffset utcNow, CancellationToken cancellationToken)

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sportner.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Sportner.Infrastructure.Persistence;
 namespace Sportner.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831154413_AddTurkeyCities")]
+    partial class AddTurkeyCities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,15 +164,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("EventDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("FeeAmount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<bool>("IsPaid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<decimal>("Latitude")
                         .HasPrecision(9, 6)
                         .HasColumnType("numeric(9,6)");
@@ -214,8 +208,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EventDate");
 
-                    b.HasIndex("IsPaid");
-
                     b.HasIndex("OrganizerUserId");
 
                     b.HasIndex("SkillLevel");
@@ -228,10 +220,7 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status", "EventDate");
 
-                    b.ToTable("Events", t =>
-                        {
-                            t.HasCheckConstraint("CK_Events_Fee", "(\"IsPaid\" = FALSE AND \"FeeAmount\" IS NULL) OR (\"IsPaid\" = TRUE AND \"FeeAmount\" IS NOT NULL AND \"FeeAmount\" > 0)");
-                        });
+                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Events.EventParticipant", b =>
@@ -354,61 +343,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("ReportReasonId");
 
                     b.ToTable("EventParticipantRemovals");
-                });
-
-            modelBuilder.Entity("Sportner.Domain.Events.EventQuestion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AuthorUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ReplyCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<Guid?>("ReplyToUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorUserId");
-
-                    b.HasIndex("ParentId");
-
-                    b.HasIndex("ReplyToUserId");
-
-                    b.HasIndex("EventId", "CreatedAt");
-
-                    b.HasIndex("EventId", "ParentId");
-
-                    b.ToTable("EventQuestions");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Events.EventReminderDispatch", b =>
@@ -2163,31 +2097,6 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ReportReasonId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Sportner.Domain.Events.EventQuestion", b =>
-                {
-                    b.HasOne("Sportner.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("AuthorUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Sportner.Domain.Events.Event", null)
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Sportner.Domain.Events.EventQuestion", null)
-                        .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Sportner.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("ReplyToUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Sportner.Domain.Events.EventReminderDispatch", b =>

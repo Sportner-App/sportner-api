@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
+using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -27,6 +28,9 @@ internal static class ModelBuilderExtensions
 
     private static void ConfigureUniqueIndexes(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<City>().HasIndex(entity => entity.PlateCode).IsUnique();
+        modelBuilder.Entity<City>().HasIndex(entity => entity.Name).IsUnique();
+
         modelBuilder.Entity<User>()
             .HasIndex(entity => entity.PhoneNumber)
             .IsUnique()
@@ -320,6 +324,8 @@ internal static class ModelBuilderExtensions
 
     private static void ConfigurePropertyMappings(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<City>().Property(entity => entity.PlateCode).HasColumnType("smallint");
+        modelBuilder.Entity<City>().Property(entity => entity.Name).HasMaxLength(100);
         modelBuilder.Entity<User>()
             .Property(entity => entity.PhoneNumber)
             .HasMaxLength(20);
