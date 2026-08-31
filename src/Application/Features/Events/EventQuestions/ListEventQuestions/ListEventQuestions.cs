@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Organizations;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
@@ -32,10 +33,25 @@ internal sealed class ListEventQuestionsQueryHandler
     {
         var @event = await _dbContext.Events.AsNoTracking()
             .Where(candidate => candidate.Id == request.EventId)
-            .Select(candidate => new { candidate.Id, candidate.OrganizerUserId })
+            .Select(candidate => new
+            {
+                candidate.Id,
+                candidate.OrganizerUserId,
+                candidate.OrganizationId
+            })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (@event is null)
+        {
+            return Result<PagedResult<EventQuestionResponse>>.Failure(EventQuestionErrors.EventNotFound);
+        }
+
+        if (@event.OrganizationId is { } organizationId
+            && !await OrganizationQueries.IsApprovedMemberAsync(
+                _dbContext,
+                organizationId,
+                _currentUser.UserId,
+                cancellationToken))
         {
             return Result<PagedResult<EventQuestionResponse>>.Failure(EventQuestionErrors.EventNotFound);
         }

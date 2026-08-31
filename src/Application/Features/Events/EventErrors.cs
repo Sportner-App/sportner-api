@@ -84,6 +84,10 @@ internal static class EventErrors
         "Event.RelationshipBlocked",
         "This relationship is blocked.");
 
+    internal static readonly Error NotOrganizationMember = Error.Forbidden(
+        "Event.NotOrganizationMember",
+        "Only approved organization members can join this event.");
+
     internal static readonly Error FriendAlreadyAssociated = Error.Conflict(
         "Event.FriendAlreadyAssociated",
         "One of the selected friends is already associated with this event.");

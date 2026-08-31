@@ -6,6 +6,7 @@ using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Organizations;
 using Sportner.Domain.Quests;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
@@ -165,6 +166,14 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<ReportReason>()
             .HasIndex(entity => entity.Code)
             .IsUnique();
+
+        modelBuilder.Entity<Organization>()
+            .HasIndex(entity => entity.InviteCode)
+            .IsUnique();
+
+        modelBuilder.Entity<OrganizationMember>()
+            .HasIndex(entity => new { entity.OrganizationId, entity.UserId })
+            .IsUnique();
     }
 
     private static void ConfigureQueryIndexes(ModelBuilder modelBuilder)
@@ -203,6 +212,14 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.Latitude, entity.Longitude });
         modelBuilder.Entity<Event>().HasIndex(entity => entity.SkillLevel);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.IsPaid);
+        modelBuilder.Entity<Event>().HasIndex(entity => entity.OrganizationId);
+
+        modelBuilder.Entity<Organization>().HasIndex(entity => entity.FounderUserId);
+        modelBuilder.Entity<Organization>().HasIndex(entity => entity.CityId);
+
+        modelBuilder.Entity<OrganizationMember>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<OrganizationMember>()
+            .HasIndex(entity => new { entity.OrganizationId, entity.Status });
 
         modelBuilder.Entity<EventQuestion>()
             .HasIndex(entity => new { entity.EventId, entity.CreatedAt });
@@ -524,6 +541,16 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<AppFeedback>()
             .Property(entity => entity.Content)
             .HasMaxLength(AppFeedback.MaxContentLength);
+
+        modelBuilder.Entity<Organization>()
+            .Property(entity => entity.Name)
+            .HasMaxLength(Organization.NameMaxLength);
+        modelBuilder.Entity<Organization>()
+            .Property(entity => entity.Description)
+            .HasMaxLength(Organization.DescriptionMaxLength);
+        modelBuilder.Entity<Organization>()
+            .Property(entity => entity.InviteCode)
+            .HasMaxLength(Organization.InviteCodeLength);
     }
 
     private static void ConfigureDefaults(ModelBuilder modelBuilder)
@@ -625,6 +652,10 @@ internal static class ModelBuilderExtensions
             .HasColumnType("smallint");
         modelBuilder.Entity<ReportReason>().Property(entity => entity.DisplayOrder)
             .HasColumnType("smallint");
+        modelBuilder.Entity<OrganizationMember>().Property(entity => entity.Role)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<OrganizationMember>().Property(entity => entity.Status)
+            .HasColumnType("smallint");
     }
 
     private static void ConfigureRelationships(ModelBuilder modelBuilder)
@@ -693,6 +724,38 @@ internal static class ModelBuilderExtensions
             .HasOne<Sport>()
             .WithMany()
             .HasForeignKey(entity => entity.SportId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Event>()
+            .HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+
+        modelBuilder.Entity<Organization>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.FounderUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Organization>()
+            .HasOne<City>()
+            .WithMany()
+            .HasForeignKey(entity => entity.CityId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+
+        modelBuilder.Entity<OrganizationMember>()
+            .HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OrganizationMember>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<EventQuestion>()

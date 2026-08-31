@@ -31,5 +31,8 @@ public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventC
             .LessThanOrEqualTo(Event.MaxFeeAmount)
             .When(command => command.IsPaid)
             .WithMessage("Fee amount is required and must be greater than zero for paid events.");
+        RuleFor(command => command.OrganizationId)
+            .NotEmpty()
+            .When(command => command.OrganizationId is not null);
     }
 }

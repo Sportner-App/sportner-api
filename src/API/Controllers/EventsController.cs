@@ -198,7 +198,8 @@ public sealed class EventsController : ApiControllerBase
             request.MaxParticipantAge,
             request.SkillLevel,
             request.IsPaid,
-            request.FeeAmount);
+            request.FeeAmount,
+            request.OrganizationId);
 
         var result = await Sender.Send(command, cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -510,7 +511,8 @@ public sealed class EventsController : ApiControllerBase
         int MaxParticipantAge,
         short? SkillLevel = null,
         bool IsPaid = false,
-        decimal? FeeAmount = null);
+        decimal? FeeAmount = null,
+        Guid? OrganizationId = null);
 
     public sealed record CreateRecurringEventsRequest(
         Guid SportId, string Title, string? Description, DateTimeOffset EventDate,

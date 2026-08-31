@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Organizations;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
 using Sportner.Domain.Messaging;
@@ -32,6 +33,52 @@ internal static class EventAccess
         }
 
         if (@event.OrganizerUserId != userId)
+        {
+            return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotOrganizer);
+        }
+
+        return Result<(User, Domain.Events.Event)>.Success((user, @event));
+    }
+
+    internal static async Task<Result<(User User, Domain.Events.Event Event)>> LoadCancellableEventAsync(
+        IApplicationDbContext dbContext,
+        Guid userId,
+        Guid eventId,
+        CancellationToken cancellationToken)
+    {
+        var organizerLoad = await LoadOrganizerEventAsync(dbContext, userId, eventId, cancellationToken);
+        if (organizerLoad.IsSuccess || organizerLoad.Errors.All(error => error.Code != EventErrors.NotOrganizer.Code))
+        {
+            return organizerLoad;
+        }
+
+        var user = await dbContext.Users
+            .FirstOrDefaultAsync(candidate => candidate.Id == userId, cancellationToken);
+
+        if (user is null)
+        {
+            return Result<(User, Domain.Events.Event)>.Failure(EventErrors.UserNotFound);
+        }
+
+        var @event = await LoadAggregateAsync(dbContext, eventId, cancellationToken);
+
+        if (@event is null)
+        {
+            return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotFound);
+        }
+
+        if (@event.OrganizationId is not { } organizationId)
+        {
+            return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotOrganizer);
+        }
+
+        var membership = await OrganizationQueries.FindMembershipAsync(
+            dbContext,
+            organizationId,
+            userId,
+            cancellationToken);
+
+        if (membership is null || !membership.CanManageMembers)
         {
             return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotOrganizer);
         }

@@ -14,6 +14,12 @@ public sealed record CancelEventCommand(Guid EventId) : ICommand<EventResponse>;
 internal sealed class CancelEventCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<CancelEventCommand, EventResponse>
 {
+    protected override Task<Result<(Sportner.Domain.Users.User User, Domain.Events.Event Event)>> LoadEventAsync(
+        Guid userId,
+        Guid eventId,
+        CancellationToken cancellationToken) =>
+        EventAccess.LoadCancellableEventAsync(DbContext, userId, eventId, cancellationToken);
+
     private readonly INotificationPublisher _notificationPublisher;
 
     public CancelEventCommandHandler(

@@ -32,7 +32,10 @@ public sealed record EventResponse(
     int WaitlistCount,
     short? MyParticipationStatus,
     bool IsOnWaitlist,
-    Guid? ConversationId);
+    Guid? ConversationId,
+    Guid? OrganizationId = null,
+    string? OrganizationName = null,
+    bool CanCancel = false);
 
 public sealed record EventListItemResponse(
     Guid Id,

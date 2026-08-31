@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Organizations;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
@@ -30,6 +31,16 @@ internal sealed class ListParticipantsQueryHandler
             .FirstOrDefaultAsync(candidate => candidate.Id == request.EventId, cancellationToken);
 
         if (@event is null)
+        {
+            return Result<IReadOnlyList<ParticipantResponse>>.Failure(EventErrors.NotFound);
+        }
+
+        if (@event.OrganizationId is { } organizationId
+            && !await OrganizationQueries.IsApprovedMemberAsync(
+                _dbContext,
+                organizationId,
+                _currentUser.UserId,
+                cancellationToken))
         {
             return Result<IReadOnlyList<ParticipantResponse>>.Failure(EventErrors.NotFound);
         }

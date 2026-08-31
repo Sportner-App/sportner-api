@@ -17,5 +17,11 @@ public enum NotificationType : short
     System = 12,
     QuestCompleted = 13,
     EventQuestionAsked = 14,
-    EventQuestionReplied = 15
+    EventQuestionReplied = 15,
+    OrganizationJoinRequested = 16,
+    OrganizationJoinApproved = 17,
+    OrganizationJoinRejected = 18,
+    OrganizationRoleChanged = 19,
+    OrganizationMemberRemoved = 20,
+    OrganizationMemberBlocked = 21
 }

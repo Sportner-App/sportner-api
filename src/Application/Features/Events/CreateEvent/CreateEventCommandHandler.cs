@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Organizations;
 using Sportner.Domain.Common.Enums;
 using DomainEvent = Sportner.Domain.Events.Event;
 
@@ -60,6 +61,28 @@ internal sealed class CreateEventCommandHandler
             return Result<EventResponse>.Failure(EventErrors.SportInactive);
         }
 
+        if (request.OrganizationId is { } organizationId)
+        {
+            var organizationExists = await _dbContext.Organizations.AsNoTracking()
+                .AnyAsync(organization => organization.Id == organizationId, cancellationToken);
+
+            if (!organizationExists)
+            {
+                return Result<EventResponse>.Failure(OrganizationErrors.NotFound);
+            }
+
+            var membership = await OrganizationQueries.FindMembershipAsync(
+                _dbContext,
+                organizationId,
+                userId,
+                cancellationToken);
+
+            if (membership is null || !membership.CanCreateEvents)
+            {
+                return Result<EventResponse>.Failure(OrganizationErrors.CannotCreateEvents);
+            }
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
 
         var @event = DomainEvent.Create(
@@ -78,7 +101,8 @@ internal sealed class CreateEventCommandHandler
             request.MaxParticipantAge,
             request.SkillLevel is { } skill ? (SkillLevel)skill : null,
             request.IsPaid,
-            request.FeeAmount);
+            request.FeeAmount,
+            request.OrganizationId);
 
         _dbContext.Events.Add(@event);
         await _dbContext.SaveChangesAsync(cancellationToken);

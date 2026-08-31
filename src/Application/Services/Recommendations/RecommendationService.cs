@@ -359,7 +359,8 @@ internal sealed class RecommendationService : IRecommendationService
 
         var eventsQuery = _dbContext.Events.AsNoTracking()
             .Where(@event =>
-                (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
+                @event.OrganizationId == null
+                && (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
                 && @event.EventDate > utcNow
                 && !blockedSet.Contains(@event.OrganizerUserId));
 

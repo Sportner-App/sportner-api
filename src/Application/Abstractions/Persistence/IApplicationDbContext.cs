@@ -6,6 +6,7 @@ using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Organizations;
 using Sportner.Domain.Quests;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
@@ -26,6 +27,8 @@ public interface IApplicationDbContext
     DbSet<UserDevice> UserDevices { get; }
     DbSet<UserSavedLocation> UserSavedLocations { get; }
     DbSet<Event> Events { get; }
+    DbSet<Organization> Organizations { get; }
+    DbSet<OrganizationMember> OrganizationMembers { get; }
     DbSet<EventQuestion> EventQuestions { get; }
     DbSet<EventParticipant> EventParticipants { get; }
     DbSet<EventWaitlist> EventWaitlists { get; }

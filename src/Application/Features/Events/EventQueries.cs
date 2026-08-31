@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Features.Organizations;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
@@ -18,6 +19,16 @@ internal static class EventQueries
             .FirstOrDefaultAsync(candidate => candidate.Id == eventId, cancellationToken);
 
         if (@event is null)
+        {
+            return null;
+        }
+
+        if (@event.OrganizationId is { } organizationId
+            && !await OrganizationQueries.IsApprovedMemberAsync(
+                dbContext,
+                organizationId,
+                viewerUserId,
+                cancellationToken))
         {
             return null;
         }
@@ -97,6 +108,30 @@ internal static class EventQueries
             .Select(conversation => (Guid?)conversation.Id)
             .FirstOrDefaultAsync(cancellationToken);
 
+        string? organizationName = null;
+        var canCancel = viewerUserId == @event.OrganizerUserId
+            && @event.Status is EventStatus.Draft or EventStatus.Published or EventStatus.Full;
+
+        if (@event.OrganizationId is { } orgId)
+        {
+            organizationName = await dbContext.Organizations.AsNoTracking()
+                .Where(organization => organization.Id == orgId)
+                .Select(organization => organization.Name)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (!canCancel
+                && viewerUserId is { } managerId
+                && @event.Status is EventStatus.Draft or EventStatus.Published or EventStatus.Full)
+            {
+                var membership = await OrganizationQueries.FindMembershipAsync(
+                    dbContext,
+                    orgId,
+                    managerId,
+                    cancellationToken);
+                canCancel = membership?.CanManageMembers == true;
+            }
+        }
+
         return new EventResponse(
             @event.Id,
             @event.SportId,
@@ -122,7 +157,10 @@ internal static class EventQueries
             waitlistCount,
             myStatus,
             isOnWaitlist,
-            conversationId);
+            conversationId,
+            @event.OrganizationId,
+            organizationName,
+            canCancel);
     }
 
     /// <summary>

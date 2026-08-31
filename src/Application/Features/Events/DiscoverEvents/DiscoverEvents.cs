@@ -79,7 +79,8 @@ internal sealed class DiscoverEventsQueryHandler
 
         IQueryable<Event> events = _dbContext.Events.AsNoTracking()
             .Where(@event =>
-                (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
+                @event.OrganizationId == null
+                && (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
                 && @event.EventDate > utcNow);
 
         if (_currentUser.UserId is { } viewerId)

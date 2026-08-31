@@ -191,6 +191,12 @@ public class NotificationSetting : AggregateRoot
             NotificationType.QuestCompleted => (true, true, false),
             NotificationType.EventQuestionAsked => (true, true, false),
             NotificationType.EventQuestionReplied => (true, true, false),
+            NotificationType.OrganizationJoinRequested => (true, true, false),
+            NotificationType.OrganizationJoinApproved => (true, true, false),
+            NotificationType.OrganizationJoinRejected => (true, true, false),
+            NotificationType.OrganizationRoleChanged => (true, true, false),
+            NotificationType.OrganizationMemberRemoved => (true, true, false),
+            NotificationType.OrganizationMemberBlocked => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

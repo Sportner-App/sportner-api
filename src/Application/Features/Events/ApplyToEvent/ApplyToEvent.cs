@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Organizations;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
@@ -54,6 +55,16 @@ internal sealed class ApplyToEventCommandHandler
         if (@event is null)
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.NotFound);
+        }
+
+        if (@event.OrganizationId is { } organizationId
+            && !await OrganizationQueries.IsApprovedMemberAsync(
+                _dbContext,
+                organizationId,
+                userId,
+                cancellationToken))
+        {
+            return Result<ApplyToEventResponse>.Failure(EventErrors.NotOrganizationMember);
         }
 
         if (@event.OrganizerUserId == userId)

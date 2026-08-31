@@ -7,6 +7,7 @@ using Sportner.Domain.Feedback;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Organizations;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
@@ -108,7 +109,10 @@ public class PersistenceModelTests
             (typeof(UserBadge), [nameof(UserBadge.UserId), nameof(UserBadge.BadgeId)]),
             (typeof(Report),
                 [nameof(Report.ReporterUserId), nameof(Report.EntityType), nameof(Report.EntityId)]),
-            (typeof(ReportReason), [nameof(ReportReason.Code)])
+            (typeof(ReportReason), [nameof(ReportReason.Code)]),
+            (typeof(Organization), [nameof(Organization.InviteCode)]),
+            (typeof(OrganizationMember),
+                [nameof(OrganizationMember.OrganizationId), nameof(OrganizationMember.UserId)])
         };
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -184,7 +188,10 @@ public class PersistenceModelTests
             (typeof(ReportReason), nameof(ReportReason.Code), 100),
             (typeof(ReportReason), nameof(ReportReason.Name), 100),
             (typeof(ReportReason), nameof(ReportReason.Description), 1000),
-            (typeof(AppFeedback), nameof(AppFeedback.Content), 2000)
+            (typeof(AppFeedback), nameof(AppFeedback.Content), 2000),
+            (typeof(Organization), nameof(Organization.Name), 80),
+            (typeof(Organization), nameof(Organization.Description), 1000),
+            (typeof(Organization), nameof(Organization.InviteCode), 8)
         };
 
         foreach (var (entityType, propertyName, length) in maxLengths)
@@ -242,7 +249,9 @@ public class PersistenceModelTests
             (typeof(Badge), nameof(Badge.DisplayOrder)),
             (typeof(Report), nameof(Report.EntityType)),
             (typeof(Report), nameof(Report.Status)),
-            (typeof(ReportReason), nameof(ReportReason.DisplayOrder))
+            (typeof(ReportReason), nameof(ReportReason.DisplayOrder)),
+            (typeof(OrganizationMember), nameof(OrganizationMember.Role)),
+            (typeof(OrganizationMember), nameof(OrganizationMember.Status))
         };
 
         foreach (var (entityType, propertyName) in smallInts)

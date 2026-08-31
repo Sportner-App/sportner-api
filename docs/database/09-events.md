@@ -52,6 +52,7 @@ Every event record represents exactly one occurrence.
 | id                 | UUID         |       No | Primary key                                    |
 | organizer_user_id  | UUID         |       No | References `users(id)`                         |
 | sport_id           | UUID         |       No | References `sports(id)`                        |
+| organization_id    | UUID         |      Yes | Private org event; `NULL` for public discovery |
 | title              | VARCHAR(150) |       No | Event title                                    |
 | description        | TEXT         |      Yes | Optional event description                     |
 | event_date         | TIMESTAMPTZ  |       No | Event start date and time                      |
@@ -100,6 +101,7 @@ A future implementation should introduce an `event_series` model rather than sto
 - `INDEX(status)`
 - `INDEX(skill_level)`
 - `INDEX(is_paid)`
+- `INDEX(organization_id)`
 - `INDEX(status, event_date)`
 
 The composite index supports common discovery queries for upcoming published events.
@@ -110,8 +112,9 @@ The composite index supports common discovery queries for upcoming published eve
 
 | Column            | References | Delete Behavior |
 | ----------------- | ---------- | --------------- |
-| organizer_user_id | users(id)  | Restrict        |
-| sport_id          | sports(id) | Restrict        |
+| organizer_user_id | users(id)          | Restrict        |
+| sport_id          | sports(id)         | Restrict        |
+| organization_id   | organizations(id)  | Restrict        |
 
 Events must remain available for historical participation, review and moderation records.
 

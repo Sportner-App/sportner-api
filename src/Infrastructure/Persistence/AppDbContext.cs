@@ -7,6 +7,7 @@ using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
+using Sportner.Domain.Organizations;
 using Sportner.Domain.Quests;
 using Sportner.Domain.Reviews;
 using Sportner.Domain.Social;
@@ -42,6 +43,10 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<UserSavedLocation> UserSavedLocations => Set<UserSavedLocation>();
 
     public DbSet<Event> Events => Set<Event>();
+
+    public DbSet<Organization> Organizations => Set<Organization>();
+
+    public DbSet<OrganizationMember> OrganizationMembers => Set<OrganizationMember>();
 
     public DbSet<EventQuestion> EventQuestions => Set<EventQuestion>();
 

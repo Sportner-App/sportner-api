@@ -17,6 +17,8 @@ public class Event : AggregateRoot
 
     public Guid SportId { get; private set; }
 
+    public Guid? OrganizationId { get; private set; }
+
     public string Title { get; private set; } = null!;
 
     public string? Description { get; private set; }
@@ -67,7 +69,8 @@ public class Event : AggregateRoot
         int maxParticipantAge = 60,
         SkillLevel? skillLevel = null,
         bool isPaid = false,
-        decimal? feeAmount = null)
+        decimal? feeAmount = null,
+        Guid? organizationId = null)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -79,11 +82,17 @@ public class Event : AggregateRoot
             throw new DomainException("Sport id is required.");
         }
 
+        if (organizationId is { } orgId && orgId == Guid.Empty)
+        {
+            throw new DomainException("Organization id is invalid.");
+        }
+
         var @event = new Event
         {
             Id = Guid.NewGuid(),
             OrganizerUserId = organizerUserId,
             SportId = sportId,
+            OrganizationId = organizationId,
             Title = NormalizeTitle(title),
             Description = NormalizeOptionalDescription(description),
             EventDate = NormalizeEventDate(eventDate, utcNow),

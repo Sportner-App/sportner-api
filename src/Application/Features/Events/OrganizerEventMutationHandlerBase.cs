@@ -20,6 +20,12 @@ internal abstract class OrganizerEventMutationHandlerBase
         TimeProvider = timeProvider;
     }
 
+    protected virtual Task<Result<(Domain.Users.User User, DomainEvent Event)>> LoadEventAsync(
+        Guid userId,
+        Guid eventId,
+        CancellationToken cancellationToken) =>
+        EventAccess.LoadOrganizerEventAsync(DbContext, userId, eventId, cancellationToken);
+
     protected IApplicationDbContext DbContext { get; }
 
     protected ICurrentUser CurrentUser { get; }
@@ -36,11 +42,7 @@ internal abstract class OrganizerEventMutationHandlerBase
             return Result<EventResponse>.Failure(EventErrors.NotAuthenticated);
         }
 
-        var loaded = await EventAccess.LoadOrganizerEventAsync(
-            DbContext,
-            userId,
-            eventId,
-            cancellationToken);
+        var loaded = await LoadEventAsync(userId, eventId, cancellationToken);
 
         if (loaded.IsFailure)
         {
