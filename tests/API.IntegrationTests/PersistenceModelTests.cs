@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Common.Base;
 using Sportner.Domain.Events;
+using Sportner.Domain.Feedback;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -181,7 +182,8 @@ public class PersistenceModelTests
             (typeof(Report), nameof(Report.ResolutionNote), 2000),
             (typeof(ReportReason), nameof(ReportReason.Code), 100),
             (typeof(ReportReason), nameof(ReportReason.Name), 100),
-            (typeof(ReportReason), nameof(ReportReason.Description), 1000)
+            (typeof(ReportReason), nameof(ReportReason.Description), 1000),
+            (typeof(AppFeedback), nameof(AppFeedback.Content), 2000)
         };
 
         foreach (var (entityType, propertyName, length) in maxLengths)

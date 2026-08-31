@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
+using Sportner.Domain.Feedback;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -302,6 +303,11 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<ReportReason>().HasIndex(entity => entity.DisplayOrder);
         modelBuilder.Entity<ReportReason>().HasIndex(entity => entity.IsActive);
+
+        modelBuilder.Entity<AppFeedback>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<AppFeedback>().HasIndex(entity => entity.CreatedAt);
+        modelBuilder.Entity<AppFeedback>()
+            .HasIndex(entity => new { entity.UserId, entity.CreatedAt });
     }
 
     private static void ConfigurePropertyMappings(ModelBuilder modelBuilder)
@@ -493,6 +499,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<ReportReason>()
             .Property(entity => entity.Description)
             .HasMaxLength(1000);
+
+        modelBuilder.Entity<AppFeedback>()
+            .Property(entity => entity.Content)
+            .HasMaxLength(AppFeedback.MaxContentLength);
     }
 
     private static void ConfigureDefaults(ModelBuilder modelBuilder)
@@ -955,6 +965,12 @@ internal static class ModelBuilderExtensions
             .HasOne<User>()
             .WithMany()
             .HasForeignKey(entity => entity.ReviewedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AppFeedback>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

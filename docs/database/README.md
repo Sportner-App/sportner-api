@@ -307,6 +307,7 @@ user_badges
 
 reports
 report_reasons
+app_feedbacks
 ```
 
 ---

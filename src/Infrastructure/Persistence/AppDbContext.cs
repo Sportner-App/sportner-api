@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
+using Sportner.Domain.Feedback;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -88,6 +89,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Report> Reports => Set<Report>();
 
     public DbSet<ReportReason> ReportReasons => Set<ReportReason>();
+
+    public DbSet<AppFeedback> AppFeedbacks => Set<AppFeedback>();
 
     public void MarkAsAdded<TEntity>(TEntity entity) where TEntity : class =>
         Entry(entity).State = EntityState.Added;

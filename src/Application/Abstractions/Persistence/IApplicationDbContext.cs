@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
+using Sportner.Domain.Feedback;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Notifications;
@@ -48,6 +49,7 @@ public interface IApplicationDbContext
     DbSet<AlbumMedia> AlbumMedia { get; }
     DbSet<Report> Reports { get; }
     DbSet<ReportReason> ReportReasons { get; }
+    DbSet<AppFeedback> AppFeedbacks { get; }
 
     /// <summary>
     /// Forces EF to insert an entity that already has a client-generated key
