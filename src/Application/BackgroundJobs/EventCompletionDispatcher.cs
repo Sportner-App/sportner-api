@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.BackgroundJobs;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Features.Events;
+using Sportner.Application.Features.Messaging;
 using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Enums;
 
@@ -65,8 +66,55 @@ internal sealed class EventCompletionDispatcher : IEventCompletionDispatcher
             }
         }
 
+        await CloseEndedEventConversationsAsync(utcNow, cancellationToken);
+
         _logger.LogInformation("Event completion dispatcher closed {CompletedCount} events.", completed);
         return completed;
+    }
+
+    private async Task CloseEndedEventConversationsAsync(
+        DateTimeOffset utcNow,
+        CancellationToken cancellationToken)
+    {
+        var openEventConversations = await _dbContext.Conversations
+            .Where(conversation =>
+                !conversation.IsClosed
+                && conversation.Type == ConversationType.Event
+                && conversation.EventId != null)
+            .Take(Math.Clamp(_options.EventCompletionBatchSize, 1, 500))
+            .ToListAsync(cancellationToken);
+
+        if (openEventConversations.Count == 0)
+        {
+            return;
+        }
+
+        var eventIds = openEventConversations
+            .Where(conversation => conversation.EventId is not null)
+            .Select(conversation => conversation.EventId!.Value)
+            .Distinct()
+            .ToList();
+
+        var endedEventIds = await MessagingAccess.ListEndedEventIdsAsync(
+            _dbContext,
+            eventIds,
+            utcNow,
+            cancellationToken);
+
+        var closedAny = false;
+        foreach (var conversation in openEventConversations)
+        {
+            if (conversation.EventId is { } eventId && endedEventIds.Contains(eventId))
+            {
+                conversation.Close(utcNow);
+                closedAny = true;
+            }
+        }
+
+        if (closedAny)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task<bool> CompleteIfDueAsync(

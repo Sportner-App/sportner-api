@@ -35,6 +35,19 @@ internal static class ConversationListBuilder
             })
             .ToListAsync(cancellationToken);
 
+        var eventIds = conversations
+            .Where(conversation =>
+                conversation.Type == ConversationType.Event && conversation.EventId is not null)
+            .Select(conversation => conversation.EventId!.Value)
+            .Distinct()
+            .ToList();
+
+        var endedEventIds = await MessagingAccess.ListEndedEventIdsAsync(
+            dbContext,
+            eventIds,
+            utcNow,
+            cancellationToken);
+
         var lastMessages = await dbContext.Messages.AsNoTracking()
             .Where(message => conversationIds.Contains(message.ConversationId))
             .GroupBy(message => message.ConversationId)
@@ -158,7 +171,8 @@ internal static class ConversationListBuilder
                     (short)conversation.Type,
                     conversation.EventId,
                     conversation.Title,
-                    conversation.IsClosed,
+                    conversation.IsClosed
+                        || (conversation.EventId is { } eventId && endedEventIds.Contains(eventId)),
                     conversation.CreatedAt,
                     lastMessageAt,
                     preview,

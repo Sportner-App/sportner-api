@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Events;
 using Sportner.Domain.Messaging;
 
 namespace Sportner.Application.Features.Messaging;
@@ -32,6 +33,81 @@ internal static class MessagingAccess
         }
 
         return Result<Conversation>.Success(conversation);
+    }
+
+    internal static async Task CloseIfEventEndedAsync(
+        IApplicationDbContext dbContext,
+        Conversation conversation,
+        DateTimeOffset utcNow,
+        CancellationToken cancellationToken)
+    {
+        if (conversation.IsClosed
+            || conversation.Type is not ConversationType.Event
+            || conversation.EventId is not { } eventId)
+        {
+            return;
+        }
+
+        if (await IsLinkedEventEndedAsync(dbContext, eventId, utcNow, cancellationToken))
+        {
+            conversation.Close(utcNow);
+        }
+    }
+
+    internal static async Task<bool> IsLinkedEventEndedAsync(
+        IApplicationDbContext dbContext,
+        Guid eventId,
+        DateTimeOffset utcNow,
+        CancellationToken cancellationToken)
+    {
+        var snapshot = await dbContext.Events.AsNoTracking()
+            .Where(@event => @event.Id == eventId)
+            .Select(@event => new
+            {
+                @event.Status,
+                @event.EventDate,
+                @event.DurationMinutes
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return snapshot is not null
+            && Event.HasEnded(
+                snapshot.Status,
+                snapshot.EventDate,
+                snapshot.DurationMinutes,
+                utcNow);
+    }
+
+    internal static async Task<IReadOnlySet<Guid>> ListEndedEventIdsAsync(
+        IApplicationDbContext dbContext,
+        IReadOnlyCollection<Guid> eventIds,
+        DateTimeOffset utcNow,
+        CancellationToken cancellationToken)
+    {
+        if (eventIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var snapshots = await dbContext.Events.AsNoTracking()
+            .Where(@event => eventIds.Contains(@event.Id))
+            .Select(@event => new
+            {
+                @event.Id,
+                @event.Status,
+                @event.EventDate,
+                @event.DurationMinutes
+            })
+            .ToListAsync(cancellationToken);
+
+        return snapshots
+            .Where(snapshot => Event.HasEnded(
+                snapshot.Status,
+                snapshot.EventDate,
+                snapshot.DurationMinutes,
+                utcNow))
+            .Select(snapshot => snapshot.Id)
+            .ToHashSet();
     }
 
     internal static async Task<bool> IsDirectPeerBlockedAsync(
@@ -113,12 +189,24 @@ internal static class MessagingAccess
             })
             .ToList();
 
+        var isClosed = conversation.IsClosed;
+        if (!isClosed
+            && conversation.Type is ConversationType.Event
+            && conversation.EventId is { } eventId)
+        {
+            isClosed = await IsLinkedEventEndedAsync(
+                dbContext,
+                eventId,
+                DateTimeOffset.UtcNow,
+                cancellationToken);
+        }
+
         return new ConversationResponse(
             conversation.Id,
             (short)conversation.Type,
             conversation.EventId,
             conversation.Title,
-            conversation.IsClosed,
+            isClosed,
             conversation.ClosedAt,
             conversation.CreatedAt,
             (short)myMembership.Role,

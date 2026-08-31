@@ -539,9 +539,16 @@ public class Event : AggregateRoot
             || OccupiedParticipantCount() < MaxParticipants.Value;
     }
 
+    public static bool HasEnded(
+        EventStatus status,
+        DateTimeOffset eventDate,
+        int durationMinutes,
+        DateTimeOffset utcNow) =>
+        status is EventStatus.Cancelled or EventStatus.Completed
+        || utcNow >= eventDate.AddMinutes(durationMinutes);
+
     public bool HasEnded(DateTimeOffset utcNow) =>
-        Status is EventStatus.Cancelled or EventStatus.Completed
-        || utcNow >= GetScheduledEnd();
+        HasEnded(Status, EventDate, DurationMinutes, utcNow);
 
     private DateTimeOffset GetScheduledEnd()
     {

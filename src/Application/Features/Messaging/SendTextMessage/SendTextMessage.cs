@@ -80,8 +80,16 @@ internal sealed class SendTextMessageCommandHandler
             return Result<MessageResponse>.Failure(MessagingErrors.Blocked);
         }
 
+        var utcNow = _timeProvider.GetUtcNow();
+        await MessagingAccess.CloseIfEventEndedAsync(
+            _dbContext,
+            conversation,
+            utcNow,
+            cancellationToken);
+
         if (conversation.IsClosed)
         {
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return Result<MessageResponse>.Failure(MessagingErrors.ConversationClosed);
         }
 
@@ -105,7 +113,6 @@ internal sealed class SendTextMessageCommandHandler
             }
         }
 
-        var utcNow = _timeProvider.GetUtcNow();
         var message = Message.CreateText(
             conversation.Id,
             userId,
