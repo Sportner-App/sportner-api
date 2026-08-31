@@ -72,6 +72,16 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
             return Result<CommentResponse>.Failure(PostErrors.NotFound);
         }
 
+        if (post.UserId != userId
+            && await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                post.UserId,
+                cancellationToken))
+        {
+            return Result<CommentResponse>.Failure(PostErrors.Forbidden);
+        }
+
         var parent = await _dbContext.PostComments
             .FirstOrDefaultAsync(
                 candidate =>
@@ -81,6 +91,16 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
         if (parent is null)
         {
             return Result<CommentResponse>.Failure(PostErrors.CommentNotFound);
+        }
+
+        if (parent.UserId != userId
+            && await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                parent.UserId,
+                cancellationToken))
+        {
+            return Result<CommentResponse>.Failure(PostErrors.Forbidden);
         }
 
         // One nesting level only.

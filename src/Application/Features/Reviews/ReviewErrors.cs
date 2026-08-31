@@ -32,6 +32,10 @@ internal static class ReviewErrors
         "Review.AlreadyExists",
         "A review for this participant on this event already exists.");
 
+    internal static readonly Error RelationshipBlocked = Error.Forbidden(
+        "Review.RelationshipBlocked",
+        "This relationship is blocked.");
+
     internal static readonly Error NotReviewer = Error.Forbidden(
         "Review.NotReviewer",
         "Only the reviewer can update this review.");

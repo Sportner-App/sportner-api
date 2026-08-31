@@ -80,6 +80,10 @@ internal static class EventErrors
         "Event.NotFriends",
         "Only accepted friends can be added to the event.");
 
+    internal static readonly Error RelationshipBlocked = Error.Forbidden(
+        "Event.RelationshipBlocked",
+        "This relationship is blocked.");
+
     internal static readonly Error FriendAlreadyAssociated = Error.Conflict(
         "Event.FriendAlreadyAssociated",
         "One of the selected friends is already associated with this event.");

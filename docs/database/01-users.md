@@ -80,6 +80,7 @@ This table must never contain profile-related information.
 - posts
 - notifications
 - friendships
+- user_blocks
 - user_badges
 
 ---

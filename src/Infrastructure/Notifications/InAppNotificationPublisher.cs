@@ -43,6 +43,21 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
             return;
         }
 
+        if (actorUserId is { } actor)
+        {
+            var blocked = await _dbContext.UserBlocks.AsNoTracking()
+                .AnyAsync(
+                    block =>
+                        (block.BlockerUserId == recipientUserId && block.BlockedUserId == actor)
+                        || (block.BlockerUserId == actor && block.BlockedUserId == recipientUserId),
+                    cancellationToken);
+
+            if (blocked)
+            {
+                return;
+            }
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
 
         var setting = await _dbContext.NotificationSettings

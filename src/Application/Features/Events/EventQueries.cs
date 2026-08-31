@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
 
@@ -19,6 +20,30 @@ internal static class EventQueries
         if (@event is null)
         {
             return null;
+        }
+
+        if (viewerUserId is { } viewer
+            && viewer != @event.OrganizerUserId
+            && await BlockQueries.BlockedPairExistsAsync(
+                dbContext,
+                viewer,
+                @event.OrganizerUserId,
+                cancellationToken))
+        {
+            var involved = await dbContext.EventParticipants.AsNoTracking()
+                .AnyAsync(
+                    participant =>
+                        participant.EventId == eventId && participant.UserId == viewer,
+                    cancellationToken)
+                || await dbContext.EventWaitlists.AsNoTracking()
+                    .AnyAsync(
+                        entry => entry.EventId == eventId && entry.UserId == viewer,
+                        cancellationToken);
+
+            if (!involved)
+            {
+                return null;
+            }
         }
 
         var sport = await dbContext.Sports.AsNoTracking()

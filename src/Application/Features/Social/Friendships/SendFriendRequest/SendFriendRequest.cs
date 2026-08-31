@@ -53,6 +53,15 @@ internal sealed class SendFriendRequestCommandHandler
             return Result<FriendshipResponse>.Failure(FriendshipErrors.UserNotFound);
         }
 
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                requesterId,
+                request.AddresseeUserId,
+                cancellationToken))
+        {
+            return Result<FriendshipResponse>.Failure(FriendshipErrors.Blocked);
+        }
+
         var existing = await SocialQueries.FindBetweenAsync(
             _dbContext,
             requesterId,
@@ -61,11 +70,6 @@ internal sealed class SendFriendRequestCommandHandler
 
         if (existing is not null)
         {
-            if (existing.Status is FriendshipStatus.Blocked)
-            {
-                return Result<FriendshipResponse>.Failure(FriendshipErrors.Blocked);
-            }
-
             if (existing.Status is FriendshipStatus.Accepted or FriendshipStatus.Pending)
             {
                 return Result<FriendshipResponse>.Failure(FriendshipErrors.AlreadyExists);

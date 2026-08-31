@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Users;
 
@@ -80,6 +81,17 @@ internal static class ProfileQueries
                 cancellationToken);
 
         if (!isReachable)
+        {
+            return Result<PublicProfileResponse>.Failure(ProfileErrors.NotFound);
+        }
+
+        if (requesterId is { } viewerId
+            && viewerId != profile.UserId
+            && await BlockQueries.BlockedPairExistsAsync(
+                dbContext,
+                viewerId,
+                profile.UserId,
+                cancellationToken))
         {
             return Result<PublicProfileResponse>.Failure(ProfileErrors.NotFound);
         }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Models;
@@ -15,10 +16,12 @@ internal sealed class ListCommentsQueryHandler
     private const int MaxLimit = 100;
 
     private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentUser _currentUser;
 
-    public ListCommentsQueryHandler(IApplicationDbContext dbContext)
+    public ListCommentsQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
     {
         _dbContext = dbContext;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<CursorPagedResult<CommentResponse>>> Handle(
@@ -45,6 +48,12 @@ internal sealed class ListCommentsQueryHandler
                   && comment.ParentCommentId == null
                   && !comment.IsHidden
             select new { comment, profile };
+
+        if (_currentUser.UserId is { } viewerId)
+        {
+            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
+            query = query.Where(row => !blockedIds.Contains(row.comment.UserId));
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Before))
         {

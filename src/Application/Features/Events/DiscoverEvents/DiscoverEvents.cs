@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Geo;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
 
@@ -45,11 +47,16 @@ internal sealed class DiscoverEventsQueryHandler
     : IQueryHandler<DiscoverEventsQuery, PagedResult<EventListItemResponse>>
 {
     private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
 
-    public DiscoverEventsQueryHandler(IApplicationDbContext dbContext, TimeProvider timeProvider)
+    public DiscoverEventsQueryHandler(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        TimeProvider timeProvider)
     {
         _dbContext = dbContext;
+        _currentUser = currentUser;
         _timeProvider = timeProvider;
     }
 
@@ -67,6 +74,12 @@ internal sealed class DiscoverEventsQueryHandler
             .Where(@event =>
                 (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
                 && @event.EventDate > utcNow);
+
+        if (_currentUser.UserId is { } viewerId)
+        {
+            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
+            events = events.Where(@event => !blockedIds.Contains(@event.OrganizerUserId));
+        }
 
         if (request.SportId is not null)
         {

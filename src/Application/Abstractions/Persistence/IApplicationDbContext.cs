@@ -32,6 +32,7 @@ public interface IApplicationDbContext
     DbSet<Message> Messages { get; }
     DbSet<Review> Reviews { get; }
     DbSet<Friendship> Friendships { get; }
+    DbSet<UserBlock> UserBlocks { get; }
     DbSet<Post> Posts { get; }
     DbSet<PostMedia> PostMedia { get; }
     DbSet<PostLike> PostLikes { get; }

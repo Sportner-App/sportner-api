@@ -50,6 +50,15 @@ internal sealed class LikePostCommandHandler : ICommandHandler<LikePostCommand>
             return Result.Failure(PostErrors.SelfLike);
         }
 
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                post.UserId,
+                cancellationToken))
+        {
+            return Result.Failure(PostErrors.Forbidden);
+        }
+
         var alreadyLiked = await _dbContext.PostLikes.AsNoTracking()
             .AnyAsync(like => like.PostId == post.Id && like.UserId == userId, cancellationToken);
 

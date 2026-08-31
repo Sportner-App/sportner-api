@@ -30,9 +30,7 @@ public sealed class DmDepthHandlerTests
         var stranger = CreateUser(db, "stranger", now);
         var blocked = CreateUser(db, "blocked", now);
 
-        var block = Friendship.CreateRequest(me.Id, blocked.Id, now);
-        block.Block(me.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(me.Id, blocked.Id, now));
         await db.SaveChangesAsync();
 
         var handler = new CreateDirectConversationCommandHandler(

@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.ApplyToEvent;
@@ -58,6 +59,15 @@ internal sealed class ApplyToEventCommandHandler
         if (@event.OrganizerUserId == userId)
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.OrganizerCannotApply);
+        }
+
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                @event.OrganizerUserId,
+                cancellationToken))
+        {
+            return Result<ApplyToEventResponse>.Failure(EventErrors.RelationshipBlocked);
         }
 
         if (@event.Status is not (EventStatus.Published or EventStatus.Full))

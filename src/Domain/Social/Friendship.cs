@@ -18,8 +18,6 @@ public class Friendship : AggregateRoot
 
     public DateTimeOffset? RespondedAt { get; private set; }
 
-    public Guid? BlockedByUserId { get; private set; }
-
     public static Friendship CreateRequest(
         Guid requesterUserId,
         Guid addresseeUserId,
@@ -47,7 +45,6 @@ public class Friendship : AggregateRoot
             AddresseeUserId = addresseeUserId,
             Status = FriendshipStatus.Pending,
             RespondedAt = null,
-            BlockedByUserId = null,
             CreatedAt = utcNow
         };
     }
@@ -66,7 +63,6 @@ public class Friendship : AggregateRoot
 
         Status = FriendshipStatus.Accepted;
         RespondedAt = utcNow;
-        BlockedByUserId = null;
         Touch(utcNow);
     }
 
@@ -84,43 +80,6 @@ public class Friendship : AggregateRoot
 
         Status = FriendshipStatus.Rejected;
         RespondedAt = utcNow;
-        BlockedByUserId = null;
-        Touch(utcNow);
-    }
-
-    public void Block(Guid blockedByUserId, DateTimeOffset utcNow)
-    {
-        if (blockedByUserId == Guid.Empty)
-        {
-            throw new DomainException("Blocked by user id is required.");
-        }
-
-        if (!InvolvesUser(blockedByUserId))
-        {
-            throw new DomainException("Only a friendship member can block the relationship.");
-        }
-
-        if (Status is FriendshipStatus.Blocked)
-        {
-            if (BlockedByUserId == blockedByUserId)
-            {
-                return;
-            }
-
-            throw new DomainException("Friendship is already blocked by another user.");
-        }
-
-        if (Status is not (
-            FriendshipStatus.Pending
-            or FriendshipStatus.Accepted
-            or FriendshipStatus.Rejected))
-        {
-            throw new DomainException($"Friendship cannot be blocked from status '{Status}'.");
-        }
-
-        Status = FriendshipStatus.Blocked;
-        BlockedByUserId = blockedByUserId;
-        RespondedAt = utcNow;
         Touch(utcNow);
     }
 
@@ -132,17 +91,6 @@ public class Friendship : AggregateRoot
     public bool IsAccepted()
     {
         return Status is FriendshipStatus.Accepted;
-    }
-
-    public bool IsBlocked()
-    {
-        return Status is FriendshipStatus.Blocked;
-    }
-
-    public bool IsBlockedBy(Guid userId)
-    {
-        return Status is FriendshipStatus.Blocked
-            && BlockedByUserId == userId;
     }
 
     public bool InvolvesUser(Guid userId)

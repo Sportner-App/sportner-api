@@ -3,6 +3,8 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 
 namespace Sportner.Application.Features.Messaging;
@@ -30,6 +32,34 @@ internal static class MessagingAccess
         }
 
         return Result<Conversation>.Success(conversation);
+    }
+
+    internal static async Task<bool> IsDirectPeerBlockedAsync(
+        IApplicationDbContext dbContext,
+        Conversation conversation,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        if (conversation.Type is not ConversationType.Direct)
+        {
+            return false;
+        }
+
+        var peerId = conversation.Members
+            .Where(member => member.IsActive() && member.UserId != userId)
+            .Select(member => member.UserId)
+            .FirstOrDefault();
+
+        if (peerId == Guid.Empty)
+        {
+            return false;
+        }
+
+        return await BlockQueries.BlockedPairExistsAsync(
+            dbContext,
+            userId,
+            peerId,
+            cancellationToken);
     }
 
     internal static async Task<ConversationResponse?> BuildConversationResponseAsync(

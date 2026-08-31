@@ -272,6 +272,7 @@ Tables
 
 ```text
 friendships
+user_blocks
 
 posts
 post_media

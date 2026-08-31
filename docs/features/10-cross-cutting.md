@@ -8,6 +8,7 @@ See also: [IMPLEMENTATION_WORKFLOW.md](../../.cursor/rules/IMPLEMENTATION_WORKFL
 
 ## Progress (backlog)
 
+- [x] User blocks (`UserBlocks`; either-way hide on profiles, feeds, events, DMs, notifications)
 - [x] Authorization policies named and wired (`ActiveUser`, `CanCreateContent`, `Moderator`, `Admin`)
 - [x] Cached counter matrix respected in handlers (incl. `DecreaseEventsJoined` on cancel / cancel-event)
 - [x] Storage cleanup on deletes (commit-then-best-effort via `StorageCleanup`)

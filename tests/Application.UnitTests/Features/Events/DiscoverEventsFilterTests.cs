@@ -34,7 +34,7 @@ public sealed class DiscoverEventsFilterTests
         db.Events.AddRange(matching, nonMatching);
         await db.SaveChangesAsync();
 
-        var handler = new DiscoverEventsQueryHandler(db, time);
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(null), time);
         var result = await handler.Handle(
             new DiscoverEventsQuery(
                 MinParticipantAge: 25,

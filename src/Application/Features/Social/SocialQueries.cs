@@ -38,15 +38,7 @@ internal static class SocialQueries
     internal static IQueryable<Guid> BlockedUserIds(
         IApplicationDbContext dbContext,
         Guid userId) =>
-        dbContext.Friendships.AsNoTracking()
-            .Where(friendship =>
-                friendship.Status == FriendshipStatus.Blocked
-                && (friendship.RequesterUserId == userId
-                    || friendship.AddresseeUserId == userId))
-            .Select(friendship =>
-                friendship.RequesterUserId == userId
-                    ? friendship.AddresseeUserId
-                    : friendship.RequesterUserId);
+        BlockQueries.BlockedUserIds(dbContext, userId);
 
     internal static async Task<FriendshipResponse> ToFriendshipResponseAsync(
         IApplicationDbContext dbContext,

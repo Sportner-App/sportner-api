@@ -81,6 +81,15 @@ internal sealed class InviteConversationMemberCommandHandler
             request.UserId,
             cancellationToken);
 
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                request.UserId,
+                cancellationToken))
+        {
+            return Result<ConversationResponse>.Failure(MessagingErrors.Blocked);
+        }
+
         if (friendship is null || friendship.Status is not FriendshipStatus.Accepted)
         {
             return Result<ConversationResponse>.Failure(MessagingErrors.NotFriends);

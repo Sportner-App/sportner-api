@@ -7,6 +7,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Quests;
 using Sportner.Application.Features.Reviews;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Reviews;
@@ -64,6 +65,15 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
         if (reviewerUserId == request.ReviewedUserId)
         {
             return Result<ReviewResponse>.Failure(ReviewErrors.SelfReview);
+        }
+
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                reviewerUserId,
+                request.ReviewedUserId,
+                cancellationToken))
+        {
+            return Result<ReviewResponse>.Failure(ReviewErrors.RelationshipBlocked);
         }
 
         var @event = await _dbContext.Events.AsNoTracking()

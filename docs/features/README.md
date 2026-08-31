@@ -103,7 +103,7 @@ Finish a module file’s checkboxes before starting the next, unless a dependenc
 | [03-events.md](03-events.md) | `Events` (+ nested participant/waitlist actions) |
 | [04-messaging.md](04-messaging.md) | `Conversations`, `Messages` |
 | [05-reviews.md](05-reviews.md) | `Reviews` |
-| [06-social.md](06-social.md) | `Friendships`, `Posts`, `Comments` (+ feed queries) |
+| [06-social.md](06-social.md) | `Friendships`, `UserBlocks`, `Posts`, `Comments` (+ feed queries) |
 | [07-notifications.md](07-notifications.md) | `Notifications`, `NotificationSettings` |
 | [08-gamification.md](08-gamification.md) | `Badges` |
 | [09-quests.md](09-quests.md) | `Quests` / `UserQuests` |

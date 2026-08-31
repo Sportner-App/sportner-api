@@ -52,17 +52,11 @@ internal sealed class GetMutualFriendsQueryHandler
             return Result<MutualFriendsResponse>.Failure(FriendshipErrors.UserNotFound);
         }
 
-        var blocked = await _dbContext.Friendships.AsNoTracking()
-            .AnyAsync(
-                friendship =>
-                    friendship.Status == FriendshipStatus.Blocked
-                    && ((friendship.RequesterUserId == viewerId
-                            && friendship.AddresseeUserId == request.UserId)
-                        || (friendship.RequesterUserId == request.UserId
-                            && friendship.AddresseeUserId == viewerId)),
-                cancellationToken);
-
-        if (blocked)
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                viewerId,
+                request.UserId,
+                cancellationToken))
         {
             return Result<MutualFriendsResponse>.Failure(FriendshipErrors.Blocked);
         }

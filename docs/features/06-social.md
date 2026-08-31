@@ -1,8 +1,8 @@
 # 06 — Social (Friendships, Posts, Feed)
 
-Tables: `Friendships`, `Posts`, `PostMedia`, `PostLikes`, `PostComments`.
+Tables: `Friendships`, `UserBlocks`, `Posts`, `PostMedia`, `PostLikes`, `PostComments`.
 
-Domain: `src/Domain/Social/*`. Specs: `docs/database/16`–`20`.
+Domain: `src/Domain/Social/*`. Specs: `docs/database/16`–`20`, [33-user-blocks.md](../database/33-user-blocks.md).
 
 Depends on: [01-identity.md](01-identity.md). Notifications side effects: [07-notifications.md](07-notifications.md).
 
@@ -12,7 +12,8 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 
 ## Progress
 
-- [x] Friendships (request / accept / reject / block / remove / list)
+- [x] Friendships (request / accept / reject / remove / list)
+- [x] User blocks (block / unblock / list; either-way hide)
 - [x] Friend suggestions / mutual / search (V2 depth)
 - [x] Posts CRUD + media
 - [x] Likes
@@ -26,6 +27,7 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | Controller | Base route |
 | ---------- | ---------- |
 | `FriendshipsController` | `/api/friendships` |
+| `BlocksController` | `/api/blocks` |
 | `PostsController` | `/api/posts` |
 | `UserPostsController` | `/api/users/{userId}/posts` |
 | `CommentsController` | `/api/posts/{postId}/comments` |
@@ -44,8 +46,10 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | [x] | `SendFriendRequest` | Command | `POST /api/friendships` | Bidirectional existence check; blocked → 403; rejected row replaced. Notify `FriendRequest`. |
 | [x] | `AcceptFriendRequest` | Command | `POST /api/friendships/{id}/accept` | Addressee only; bumps both `FriendsCount`; `FIRST_FRIEND`; `FriendAccepted`. |
 | [x] | `RejectFriendRequest` | Command | `POST /api/friendships/{id}/reject` | Addressee only. |
-| [x] | `BlockUser` | Command | `POST /api/friendships/block` | Creates relationship if missing; decreases friends counts when leaving Accepted. |
 | [x] | `RemoveFriendship` | Command | `DELETE /api/friendships/{id}` | Accepted only; physical delete; decrease both counts. |
+| [x] | `BlockUser` | Command | `POST /api/blocks` | `UserBlocks` row; deletes any friendship; decreases friends counts when leaving Accepted. Idempotent. Alias: `POST /api/friendships/block` (deprecated). |
+| [x] | `UnblockUser` | Command | `DELETE /api/blocks/{userId}` | Deletes only the caller's row; 204 idempotent. Does not restore friendship. |
+| [x] | `ListBlockedUsers` | Query | `GET /api/blocks?page=&pageSize=` | Users **I** blocked; profile snippet + `createdAt`. |
 | [x] | `ListFriends` | Query | `GET /api/friendships` | Accepted; paginated. |
 | [x] | `ListPendingRequests` | Query | `GET /api/friendships/pending?outgoing=` | Incoming default; optional outgoing. Response includes avatars, `mutualFriendsCount`, `sharedSportNames`. |
 | [x] | `GetFriendSuggestions` | Query | `GET /api/friendships/suggestions?limit=` | FoF / shared sports / same city; excludes private, pending, blocked, friends, reject within 30d. |
@@ -62,8 +66,8 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | [x] | `RemovePostMedia` | Command | `DELETE /api/posts/{id}/media/{mediaId}` | DB then best-effort storage delete. |
 | [x] | `ReorderPostMedia` | Command | `PUT /api/posts/{id}/media/order` | |
 | [x] | `DeletePost` | Command | `DELETE /api/posts/{id}` | Cascades likes/comments in app; storage cleanup; `PostsCount--`. |
-| [x] | `GetPostById` | Query | `GET /api/posts/{id}` | `likedByMe`; blocked authors forbidden. |
-| [x] | `ListPostsByUser` | Query | `GET /api/users/{userId}/posts` | Cursor; block rules. |
+| [x] | `GetPostById` | Query | `GET /api/posts/{id}` | `likedByMe`; blocked authors → 404. |
+| [x] | `ListPostsByUser` | Query | `GET /api/users/{userId}/posts` | Cursor; blocked pair → 404. |
 
 ### Likes
 

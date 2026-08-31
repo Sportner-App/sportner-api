@@ -88,9 +88,7 @@ public sealed class RecommendationServiceTests
         var banned = CreateUserWithProfile(db, "banned", "Banned", now, city: "Ankara");
         var ok = CreateUserWithProfile(db, "okuser", "Ok", now, city: "Ankara");
 
-        var block = Friendship.CreateRequest(viewer.Id, blocked.Id, now);
-        block.Block(viewer.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, blocked.Id, now));
 
         banned.Ban(now);
         await db.SaveChangesAsync();
@@ -136,9 +134,7 @@ public sealed class RecommendationServiceTests
         var goodOrganizer = CreateUserWithProfile(db, "orggood", "OrgGood", now);
         var blockedOrganizer = CreateUserWithProfile(db, "orgbad", "OrgBad", now);
 
-        var block = Friendship.CreateRequest(viewer.Id, blockedOrganizer.Id, now);
-        block.Block(viewer.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, blockedOrganizer.Id, now));
 
         var matched = CreatePublishedEvent(goodOrganizer.Id, sportMatch.Id, now.AddDays(2), 41.01m, 29.01m, now);
         var unmatched = CreatePublishedEvent(goodOrganizer.Id, otherSport.Id, now.AddDays(1), 41.02m, 29.02m, now);
@@ -172,9 +168,7 @@ public sealed class RecommendationServiceTests
 
         Accept(db, viewer.Id, friend.Id, now);
 
-        var block = Friendship.CreateRequest(viewer.Id, blocked.Id, now);
-        block.Block(viewer.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, blocked.Id, now));
 
         var friendPost = Post.Create(friend.Id, "from friend", now.AddHours(-1));
         var strangerPost = Post.Create(stranger.Id, "from stranger", now.AddMinutes(-30));

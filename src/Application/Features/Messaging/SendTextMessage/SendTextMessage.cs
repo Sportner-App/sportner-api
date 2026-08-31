@@ -70,6 +70,15 @@ internal sealed class SendTextMessageCommandHandler
 
         var conversation = membership.Value!;
 
+        if (await MessagingAccess.IsDirectPeerBlockedAsync(
+                _dbContext,
+                conversation,
+                userId,
+                cancellationToken))
+        {
+            return Result<MessageResponse>.Failure(MessagingErrors.Blocked);
+        }
+
         if (conversation.IsClosed)
         {
             return Result<MessageResponse>.Failure(MessagingErrors.ConversationClosed);

@@ -109,6 +109,14 @@ internal sealed class AssignEventParticipantsCommandHandler
                         return Result.Failure(EventErrors.NotFriends);
                     }
 
+                    var blockedFriendIds = await BlockQueries.BlockedUserIds(DbContext, @event.OrganizerUserId)
+                        .ToListAsync(ct);
+
+                    if (friendIds.Any(blockedFriendIds.Contains))
+                    {
+                        return Result.Failure(EventErrors.RelationshipBlocked);
+                    }
+
                     var existingUserCount = await DbContext.Users
                         .CountAsync(user => friendIds.Contains(user.Id), ct);
 

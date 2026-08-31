@@ -4,7 +4,7 @@ Tables: `Conversations`, `ConversationMembers`, `Messages`.
 
 Domain: `src/Domain/Messaging/*`. Specs: `docs/database/12`–`14`.
 
-Depends on: [03-events.md](03-events.md) (event conversation on publish); Friendship for **Group** (Direct = stranger OK, block enforced).
+Depends on: [03-events.md](03-events.md) (event conversation on publish); Friendship for **Group**; `UserBlocks` for Direct (stranger OK, either-way block forbidden).
 
 **Scope:** Event (auto) + Direct + Group (max 50).  
 **Realtime:** REST write; SignalR push on `conversation:{id}` (`/hubs/event-chat`).
@@ -43,7 +43,7 @@ Depends on: [03-events.md](03-events.md) (event conversation on publish); Friend
 | [x] | `GetConversationById` | Query | `GET /api/conversations/{id}` | Active member; includes member last-read for receipts. |
 | [x] | `ListMyConversations` | Query | `GET /api/conversations?type=` | unreadCount, isMuted, isFriend (direct), peer summary. |
 | [x] | `SearchMyConversations` | Query | `GET /api/conversations/search?q=` | Title / peer username / first name. |
-| [x] | `CreateDirectConversation` | Command | `POST /api/conversations/direct` | Friendship not required; blocked → 403; idempotent. |
+| [x] | `CreateDirectConversation` | Command | `POST /api/conversations/direct` | Friendship not required; `UserBlocks` either-way → 403; idempotent. |
 | [x] | `CreateGroupConversation` | Command | `POST /api/conversations/groups` | Title required; members must be friends; max 50. |
 | [x] | `InviteConversationMember` | Command | `POST /api/conversations/{id}/members` | Group only; owner/moderator + friend. |
 | [x] | `LeaveConversation` | Command | `POST /api/conversations/{id}/leave` | Direct/Group; owner cannot leave. |
@@ -72,8 +72,8 @@ Depends on: [03-events.md](03-events.md) (event conversation on publish); Friend
 ## Rules
 
 - Closed conversation → no send.
-- Direct: fixed 2 members; no invite; **stranger allowed**; block either-way forbidden.
-- Group: max `Conversation.MaxGroupMembers` (50); invite = owner/moderator; create still friends-only.
+- Direct: fixed 2 members; no invite; **stranger allowed**; `UserBlocks` either-way forbids create/send/hub join.
+- Group: max `Conversation.MaxGroupMembers` (50); invite = owner/moderator; create still friends-only; blocked invitees forbidden.
 - Unread = others' messages after `LastReadAt` (cap 99).
 - Event membership still orchestrated from Events.
 

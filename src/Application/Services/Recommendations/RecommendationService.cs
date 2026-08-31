@@ -80,6 +80,12 @@ internal sealed class RecommendationService : IRecommendationService
             }
         }
 
+        foreach (var blockedId in await BlockQueries.BlockedUserIds(_dbContext, viewerUserId)
+                     .ToListAsync(cancellationToken))
+        {
+            excluded.Add(blockedId);
+        }
+
         var mySportIds = await _dbContext.UserSports.AsNoTracking()
             .Where(sport => sport.UserId == viewerUserId)
             .Select(sport => sport.SportId)

@@ -67,12 +67,9 @@ internal sealed class DiscoverUsersQueryHandler
             where profile.UserId != viewerId
                 && profile.IsProfilePublic
                 && user.Status == UserStatus.Active
-                && !_dbContext.Friendships.AsNoTracking().Any(friendship =>
-                    friendship.Status == FriendshipStatus.Blocked
-                    && ((friendship.RequesterUserId == viewerId
-                            && friendship.AddresseeUserId == profile.UserId)
-                        || (friendship.AddresseeUserId == viewerId
-                            && friendship.RequesterUserId == profile.UserId)))
+                && !_dbContext.UserBlocks.AsNoTracking().Any(block =>
+                    (block.BlockerUserId == viewerId && block.BlockedUserId == profile.UserId)
+                    || (block.BlockerUserId == profile.UserId && block.BlockedUserId == viewerId))
             select profile;
 
         if (!string.IsNullOrWhiteSpace(search))

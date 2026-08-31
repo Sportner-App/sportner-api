@@ -57,6 +57,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Friendship> Friendships => Set<Friendship>();
 
+    public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+
     public DbSet<Post> Posts => Set<Post>();
 
     public DbSet<PostMedia> PostMedia => Set<PostMedia>();

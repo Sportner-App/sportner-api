@@ -70,6 +70,16 @@ internal sealed class CreateCommentCommandHandler
             return Result<CommentResponse>.Failure(PostErrors.NotFound);
         }
 
+        if (post.UserId != userId
+            && await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                post.UserId,
+                cancellationToken))
+        {
+            return Result<CommentResponse>.Failure(PostErrors.Forbidden);
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         var comment = PostComment.CreateRoot(post.Id, userId, request.Content, utcNow);
         _dbContext.PostComments.Add(comment);

@@ -16,9 +16,11 @@ The `friendships` table manages friendship relationships between users.
 
 A friendship begins with a friend request and becomes active after acceptance.
 
-Only accepted friendships allow users to access friend-specific features such as direct messaging, upcoming events, and personalized recommendations.
+Only accepted friendships allow users to access friend-specific features such as upcoming events and personalized recommendations.
 
 Each friendship is represented by a single database record.
+
+User blocking is **not** stored here. See [33-user-blocks.md](33-user-blocks.md).
 
 ---
 
@@ -34,18 +36,17 @@ Each friendship is represented by a single database record.
 
 # Columns
 
-| Column             | Type        | Nullable | Description                             |
-| ------------------ | ----------- | -------- | --------------------------------------- |
-| id                 | UUID        | No       | Primary Key                             |
-| requester_user_id  | UUID        | No       | User who sent the request               |
-| addressee_user_id  | UUID        | No       | User who received the request           |
-| status             | SMALLINT    | No       | Friendship status                       |
-| responded_at       | TIMESTAMPTZ | Yes      | Acceptance, rejection or block date     |
-| blocked_by_user_id | UUID        | Yes      | User who blocked the relationship       |
-| created_at         | TIMESTAMPTZ | No       | Request creation date                   |
-| updated_at         | TIMESTAMPTZ | Yes      | Last update date                        |
-| created_by_user_id | UUID        | Yes      | Audit                                   |
-| updated_by_user_id | UUID        | Yes      | Audit                                   |
+| Column             | Type        | Nullable | Description                    |
+| ------------------ | ----------- | -------- | ------------------------------ |
+| id                 | UUID        | No       | Primary Key                    |
+| requester_user_id  | UUID        | No       | User who sent the request      |
+| addressee_user_id  | UUID        | No       | User who received the request  |
+| status             | SMALLINT    | No       | Friendship status              |
+| responded_at       | TIMESTAMPTZ | Yes      | Acceptance or rejection date   |
+| created_at         | TIMESTAMPTZ | No       | Request creation date          |
+| updated_at         | TIMESTAMPTZ | Yes      | Last update date               |
+| created_by_user_id | UUID        | Yes      | Audit                          |
+| updated_by_user_id | UUID        | Yes      | Audit                          |
 
 ---
 
@@ -67,18 +68,15 @@ Each friendship is represented by a single database record.
 # Check Constraints
 
 - requester_user_id <> addressee_user_id
-- blocked_by_user_id IS NULL OR status = Blocked
-- blocked_by_user_id IS NULL OR blocked_by_user_id IN (requester_user_id, addressee_user_id)
 
 ---
 
 # Foreign Keys
 
-| Column             | References |
-| ------------------ | ---------- |
-| requester_user_id  | users(id)  |
-| addressee_user_id  | users(id)  |
-| blocked_by_user_id | users(id)  |
+| Column            | References |
+| ----------------- | ---------- |
+| requester_user_id | users(id)  |
+| addressee_user_id | users(id)  |
 
 ---
 
@@ -88,7 +86,6 @@ Each friendship is represented by a single database record.
 
 - users (Requester)
 - users (Addressee)
-- users (BlockedBy, optional)
 
 ---
 
@@ -101,6 +98,8 @@ Each friendship is represented by a single database record.
 | 2     | Rejected |
 | 3     | Blocked  |
 
+`Blocked` (3) is a **legacy enum value**. New blocks must not write this status. Application code must not create friendship rows solely to represent a block.
+
 ---
 
 # Business Rules
@@ -109,12 +108,8 @@ Each friendship is represented by a single database record.
 - A user cannot send multiple pending requests to the same user.
 - Friend requests require acceptance before becoming active.
 - Either user may remove an accepted friendship.
-- Blocking immediately ends the friendship if one exists.
-- `blocked_by_user_id` must be null unless status is `Blocked`.
-- When status is `Blocked`, `blocked_by_user_id` must equal either the requester or the addressee.
-- The blocker must belong to the friendship.
-- Block direction must remain known for authorization and future unblock behavior.
-- Blocked users cannot send friend requests or direct messages.
+- Blocking (via `UserBlocks`) immediately ends the friendship if one exists: the friendship row is deleted.
+- Either-way `UserBlocks` forbid friend requests and direct messages.
 - Accepted friendships allow access to friend-only features.
 - Friendship status changes must be handled only through backend business logic.
 - Before creating a friendship request, the Application layer must search both directions:
@@ -155,11 +150,15 @@ Rejected
 
 or
 
-Pending
+Pending / Accepted / Rejected
 
 ↓
 
-Blocked
+Either user blocks the other (`UserBlocks`)
+
+↓
+
+Friendship record deleted
 
 or
 
@@ -208,7 +207,3 @@ Each friendship exists as a single record regardless of direction.
 When querying a user's friends, both `requester_user_id` and `addressee_user_id` should be considered.
 
 Removing a friendship permanently deletes the record.
-
-Blocking is represented by the `Blocked` status and `blocked_by_user_id`.
-
-The stored requester/addressee direction is not redesigned for blocks; block direction is tracked separately through `blocked_by_user_id`.

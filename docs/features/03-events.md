@@ -46,18 +46,18 @@ Nested actions stay on the same controller for v1.
 | [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport (`sportName`, `sportSlug`, `sportCoverImageUrl`), organizer snippet, counts, my participation / waitlist, conversation id. |
 | [x] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Offset pagination. |
 | [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating?scope=` | Excludes self-organized; skips rejected/cancelled. Optional `scope=upcoming|past` (by start time). |
-| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring (V1 compat). List items include `sportCoverImageUrl`. |
+| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring (V1 compat). Authenticated viewers exclude blocked organizers. List items include `sportCoverImageUrl`. |
 | [x] | `ExploreEvents` | Query | `GET /api/explore/events` | Ranked discover (V2); auth required; optional geo/sport/city; `limit`. Same sport cover field as list/detail. |
 
 ### Participation
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [x] | `ApplyToEvent` | Command | `POST /api/events/{id}/apply` | Pending participant or waitlist. Organizer blocked. Cancelled users may re-apply (same row). |
+| [x] | `ApplyToEvent` | Command | `POST /api/events/{id}/apply` | Pending participant or waitlist. Either-way block with organizer → 403. Cancelled users may re-apply (same row). |
 | [x] | `ApproveParticipant` | Command | `POST /api/events/{id}/participants/{userId}/approve` | Adds conversation member; `EventsJoined`++; `EventRequestApproved` notification. |
 | [x] | `RejectParticipant` | Command | `POST /api/events/{id}/participants/{userId}/reject` | `EventRequestRejected` notification. |
 | [x] | `CancelParticipation` | Command | `POST /api/events/{id}/participants/me/cancel` | Removes conversation membership when present. Blocked after scheduled end / completed / cancelled. |
-| [x] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Current participants only (excludes cancelled/rejected). Includes `id`, `kind`, `isGuest`, nullable `userId`. Organizer sees pending (for approval); others see approved/attended/no-show only. Pending applicants are not roster members until approved. |
+| [x] | `ListParticipants` | Query | `GET /api/events/{id}/participants` | Current participants only (excludes cancelled/rejected). Includes `id`, `kind`, `isGuest`, nullable `userId`. Organizer sees pending (for approval); others see approved/attended/no-show only. Pending applicants are not roster members until approved. Either-way blocked users are omitted from the viewer's list. |
 | [x] | `AssignEventParticipants` | Command | `POST /api/events/{id}/participants/assign` | Organizer-only. Draft/Published/Full. Body: `guests[{firstName,lastName}]` + `friendUserIds`. Guests occupy capacity as Approved. Friends must be accepted friends and are added as Approved. |
 | [x] | `RemoveAssignedParticipant` | Command | `DELETE /api/events/{id}/participants/{participantId}` | Organizer-only. Cancels a guest or assigned/applied participant (not the organizer) and frees capacity. |
 

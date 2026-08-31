@@ -97,6 +97,8 @@ public class PersistenceModelTests
                 [nameof(Review.EventId), nameof(Review.ReviewerUserId), nameof(Review.ReviewedUserId)]),
             (typeof(Friendship),
                 [nameof(Friendship.RequesterUserId), nameof(Friendship.AddresseeUserId)]),
+            (typeof(UserBlock),
+                [nameof(UserBlock.BlockerUserId), nameof(UserBlock.BlockedUserId)]),
             (typeof(PostMedia), [nameof(PostMedia.PostId), nameof(PostMedia.DisplayOrder)]),
             (typeof(PostLike), [nameof(PostLike.PostId), nameof(PostLike.UserId)]),
             (typeof(NotificationSetting),

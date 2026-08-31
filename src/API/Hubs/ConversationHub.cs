@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Domain.Common.Enums;
 
 namespace Sportner.API.Hubs;
 
@@ -92,6 +93,37 @@ public sealed class ConversationHub : Hub
                 conversationId);
 
             throw new HubException("You are not a member of this conversation.");
+        }
+
+        var conversation = await _dbContext.Conversations.AsNoTracking()
+            .Where(candidate => candidate.Id == conversationId)
+            .Select(candidate => new { candidate.Type })
+            .FirstOrDefaultAsync(Context.ConnectionAborted);
+
+        if (conversation?.Type is ConversationType.Direct)
+        {
+            var peerId = await _dbContext.ConversationMembers.AsNoTracking()
+                .Where(member =>
+                    member.ConversationId == conversationId
+                    && member.UserId != userId
+                    && member.LeftAt == null)
+                .Select(member => member.UserId)
+                .FirstOrDefaultAsync(Context.ConnectionAborted);
+
+            if (peerId != Guid.Empty)
+            {
+                var blocked = await _dbContext.UserBlocks.AsNoTracking()
+                    .AnyAsync(
+                        block =>
+                            (block.BlockerUserId == userId && block.BlockedUserId == peerId)
+                            || (block.BlockerUserId == peerId && block.BlockedUserId == userId),
+                        Context.ConnectionAborted);
+
+                if (blocked)
+                {
+                    throw new HubException("You are not a member of this conversation.");
+                }
+            }
         }
     }
 }

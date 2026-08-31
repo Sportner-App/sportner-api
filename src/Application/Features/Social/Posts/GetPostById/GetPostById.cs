@@ -51,7 +51,7 @@ internal sealed class GetPostByIdQueryHandler : IQueryHandler<GetPostByIdQuery, 
 
             if (blocked)
             {
-                return Result<PostResponse>.Failure(PostErrors.Forbidden);
+                return Result<PostResponse>.Failure(PostErrors.NotFound);
             }
         }
 

@@ -44,7 +44,7 @@ internal sealed class ListPostsByUserQueryHandler
 
             if (blocked && authenticatedViewerId != request.UserId)
             {
-                return Result<CursorPagedResult<PostResponse>>.Failure(PostErrors.Forbidden);
+                return Result<CursorPagedResult<PostResponse>>.Failure(PostErrors.NotFound);
             }
         }
 

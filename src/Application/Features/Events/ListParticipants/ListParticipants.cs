@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.ListParticipants;
@@ -53,6 +54,15 @@ internal sealed class ListParticipantsQueryHandler
                 row.participant.Status == ParticipantStatus.Approved
                 || row.participant.Status == ParticipantStatus.Attended
                 || row.participant.Status == ParticipantStatus.NoShow);
+        }
+
+        if (_currentUser.UserId is { } viewerId)
+        {
+            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
+            query = query.Where(row =>
+                row.participant.UserId == null
+                || row.participant.UserId == viewerId
+                || !blockedIds.Contains(row.participant.UserId.Value));
         }
 
         var items = await query

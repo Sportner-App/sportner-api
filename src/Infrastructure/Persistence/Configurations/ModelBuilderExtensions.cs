@@ -105,6 +105,14 @@ internal static class ModelBuilderExtensions
             })
             .IsUnique();
 
+        modelBuilder.Entity<UserBlock>()
+            .HasIndex(entity => new
+            {
+                entity.BlockerUserId,
+                entity.BlockedUserId
+            })
+            .IsUnique();
+
         modelBuilder.Entity<PostMedia>()
             .HasIndex(entity => new { entity.PostId, entity.DisplayOrder })
             .IsUnique();
@@ -224,6 +232,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Friendship>().HasIndex(entity => entity.RequesterUserId);
         modelBuilder.Entity<Friendship>().HasIndex(entity => entity.AddresseeUserId);
         modelBuilder.Entity<Friendship>().HasIndex(entity => entity.Status);
+
+        modelBuilder.Entity<UserBlock>()
+            .HasIndex(entity => new { entity.BlockerUserId, entity.CreatedAt });
+        modelBuilder.Entity<UserBlock>().HasIndex(entity => entity.BlockedUserId);
 
         modelBuilder.Entity<Post>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<Post>().HasIndex(entity => entity.CreatedAt);
@@ -772,10 +784,22 @@ internal static class ModelBuilderExtensions
             .HasForeignKey(entity => entity.AddresseeUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Friendship>()
+        modelBuilder.Entity<UserBlock>()
+            .ToTable(table =>
+                table.HasCheckConstraint(
+                    "CK_UserBlocks_NotSelf",
+                    "\"BlockerUserId\" <> \"BlockedUserId\""));
+
+        modelBuilder.Entity<UserBlock>()
             .HasOne<User>()
             .WithMany()
-            .HasForeignKey(entity => entity.BlockedByUserId)
+            .HasForeignKey(entity => entity.BlockerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserBlock>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.BlockedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Post>()

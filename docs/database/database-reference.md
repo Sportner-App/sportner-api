@@ -204,7 +204,7 @@ Unless explicitly stated otherwise, all enum values are stored as `SMALLINT` in 
 |     0 | Pending  |
 |     1 | Accepted |
 |     2 | Rejected |
-|     3 | Blocked  |
+|     3 | Blocked (legacy; do not write) |
 
 ---
 

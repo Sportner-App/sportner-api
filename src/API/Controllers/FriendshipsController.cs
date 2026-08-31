@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sportner.API.Authorization;
 using Sportner.API.Common;
 using Sportner.Application.Features.Social.Friendships.AcceptFriendRequest;
-using Sportner.Application.Features.Social.Friendships.BlockUser;
+using Sportner.Application.Features.Social.Blocks.BlockUser;
 using Sportner.Application.Features.Social.Friendships.GetFriendSuggestions;
 using Sportner.Application.Features.Social.Friendships.GetMutualFriends;
 using Sportner.Application.Features.Social.Friendships.ListFriends;
@@ -100,6 +100,9 @@ public sealed class FriendshipsController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
+    /// <summary>
+    /// Deprecated alias for <c>POST /api/blocks</c>.
+    /// </summary>
     [HttpPost("block")]
     public async Task<IActionResult> Block(
         [FromBody] BlockUserBody request,

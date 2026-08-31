@@ -65,13 +65,11 @@ internal sealed class CreateDirectConversationCommandHandler
             return Result<ConversationResponse>.Failure(MessagingErrors.PeerNotFound);
         }
 
-        var friendship = await SocialQueries.FindBetweenAsync(
-            _dbContext,
-            userId,
-            request.OtherUserId,
-            cancellationToken);
-
-        if (friendship?.Status is FriendshipStatus.Blocked)
+        if (await BlockQueries.BlockedPairExistsAsync(
+                _dbContext,
+                userId,
+                request.OtherUserId,
+                cancellationToken))
         {
             return Result<ConversationResponse>.Failure(MessagingErrors.Blocked);
         }

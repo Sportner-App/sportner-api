@@ -76,6 +76,14 @@ internal sealed class CreateGroupConversationCommandHandler
             {
                 return Result<ConversationResponse>.Failure(MessagingErrors.NotFriends);
             }
+
+            var blockedIds = await BlockQueries.BlockedUserIds(_dbContext, userId)
+                .ToListAsync(cancellationToken);
+
+            if (memberIds.Any(blockedIds.Contains))
+            {
+                return Result<ConversationResponse>.Failure(MessagingErrors.Blocked);
+            }
         }
 
         var utcNow = _timeProvider.GetUtcNow();

@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 
 namespace Sportner.Application.Features.Notifications.ListMyNotifications;
 
@@ -47,6 +48,11 @@ internal sealed class ListMyNotificationsQueryHandler
             from actor in actors.DefaultIfEmpty()
             where notification.RecipientUserId == userId
             select new { notification, actor };
+
+        var blockedIds = BlockQueries.BlockedUserIds(_dbContext, userId);
+        query = query.Where(row =>
+            row.notification.ActorUserId == null
+            || !blockedIds.Contains(row.notification.ActorUserId.Value));
 
         if (request.UnreadOnly)
         {

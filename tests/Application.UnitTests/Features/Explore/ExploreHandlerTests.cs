@@ -33,9 +33,7 @@ public sealed class ExploreHandlerTests
         var blocked = CreateUserWithProfile(db, "blocked", "Blocked", now);
 
         Accept(db, viewer.Id, friend.Id, now);
-        var block = Friendship.CreateRequest(viewer.Id, blocked.Id, now);
-        block.Block(viewer.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, blocked.Id, now));
         await db.SaveChangesAsync();
 
         var handler = new DiscoverUsersQueryHandler(db, new TestCurrentUser(viewer.Id));
@@ -135,9 +133,7 @@ public sealed class ExploreHandlerTests
         var organizer = CreateUserWithProfile(db, "org", "Org", now);
         var blocked = CreateUserWithProfile(db, "bad", "Bad", now);
 
-        var block = Friendship.CreateRequest(viewer.Id, blocked.Id, now);
-        block.Block(viewer.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, blocked.Id, now));
 
         var good = CreatePublishedEvent(organizer.Id, sport.Id, now.AddDays(2), now);
         var bad = CreatePublishedEvent(blocked.Id, sport.Id, now.AddDays(1), now);
@@ -169,9 +165,7 @@ public sealed class ExploreHandlerTests
         var blocked = CreateUserWithProfile(db, "blocked", "Blocked", now);
 
         Accept(db, viewer.Id, friend.Id, now);
-        var block = Friendship.CreateRequest(viewer.Id, blocked.Id, now);
-        block.Block(viewer.Id, now);
-        db.Friendships.Add(block);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, blocked.Id, now));
 
         var friendPost = Post.Create(friend.Id, "hi", now.AddHours(-2));
         var strangerPost = Post.Create(stranger.Id, "yo", now.AddMinutes(-10));

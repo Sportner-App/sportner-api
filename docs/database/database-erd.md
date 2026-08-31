@@ -38,6 +38,7 @@ Reviews
 Social
 
 - friendships
+- user_blocks
 - posts
 - post_media
 - post_likes
@@ -97,7 +98,9 @@ users
 
 ├── friendships (Addressee)
 
-├── friendships (BlockedBy)
+├── user_blocks (Blocker)
+
+├── user_blocks (Blocked)
 
 ├── posts (1 : N)
 
@@ -486,7 +489,8 @@ post_comments 1 ---- N post_comments (Replies)
 users 1 ---- N notifications
 
 users 1 ---- N friendships
-users 1 ---- N friendships (blocked_by_user_id)
+users 1 ---- N user_blocks (blocker)
+users 1 ---- N user_blocks (blocked)
 
 badges 1 ---- N user_badges
 

@@ -53,9 +53,7 @@ public sealed class FriendshipDepthHandlerTests
 
         var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
         var target = CreateUserWithProfile(db, "target", "Target", now);
-        var blocked = Friendship.CreateRequest(viewer.Id, target.Id, now);
-        blocked.Block(viewer.Id, now);
-        db.Friendships.Add(blocked);
+        db.UserBlocks.Add(UserBlock.Create(viewer.Id, target.Id, now));
         await db.SaveChangesAsync();
 
         var handler = new GetMutualFriendsQueryHandler(db, new TestCurrentUser(viewer.Id));
