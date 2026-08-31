@@ -14,4 +14,6 @@ public sealed record CreateEventCommand(
     int? MaxParticipants,
     int MinParticipantAge,
     int MaxParticipantAge,
-    short? SkillLevel = null) : ICommand<EventResponse>;
+    short? SkillLevel = null,
+    bool IsPaid = false,
+    decimal? FeeAmount = null) : ICommand<EventResponse>;

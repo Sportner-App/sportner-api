@@ -25,6 +25,8 @@ public sealed record EventResponse(
     int MinParticipantAge,
     int MaxParticipantAge,
     short? SkillLevel,
+    bool IsPaid,
+    decimal? FeeAmount,
     short Status,
     int OccupiedParticipantCount,
     int WaitlistCount,
@@ -48,6 +50,8 @@ public sealed record EventListItemResponse(
     int MinParticipantAge,
     int MaxParticipantAge,
     short? SkillLevel,
+    bool IsPaid,
+    decimal? FeeAmount,
     short Status,
     int OccupiedParticipantCount);
 

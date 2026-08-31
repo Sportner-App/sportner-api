@@ -21,7 +21,9 @@ public sealed record CreateRecurringEventsCommand(
     int MinParticipantAge,
     int MaxParticipantAge,
     int IntervalWeeks,
-    int OccurrenceCount) : ICommand<CreateRecurringEventsResponse>;
+    int OccurrenceCount,
+    bool IsPaid = false,
+    decimal? FeeAmount = null) : ICommand<CreateRecurringEventsResponse>;
 
 public sealed record CreateRecurringEventsResponse(
     Guid FirstEventId,
@@ -44,6 +46,12 @@ public sealed class CreateRecurringEventsCommandValidator
             .GreaterThanOrEqualTo(x => x.MinParticipantAge);
         RuleFor(x => x.IntervalWeeks).Must(value => value is 1 or 2 or 4);
         RuleFor(x => x.OccurrenceCount).InclusiveBetween(2, 12);
+        RuleFor(x => x.FeeAmount)
+            .NotNull()
+            .GreaterThan(0)
+            .LessThanOrEqualTo(DomainEvent.MaxFeeAmount)
+            .When(x => x.IsPaid)
+            .WithMessage("Fee amount is required and must be greater than zero for paid events.");
     }
 }
 
@@ -98,7 +106,10 @@ internal sealed class CreateRecurringEventsCommandHandler
                 request.Description,
                 request.MaxParticipants,
                 request.MinParticipantAge,
-                request.MaxParticipantAge))
+                request.MaxParticipantAge,
+                skillLevel: null,
+                isPaid: request.IsPaid,
+                feeAmount: request.FeeAmount))
             .ToList();
 
         foreach (var @event in events)

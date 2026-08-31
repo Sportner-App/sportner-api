@@ -101,6 +101,8 @@ internal sealed class ExploreEventsQueryHandler
                     @event.Address,
                     @event.MaxParticipants,
                     SkillLevel = @event.SkillLevel != null ? (short?)@event.SkillLevel : null,
+                    @event.IsPaid,
+                    @event.FeeAmount,
                     Status = (short)@event.Status,
                     OccupiedParticipantCount = _dbContext.EventParticipants.Count(participant =>
                         participant.EventId == @event.Id
@@ -134,6 +136,8 @@ internal sealed class ExploreEventsQueryHandler
                 detail.Address,
                 detail.MaxParticipants,
                 detail.SkillLevel,
+                detail.IsPaid,
+                detail.FeeAmount,
                 detail.Status,
                 detail.OccupiedParticipantCount,
                 entry.Item.DistanceKm,

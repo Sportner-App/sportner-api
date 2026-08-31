@@ -198,6 +198,7 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>()
             .HasIndex(entity => new { entity.Latitude, entity.Longitude });
         modelBuilder.Entity<Event>().HasIndex(entity => entity.SkillLevel);
+        modelBuilder.Entity<Event>().HasIndex(entity => entity.IsPaid);
 
         modelBuilder.Entity<EventQuestion>()
             .HasIndex(entity => new { entity.EventId, entity.CreatedAt });
@@ -402,6 +403,9 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>()
             .Property(entity => entity.Longitude)
             .HasPrecision(9, 6);
+        modelBuilder.Entity<Event>()
+            .Property(entity => entity.FeeAmount)
+            .HasPrecision(10, 2);
 
         modelBuilder.Entity<EventQuestion>()
             .Property(entity => entity.Content)
@@ -544,6 +548,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<EventQuestion>()
             .Property(entity => entity.ReplyCount)
             .HasDefaultValue(0);
+
+        modelBuilder.Entity<Event>()
+            .Property(entity => entity.IsPaid)
+            .HasDefaultValue(false);
     }
 
     private static void ConfigureSmallIntColumns(ModelBuilder modelBuilder)
@@ -662,6 +670,12 @@ internal static class ModelBuilderExtensions
             .WithMany(user => user.SavedLocations)
             .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Event>()
+            .ToTable(table =>
+                table.HasCheckConstraint(
+                    "CK_Events_Fee",
+                    "(\"IsPaid\" = FALSE AND \"FeeAmount\" IS NULL) OR (\"IsPaid\" = TRUE AND \"FeeAmount\" IS NOT NULL AND \"FeeAmount\" > 0)"));
 
         modelBuilder.Entity<Event>()
             .HasOne<User>()

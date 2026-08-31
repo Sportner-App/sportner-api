@@ -39,7 +39,13 @@ public class Event : AggregateRoot
 
     public SkillLevel? SkillLevel { get; private set; }
 
+    public bool IsPaid { get; private set; }
+
+    public decimal? FeeAmount { get; private set; }
+
     public EventStatus Status { get; private set; }
+
+    public const decimal MaxFeeAmount = 99_999.99m;
 
     public IReadOnlyCollection<EventParticipant> Participants => _participants.AsReadOnly();
 
@@ -59,7 +65,9 @@ public class Event : AggregateRoot
         int? maxParticipants = null,
         int minParticipantAge = 18,
         int maxParticipantAge = 60,
-        SkillLevel? skillLevel = null)
+        SkillLevel? skillLevel = null,
+        bool isPaid = false,
+        decimal? feeAmount = null)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -90,6 +98,8 @@ public class Event : AggregateRoot
             Status = EventStatus.Draft,
             CreatedAt = utcNow
         };
+
+        @event.ApplyFee(isPaid, feeAmount);
 
         if (@event.MinParticipantAge > @event.MaxParticipantAge)
         {
@@ -143,6 +153,14 @@ public class Event : AggregateRoot
         Latitude = NormalizeLatitude(latitude);
         Longitude = NormalizeLongitude(longitude);
         Address = NormalizeAddress(address);
+        Touch(utcNow);
+    }
+
+    public void UpdateFee(bool isPaid, decimal? feeAmount, DateTimeOffset utcNow)
+    {
+        EnsureEditable();
+
+        ApplyFee(isPaid, feeAmount);
         Touch(utcNow);
     }
 
@@ -867,6 +885,40 @@ public class Event : AggregateRoot
         }
 
         return skillLevel;
+    }
+
+    private void ApplyFee(bool isPaid, decimal? feeAmount)
+    {
+        var (paid, amount) = NormalizeFee(isPaid, feeAmount);
+        IsPaid = paid;
+        FeeAmount = amount;
+    }
+
+    private static (bool IsPaid, decimal? FeeAmount) NormalizeFee(bool isPaid, decimal? feeAmount)
+    {
+        if (!isPaid)
+        {
+            return (false, null);
+        }
+
+        if (feeAmount is null)
+        {
+            throw new DomainException("Fee amount is required for paid events.");
+        }
+
+        var rounded = decimal.Round(feeAmount.Value, 2, MidpointRounding.AwayFromZero);
+
+        if (rounded <= 0)
+        {
+            throw new DomainException("Fee amount must be greater than zero.");
+        }
+
+        if (rounded > MaxFeeAmount)
+        {
+            throw new DomainException($"Fee amount cannot exceed {MaxFeeAmount}.");
+        }
+
+        return (true, rounded);
     }
 
 }

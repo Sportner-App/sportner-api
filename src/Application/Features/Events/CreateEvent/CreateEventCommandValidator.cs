@@ -1,5 +1,6 @@
 using FluentValidation;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Events;
 
 namespace Sportner.Application.Features.Events.CreateEvent;
 
@@ -24,5 +25,11 @@ public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventC
             .Must(level => level is not null && Enum.IsDefined((SkillLevel)level.Value))
             .When(command => command.SkillLevel is not null)
             .WithMessage("Skill level is invalid.");
+        RuleFor(command => command.FeeAmount)
+            .NotNull()
+            .GreaterThan(0)
+            .LessThanOrEqualTo(Event.MaxFeeAmount)
+            .When(command => command.IsPaid)
+            .WithMessage("Fee amount is required and must be greater than zero for paid events.");
     }
 }

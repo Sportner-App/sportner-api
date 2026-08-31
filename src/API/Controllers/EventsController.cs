@@ -30,6 +30,7 @@ using Sportner.Application.Features.Events.RejectParticipant;
 using Sportner.Application.Features.Events.RemoveAssignedParticipant;
 using Sportner.Application.Features.Events.UpdateEventCapacity;
 using Sportner.Application.Features.Events.UpdateEventDetails;
+using Sportner.Application.Features.Events.UpdateEventFee;
 using Sportner.Application.Features.Events.UpdateEventLocation;
 using Sportner.Application.Features.Events.UpdateEventSchedule;
 using Sportner.Application.Features.Events.EventQuestions.AskEventQuestion;
@@ -56,6 +57,7 @@ public sealed class EventsController : ApiControllerBase
         [FromQuery] int? maxAge,
         [FromQuery] short? gender,
         [FromQuery] short? skillLevel,
+        [FromQuery] bool? isPaid,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
@@ -71,6 +73,7 @@ public sealed class EventsController : ApiControllerBase
                 maxAge,
                 gender,
                 skillLevel,
+                isPaid,
                 page,
                 pageSize),
             cancellationToken);
@@ -191,7 +194,9 @@ public sealed class EventsController : ApiControllerBase
             request.MaxParticipants,
             request.MinParticipantAge,
             request.MaxParticipantAge,
-            request.SkillLevel);
+            request.SkillLevel,
+            request.IsPaid,
+            request.FeeAmount);
 
         var result = await Sender.Send(command, cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -220,7 +225,7 @@ public sealed class EventsController : ApiControllerBase
             request.SportId, request.Title, request.Description, request.EventDate,
             request.DurationMinutes, request.Latitude, request.Longitude, request.Address,
             request.MaxParticipants, request.MinParticipantAge, request.MaxParticipantAge,
-            request.IntervalWeeks, request.OccurrenceCount), cancellationToken);
+            request.IntervalWeeks, request.OccurrenceCount, request.IsPaid, request.FeeAmount), cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
     }
 
@@ -262,6 +267,19 @@ public sealed class EventsController : ApiControllerBase
     {
         var result = await Sender.Send(
             new UpdateEventCapacityCommand(eventId, request.MaxParticipants),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPut("{eventId:guid}/fee")]
+    public async Task<IActionResult> UpdateFee(
+        Guid eventId,
+        [FromBody] UpdateFeeRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UpdateEventFeeCommand(eventId, request.IsPaid, request.FeeAmount),
             cancellationToken);
 
         return result.ToActionResult();
@@ -488,13 +506,16 @@ public sealed class EventsController : ApiControllerBase
         int? MaxParticipants,
         int MinParticipantAge,
         int MaxParticipantAge,
-        short? SkillLevel = null);
+        short? SkillLevel = null,
+        bool IsPaid = false,
+        decimal? FeeAmount = null);
 
     public sealed record CreateRecurringEventsRequest(
         Guid SportId, string Title, string? Description, DateTimeOffset EventDate,
         int DurationMinutes, decimal Latitude, decimal Longitude, string Address,
         int? MaxParticipants, int MinParticipantAge, int MaxParticipantAge,
-        int IntervalWeeks, int OccurrenceCount);
+        int IntervalWeeks, int OccurrenceCount,
+        bool IsPaid = false, decimal? FeeAmount = null);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 
@@ -503,6 +524,8 @@ public sealed class EventsController : ApiControllerBase
     public sealed record UpdateEventLocationRequest(decimal Latitude, decimal Longitude, string Address);
 
     public sealed record UpdateCapacityRequest(int? MaxParticipants);
+
+    public sealed record UpdateFeeRequest(bool IsPaid, decimal? FeeAmount);
 
     public sealed record AssignParticipantsRequest(
         IReadOnlyList<GuestAssignmentRequest>? Guests,

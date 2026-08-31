@@ -22,6 +22,7 @@ public sealed record DiscoverEventsQuery(
     int? MaxParticipantAge = null,
     short? OrganizerGender = null,
     short? SkillLevel = null,
+    bool? IsPaid = null,
     int Page = 1,
     int PageSize = 20) : IQuery<PagedResult<EventListItemResponse>>;
 
@@ -119,6 +120,11 @@ internal sealed class DiscoverEventsQueryHandler
             events = events.Where(@event => @event.SkillLevel == skillLevel);
         }
 
+        if (request.IsPaid is { } isPaid)
+        {
+            events = events.Where(@event => @event.IsPaid == isPaid);
+        }
+
         if (request.Latitude is { } lat
             && request.Longitude is { } lng
             && request.RadiusKm is { } radiusKm
@@ -155,6 +161,8 @@ internal sealed class DiscoverEventsQueryHandler
                 @event.MinParticipantAge,
                 @event.MaxParticipantAge,
                 @event.SkillLevel != null ? (short?)@event.SkillLevel : null,
+                @event.IsPaid,
+                @event.FeeAmount,
                 (short)@event.Status,
                 _dbContext.EventParticipants.Count(participant =>
                     participant.EventId == @event.Id

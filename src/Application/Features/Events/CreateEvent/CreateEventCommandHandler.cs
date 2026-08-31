@@ -76,7 +76,9 @@ internal sealed class CreateEventCommandHandler
             request.MaxParticipants,
             request.MinParticipantAge,
             request.MaxParticipantAge,
-            request.SkillLevel is { } skill ? (SkillLevel)skill : null);
+            request.SkillLevel is { } skill ? (SkillLevel)skill : null,
+            request.IsPaid,
+            request.FeeAmount);
 
         _dbContext.Events.Add(@event);
         await _dbContext.SaveChangesAsync(cancellationToken);

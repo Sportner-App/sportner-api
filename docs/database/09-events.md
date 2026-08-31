@@ -61,6 +61,8 @@ Every event record represents exactly one occurrence.
 | address            | TEXT         |       No | Full formatted address                         |
 | max_participants   | INTEGER      |      Yes | Maximum occupied slots; `NULL` means unlimited |
 | skill_level        | SMALLINT     |      Yes | Optional informational skill (0–4); not a join gate |
+| is_paid            | BOOLEAN      |       No | Whether attendance has an advertised fee; default `false` |
+| fee_amount         | DECIMAL(10,2)|      Yes | Advertised TRY amount when paid; `NULL` when free |
 | status             | SMALLINT     |       No | Event lifecycle status                         |
 | created_at         | TIMESTAMPTZ  |       No | Creation timestamp                             |
 | updated_at         | TIMESTAMPTZ  |      Yes | Last update timestamp                          |
@@ -97,6 +99,7 @@ A future implementation should introduce an `event_series` model rather than sto
 - `INDEX(event_date)`
 - `INDEX(status)`
 - `INDEX(skill_level)`
+- `INDEX(is_paid)`
 - `INDEX(status, event_date)`
 
 The composite index supports common discovery queries for upcoming published events.
@@ -201,6 +204,10 @@ When `max_participants` is `NULL`, capacity is unlimited and applications never 
 - Only users marked as attended become eligible to review other attendees.
 - Cancelling an event stops applications and participant management.
 - Completed and cancelled events cannot return to an earlier lifecycle state.
+- `is_paid` is informational only. The platform does not collect, hold, or transfer money.
+- When `is_paid` is `false`, `fee_amount` must be `NULL`.
+- When `is_paid` is `true`, `fee_amount` is required, must be greater than zero, and is stored as TRY with two decimal places (maximum `99999.99`).
+- Existing events without a fee default to free.
 
 ---
 

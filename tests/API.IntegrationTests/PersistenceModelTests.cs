@@ -204,7 +204,8 @@ public class PersistenceModelTests
             (typeof(UserSavedLocation), nameof(UserSavedLocation.Latitude), 9, 6),
             (typeof(UserSavedLocation), nameof(UserSavedLocation.Longitude), 9, 6),
             (typeof(Event), nameof(Event.Latitude), 9, 6),
-            (typeof(Event), nameof(Event.Longitude), 9, 6)
+            (typeof(Event), nameof(Event.Longitude), 9, 6),
+            (typeof(Event), nameof(Event.FeeAmount), 10, 2)
         };
 
         foreach (var (entityType, propertyName, precision, scale) in precisions)

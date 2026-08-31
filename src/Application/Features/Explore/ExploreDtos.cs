@@ -26,6 +26,8 @@ public sealed record ExploreEventItemResponse(
     string Address,
     int? MaxParticipants,
     short? SkillLevel,
+    bool IsPaid,
+    decimal? FeeAmount,
     short Status,
     int OccupiedParticipantCount,
     double? DistanceKm,
