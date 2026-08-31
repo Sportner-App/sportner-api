@@ -23,6 +23,7 @@ public sealed record DiscoverEventsQuery(
     short? OrganizerGender = null,
     short? SkillLevel = null,
     bool? IsPaid = null,
+    bool FriendsOnly = false,
     int Page = 1,
     int PageSize = 20) : IQuery<PagedResult<EventListItemResponse>>;
 
@@ -85,6 +86,21 @@ internal sealed class DiscoverEventsQueryHandler
         {
             var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
             events = events.Where(@event => !blockedIds.Contains(@event.OrganizerUserId));
+
+            if (request.FriendsOnly)
+            {
+                var friendIds = SocialQueries.AcceptedFriendIds(_dbContext, viewerId);
+                events = events.Where(@event => friendIds.Contains(@event.OrganizerUserId));
+            }
+        }
+        else if (request.FriendsOnly)
+        {
+            return Result<PagedResult<EventListItemResponse>>.Success(
+                PagedResult<EventListItemResponse>.Create(
+                    [],
+                    pagination.NormalizedPage,
+                    pagination.NormalizedPageSize,
+                    0));
         }
 
         if (request.SportId is not null)

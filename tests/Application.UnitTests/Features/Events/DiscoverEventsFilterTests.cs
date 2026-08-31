@@ -3,6 +3,7 @@ using Microsoft.Extensions.Time.Testing;
 using Sportner.Application.Features.Events.DiscoverEvents;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
 using Sportner.Domain.Users;
 using DomainEvent = Sportner.Domain.Events.Event;
@@ -76,6 +77,38 @@ public sealed class DiscoverEventsFilterTests
         result.IsSuccess.Should().BeTrue();
         result.Value!.Items.Should().ContainSingle(item => item.Id == intermediate.Id);
         result.Value.Items[0].SkillLevel.Should().Be((short)SkillLevel.Intermediate);
+    }
+
+    [Fact]
+    public async Task Handle_FriendsOnly_ReturnsEventsOrganizedByAcceptedFriends()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(
+            new DateTimeOffset(2026, 8, 31, 12, 0, 0, TimeSpan.Zero));
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var viewer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+        var friend = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+        var stranger = TestUsers.CreateActive("+905553333333", time.GetUtcNow());
+
+        var friendship = Friendship.CreateRequest(viewer.Id, friend.Id, time.GetUtcNow());
+        friendship.Accept(time.GetUtcNow());
+
+        var friendEvent = CreateEvent(friend.Id, sport.Id, "Arkadas", 18, 40, time);
+        var strangerEvent = CreateEvent(stranger.Id, sport.Id, "Yabanci", 18, 40, time);
+
+        db.Users.AddRange(viewer, friend, stranger);
+        db.Sports.Add(sport);
+        db.Friendships.Add(friendship);
+        db.Events.AddRange(friendEvent, strangerEvent);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(viewer.Id), time);
+        var result = await handler.Handle(
+            new DiscoverEventsQuery(FriendsOnly: true),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().ContainSingle(item => item.Id == friendEvent.Id);
     }
 
     private static UserProfile CreateProfile(
