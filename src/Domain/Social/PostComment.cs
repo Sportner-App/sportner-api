@@ -17,6 +17,8 @@ public class PostComment : AggregateRoot
 
     public Guid? ParentCommentId { get; private set; }
 
+    public Guid? ReplyToUserId { get; private set; }
+
     public string Content { get; private set; } = null!;
 
     public int LikeCount { get; private set; }
@@ -39,14 +41,21 @@ public class PostComment : AggregateRoot
         Guid userId,
         Guid parentCommentId,
         string content,
-        DateTimeOffset utcNow)
+        DateTimeOffset utcNow,
+        Guid? replyToUserId = null)
     {
         if (parentCommentId == Guid.Empty)
         {
             throw new DomainException("Parent comment id is required.");
         }
 
-        return Create(postId, userId, content, parentCommentId, utcNow);
+        return Create(
+            postId,
+            userId,
+            content,
+            parentCommentId,
+            utcNow,
+            replyToUserId == Guid.Empty ? null : replyToUserId);
     }
 
     public void UpdateContent(string content, DateTimeOffset utcNow)
@@ -118,7 +127,8 @@ public class PostComment : AggregateRoot
         Guid userId,
         string content,
         Guid? parentCommentId,
-        DateTimeOffset utcNow)
+        DateTimeOffset utcNow,
+        Guid? replyToUserId = null)
     {
         if (postId == Guid.Empty)
         {
@@ -136,6 +146,7 @@ public class PostComment : AggregateRoot
             PostId = postId,
             UserId = userId,
             ParentCommentId = parentCommentId,
+            ReplyToUserId = replyToUserId,
             Content = NormalizeContent(content),
             LikeCount = 0,
             ReplyCount = 0,

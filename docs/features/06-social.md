@@ -81,10 +81,11 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
 | [x] | `CreateComment` | Command | `POST /api/posts/{postId}/comments` | Root; notify `PostCommented`. |
-| [x] | `CreateReply` | Command | `POST /api/posts/{postId}/comments/{parentId}/replies` | One nesting level; notify `CommentReplied`. |
+| [x] | `CreateReply` | Command | `POST /api/posts/{postId}/comments/{parentId}/replies` | Flatten to root; `ReplyToUserId` when target is a reply; notify tapped user. |
 | [x] | `UpdateComment` | Command | `PUT /api/comments/{id}` | Owner. |
 | [x] | `DeleteComment` | Command | `DELETE /api/comments/{id}` | Deletes replies with root; maintains counters. |
 | [x] | `ListComments` | Query | `GET /api/posts/{postId}/comments` | Root comments cursor; `replyCount` on each. |
+| [x] | `ListReplies` | Query | `GET /api/posts/{postId}/comments/{commentId}/replies` | Root only; oldest first; `ReplyToUsername`. |
 
 ### Feed
 

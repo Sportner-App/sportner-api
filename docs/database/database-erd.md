@@ -172,6 +172,8 @@ post_comments
 
 ├── post_comments (Self Reference)
 
+├── users (reply_to_user_id)
+
 └── reports
 
 ---

@@ -118,6 +118,15 @@ internal sealed class CreateCommentCommandHandler
             })
             .FirstOrDefaultAsync(cancellationToken);
 
+        string? replyToUsername = null;
+        if (comment.ReplyToUserId is { } replyToUserId)
+        {
+            replyToUsername = await dbContext.UserProfiles.AsNoTracking()
+                .Where(candidate => candidate.UserId == replyToUserId)
+                .Select(candidate => candidate.Username)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         return new CommentResponse(
             comment.Id,
             comment.PostId,
@@ -129,6 +138,8 @@ internal sealed class CreateCommentCommandHandler
             comment.Content,
             comment.LikeCount,
             comment.ReplyCount,
-            comment.CreatedAt);
+            comment.CreatedAt,
+            comment.ReplyToUserId,
+            replyToUsername);
     }
 }

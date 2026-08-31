@@ -50,6 +50,7 @@ References:
 - Post
 - User
 - Parent PostComment (optional)
+- Reply-to User (optional, Instagram-style mention target)
 
 The aggregate does **not** own child reply collections.
 
@@ -67,6 +68,7 @@ This prevents loading an unbounded reply tree into memory.
 | post_id            | UUID        |       No | References `posts(id)`         |
 | user_id            | UUID        |       No | References `users(id)`         |
 | parent_comment_id  | UUID        |      Yes | References `post_comments(id)` |
+| reply_to_user_id   | UUID        |      Yes | User being replied to (reply-to-reply only) |
 | content            | VARCHAR(1000) |     No | Comment text                   |
 | like_count         | INTEGER     |       No | Cached comment likes           |
 | reply_count        | INTEGER     |       No | Cached direct replies          |
@@ -94,6 +96,7 @@ Counters must never become negative.
 - `INDEX(post_id)`
 - `INDEX(parent_comment_id)`
 - `INDEX(user_id)`
+- `INDEX(reply_to_user_id)`
 - `INDEX(created_at)`
 - `INDEX(post_id, created_at)`
 
@@ -106,6 +109,7 @@ Counters must never become negative.
 | post_id           | posts(id)         | Cascade         |
 | user_id           | users(id)         | Cascade         |
 | parent_comment_id | post_comments(id) | Restrict        |
+| reply_to_user_id  | users(id)         | Restrict        |
 
 Recursive delete should be orchestrated by the Application layer rather than relying on cascading self-references.
 
@@ -127,6 +131,9 @@ Recursive delete should be orchestrated by the Application layer rather than rel
 - Every comment belongs to one author.
 - A reply references one parent comment.
 - Root comments have `parent_comment_id = NULL`.
+- Replies always store `parent_comment_id` as the **root** comment id (one nesting level).
+- Replying to a reply still attaches to that root; `reply_to_user_id` is set to the tapped reply author.
+- Replying to a root comment leaves `reply_to_user_id` null.
 - Reply comments must belong to the same post as their parent.
 - Users may edit only their own comments.
 - Blank comments are not allowed.
@@ -223,6 +230,7 @@ Notifications may be created for:
 
 - Post owner
 - Parent comment owner
+- Reply-to user when the client replies to a reply
 
 Rules:
 

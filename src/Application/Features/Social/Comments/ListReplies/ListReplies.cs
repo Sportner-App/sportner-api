@@ -5,27 +5,30 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
 
-namespace Sportner.Application.Features.Social.Comments.ListComments;
+namespace Sportner.Application.Features.Social.Comments.ListReplies;
 
-public sealed record ListCommentsQuery(Guid PostId, string? Before = null, int Limit = 30)
-    : IQuery<CursorPagedResult<CommentResponse>>;
+public sealed record ListRepliesQuery(
+    Guid PostId,
+    Guid CommentId,
+    string? Before = null,
+    int Limit = 30) : IQuery<CursorPagedResult<CommentResponse>>;
 
-internal sealed class ListCommentsQueryHandler
-    : IQueryHandler<ListCommentsQuery, CursorPagedResult<CommentResponse>>
+internal sealed class ListRepliesQueryHandler
+    : IQueryHandler<ListRepliesQuery, CursorPagedResult<CommentResponse>>
 {
     private const int MaxLimit = 100;
 
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
 
-    public ListCommentsQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
+    public ListRepliesQueryHandler(IApplicationDbContext dbContext, ICurrentUser currentUser)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
     }
 
     public async Task<Result<CursorPagedResult<CommentResponse>>> Handle(
-        ListCommentsQuery request,
+        ListRepliesQuery request,
         CancellationToken cancellationToken)
     {
         var postExists = await _dbContext.Posts.AsNoTracking()
@@ -36,9 +39,18 @@ internal sealed class ListCommentsQueryHandler
             return Result<CursorPagedResult<CommentResponse>>.Failure(PostErrors.NotFound);
         }
 
+        var root = await _dbContext.PostComments.AsNoTracking()
+            .FirstOrDefaultAsync(
+                comment => comment.Id == request.CommentId && comment.PostId == request.PostId,
+                cancellationToken);
+
+        if (root is null || root.IsHidden || root.IsReply())
+        {
+            return Result<CursorPagedResult<CommentResponse>>.Failure(PostErrors.CommentNotFound);
+        }
+
         var limit = request.Limit is < 1 or > MaxLimit ? 30 : request.Limit;
 
-        // Root comments only; clients lazy-load replies separately if needed.
         var query =
             from comment in _dbContext.PostComments.AsNoTracking()
             join profile in _dbContext.UserProfiles.AsNoTracking()
@@ -48,7 +60,7 @@ internal sealed class ListCommentsQueryHandler
                 on comment.ReplyToUserId equals replyToProfile.UserId into replyToProfiles
             from replyToProfile in replyToProfiles.DefaultIfEmpty()
             where comment.PostId == request.PostId
-                  && comment.ParentCommentId == null
+                  && comment.ParentCommentId == root.Id
                   && !comment.IsHidden
             select new { comment, profile, replyToProfile };
 
@@ -77,14 +89,14 @@ internal sealed class ListCommentsQueryHandler
 
             var cursorIdKey = cursor.Id.ToString("D");
             query = query.Where(row =>
-                row.comment.CreatedAt < cursor.CreatedAt
+                row.comment.CreatedAt > cursor.CreatedAt
                 || (row.comment.CreatedAt == cursor.CreatedAt
-                    && row.comment.Id.ToString().CompareTo(cursorIdKey) < 0));
+                    && row.comment.Id.ToString().CompareTo(cursorIdKey) > 0));
         }
 
         var page = await query
-            .OrderByDescending(row => row.comment.CreatedAt)
-            .ThenByDescending(row => row.comment.Id)
+            .OrderBy(row => row.comment.CreatedAt)
+            .ThenBy(row => row.comment.Id)
             .Take(limit + 1)
             .Select(row => new CommentResponse(
                 row.comment.Id,

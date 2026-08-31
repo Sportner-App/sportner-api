@@ -83,4 +83,6 @@ public sealed record CommentResponse(
     string Content,
     int LikeCount,
     int ReplyCount,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    Guid? ReplyToUserId,
+    string? ReplyToUsername);

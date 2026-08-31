@@ -82,49 +82,79 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
             return Result<CommentResponse>.Failure(PostErrors.Forbidden);
         }
 
-        var parent = await _dbContext.PostComments
+        var target = await _dbContext.PostComments
             .FirstOrDefaultAsync(
                 candidate =>
                     candidate.Id == request.ParentCommentId && candidate.PostId == request.PostId,
                 cancellationToken);
 
-        if (parent is null)
+        if (target is null || target.IsHidden)
         {
             return Result<CommentResponse>.Failure(PostErrors.CommentNotFound);
         }
 
-        if (parent.UserId != userId
+        PostComment root;
+        if (target.IsReply())
+        {
+            if (target.ParentCommentId is not { } rootId)
+            {
+                return Result<CommentResponse>.Failure(PostErrors.CommentNotFound);
+            }
+
+            var resolvedRoot = await _dbContext.PostComments
+                .FirstOrDefaultAsync(
+                    candidate => candidate.Id == rootId && candidate.PostId == request.PostId,
+                    cancellationToken);
+
+            if (resolvedRoot is null || resolvedRoot.IsHidden || resolvedRoot.IsReply())
+            {
+                return Result<CommentResponse>.Failure(PostErrors.CommentNotFound);
+            }
+
+            root = resolvedRoot;
+        }
+        else
+        {
+            root = target;
+        }
+
+        if (target.UserId != userId
             && await BlockQueries.BlockedPairExistsAsync(
                 _dbContext,
                 userId,
-                parent.UserId,
+                target.UserId,
                 cancellationToken))
         {
             return Result<CommentResponse>.Failure(PostErrors.Forbidden);
         }
 
-        // One nesting level only.
-        if (parent.IsReply())
-        {
-            return Result<CommentResponse>.Failure(PostErrors.CommentNotFound);
-        }
-
         var utcNow = _timeProvider.GetUtcNow();
+        var replyToUserId = target.IsReply() ? target.UserId : (Guid?)null;
         var reply = PostComment.CreateReply(
             post.Id,
             userId,
-            parent.Id,
+            root.Id,
             request.Content,
-            utcNow);
+            utcNow,
+            replyToUserId);
 
         _dbContext.PostComments.Add(reply);
-        parent.IncrementReplyCount(utcNow);
+        root.IncrementReplyCount(utcNow);
         post.IncrementCommentCount(utcNow);
 
+        var actorUsername = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(profile => profile.UserId == userId)
+            .Select(profile => profile.Username)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var notifyTitle = !string.IsNullOrWhiteSpace(actorUsername)
+            ? $"{actorUsername} kullanıcısı yorumuna yanıt verdi"
+            : "Bir kullanıcı yorumuna yanıt verdi";
+
         await _notificationPublisher.PublishAsync(
-            parent.UserId,
+            target.UserId,
             NotificationType.CommentReplied,
-            "Yorumuna yanıt verildi",
+            notifyTitle,
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
             NotificationEntityType.Comment,
             reply.Id,

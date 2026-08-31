@@ -6,6 +6,7 @@ using Sportner.Application.Features.Social.Comments.CreateComment;
 using Sportner.Application.Features.Social.Comments.CreateReply;
 using Sportner.Application.Features.Social.Comments.DeleteComment;
 using Sportner.Application.Features.Social.Comments.ListComments;
+using Sportner.Application.Features.Social.Comments.ListReplies;
 using Sportner.Application.Features.Social.Comments.UpdateComment;
 
 namespace Sportner.API.Controllers;
@@ -40,6 +41,21 @@ public sealed class CommentsController : ApiControllerBase
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
+    }
+
+    [HttpGet("{commentId:guid}/replies")]
+    public async Task<IActionResult> ListReplies(
+        Guid postId,
+        Guid commentId,
+        [FromQuery] string? before,
+        [FromQuery] int limit = 30,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(
+            new ListRepliesQuery(postId, commentId, before, limit),
+            cancellationToken);
+
+        return result.ToActionResult();
     }
 
     [HttpPost("{parentCommentId:guid}/replies")]

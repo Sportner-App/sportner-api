@@ -259,6 +259,7 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<PostComment>().HasIndex(entity => entity.PostId);
         modelBuilder.Entity<PostComment>().HasIndex(entity => entity.ParentCommentId);
         modelBuilder.Entity<PostComment>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<PostComment>().HasIndex(entity => entity.ReplyToUserId);
         modelBuilder.Entity<PostComment>().HasIndex(entity => entity.CreatedAt);
         modelBuilder.Entity<PostComment>()
             .HasIndex(entity => new { entity.PostId, entity.CreatedAt });
@@ -867,6 +868,13 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.ParentCommentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PostComment>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ReplyToUserId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
 
         modelBuilder.Entity<Notification>()
             .HasOne<User>()
