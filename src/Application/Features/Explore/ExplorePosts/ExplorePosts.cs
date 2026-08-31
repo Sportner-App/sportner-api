@@ -45,13 +45,28 @@ internal sealed class ExplorePostsQueryHandler
         ExplorePostsQuery request,
         CancellationToken cancellationToken)
     {
-        if (_currentUser.UserId is not { } viewerId)
+        var viewerId = _currentUser.UserId;
+
+        if (viewerId is null)
         {
-            return Result<IReadOnlyList<PostResponse>>.Failure(ExploreErrors.NotAuthenticated);
+            var recentPosts = await _dbContext.Posts.AsNoTracking()
+                .Include(post => post.Media)
+                .OrderByDescending(post => post.CreatedAt)
+                .Take(request.Limit)
+                .ToListAsync(cancellationToken);
+
+            var recentItems = new List<PostResponse>(recentPosts.Count);
+            foreach (var post in recentPosts)
+            {
+                recentItems.Add(await SocialQueries.ToPostResponseAsync(
+                    _dbContext, _fileStorage, post, null, cancellationToken));
+            }
+
+            return Result<IReadOnlyList<PostResponse>>.Success(recentItems);
         }
 
         var scored = await _recommendationService.ScorePostsAsync(
-            viewerId,
+            viewerId.Value,
             request.Limit,
             cancellationToken);
 
@@ -80,7 +95,7 @@ internal sealed class ExplorePostsQueryHandler
                 _dbContext,
                 _fileStorage,
                 post,
-                viewerId,
+                viewerId.Value,
                 cancellationToken));
         }
 

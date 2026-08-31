@@ -17,6 +17,7 @@ namespace Sportner.API.Controllers;
 public sealed class SportsController : ApiControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> ListActiveSports(
         [FromQuery] string? q,
         [FromQuery] int page = 1,
@@ -31,6 +32,7 @@ public sealed class SportsController : ApiControllerBase
     }
 
     [HttpGet("{slug}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetSportBySlug(string slug, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new GetSportBySlugQuery(slug), cancellationToken);

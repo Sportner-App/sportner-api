@@ -42,6 +42,7 @@ public sealed class ExploreController : ApiControllerBase
     }
 
     [HttpGet("posts")]
+    [AllowAnonymous]
     public async Task<IActionResult> Posts(
         [FromQuery] int limit = 20,
         CancellationToken cancellationToken = default)
