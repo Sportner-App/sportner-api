@@ -48,14 +48,14 @@ internal sealed class ListOrganizationEventsQueryHandler
         }
 
         var utcNow = _timeProvider.GetUtcNow();
-        var items = await EventQueries.ProjectListItems(
-                _dbContext,
-                _dbContext.Events.AsNoTracking()
-                    .Where(@event =>
-                        @event.OrganizationId == request.OrganizationId
-                        && @event.Status != EventStatus.Cancelled
-                        && @event.EventDate >= utcNow.AddDays(-1)))
-            .OrderBy(@event => @event.EventDate)
+        var events = _dbContext.Events.AsNoTracking()
+            .Where(@event =>
+                @event.OrganizationId == request.OrganizationId
+                && @event.Status != EventStatus.Cancelled
+                && @event.EventDate >= utcNow.AddDays(-1))
+            .OrderBy(@event => @event.EventDate);
+
+        var items = await EventQueries.ProjectListItems(_dbContext, events)
             .ToListAsync(cancellationToken);
 
         return Result<IReadOnlyList<EventListItemResponse>>.Success(items);
