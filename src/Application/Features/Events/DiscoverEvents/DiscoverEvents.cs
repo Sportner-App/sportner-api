@@ -21,6 +21,7 @@ public sealed record DiscoverEventsQuery(
     int? MinParticipantAge = null,
     int? MaxParticipantAge = null,
     short? OrganizerGender = null,
+    short? SkillLevel = null,
     int Page = 1,
     int PageSize = 20) : IQuery<PagedResult<EventListItemResponse>>;
 
@@ -40,6 +41,10 @@ public sealed class DiscoverEventsQueryValidator : AbstractValidator<DiscoverEve
         RuleFor(query => query.OrganizerGender)
             .InclusiveBetween((short)0, (short)2)
             .When(query => query.OrganizerGender is not null);
+        RuleFor(query => query.SkillLevel)
+            .Must(level => level is not null && Enum.IsDefined((SkillLevel)level.Value))
+            .When(query => query.SkillLevel is not null)
+            .WithMessage("Skill level is invalid.");
     }
 }
 
@@ -108,6 +113,12 @@ internal sealed class DiscoverEventsQueryHandler
                 profile.UserId == @event.OrganizerUserId && profile.Gender == gender));
         }
 
+        if (request.SkillLevel is { } skill)
+        {
+            var skillLevel = (SkillLevel)skill;
+            events = events.Where(@event => @event.SkillLevel == skillLevel);
+        }
+
         if (request.Latitude is { } lat
             && request.Longitude is { } lng
             && request.RadiusKm is { } radiusKm
@@ -143,6 +154,7 @@ internal sealed class DiscoverEventsQueryHandler
                 @event.MaxParticipants,
                 @event.MinParticipantAge,
                 @event.MaxParticipantAge,
+                @event.SkillLevel != null ? (short?)@event.SkillLevel : null,
                 (short)@event.Status,
                 _dbContext.EventParticipants.Count(participant =>
                     participant.EventId == @event.Id

@@ -220,6 +220,7 @@ public class PersistenceModelTests
             (typeof(UserSport), nameof(UserSport.SkillLevel)),
             (typeof(UserDevice), nameof(UserDevice.Platform)),
             (typeof(Event), nameof(Event.Status)),
+            (typeof(Event), nameof(Event.SkillLevel)),
             (typeof(EventParticipant), nameof(EventParticipant.Status)),
             (typeof(Conversation), nameof(Conversation.Type)),
             (typeof(ConversationMember), nameof(ConversationMember.Role)),

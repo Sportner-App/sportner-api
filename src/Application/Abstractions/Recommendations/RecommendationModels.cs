@@ -43,4 +43,5 @@ public sealed record EventRecommendationRequest(
     decimal? Latitude = null,
     decimal? Longitude = null,
     double? RadiusKm = null,
+    short? SkillLevel = null,
     int Limit = 20);

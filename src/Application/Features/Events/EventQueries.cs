@@ -114,6 +114,7 @@ internal static class EventQueries
             @event.MaxParticipants,
             @event.MinParticipantAge,
             @event.MaxParticipantAge,
+            @event.SkillLevel is { } skill ? (short)skill : null,
             (short)@event.Status,
             occupied,
             waitlistCount,
@@ -152,6 +153,7 @@ internal static class EventQueries
             @event.MaxParticipants,
             @event.MinParticipantAge,
             @event.MaxParticipantAge,
+            @event.SkillLevel != null ? (short?)@event.SkillLevel : null,
             (short)@event.Status,
             dbContext.EventParticipants.Count(participant =>
                 participant.EventId == @event.Id

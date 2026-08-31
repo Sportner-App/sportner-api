@@ -24,6 +24,7 @@ public sealed record EventResponse(
     int? MaxParticipants,
     int MinParticipantAge,
     int MaxParticipantAge,
+    short? SkillLevel,
     short Status,
     int OccupiedParticipantCount,
     int WaitlistCount,
@@ -46,6 +47,7 @@ public sealed record EventListItemResponse(
     int? MaxParticipants,
     int MinParticipantAge,
     int MaxParticipantAge,
+    short? SkillLevel,
     short Status,
     int OccupiedParticipantCount);
 

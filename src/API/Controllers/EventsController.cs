@@ -48,6 +48,7 @@ public sealed class EventsController : ApiControllerBase
         [FromQuery] int? minAge,
         [FromQuery] int? maxAge,
         [FromQuery] short? gender,
+        [FromQuery] short? skillLevel,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
@@ -62,6 +63,7 @@ public sealed class EventsController : ApiControllerBase
                 minAge,
                 maxAge,
                 gender,
+                skillLevel,
                 page,
                 pageSize),
             cancellationToken);
@@ -180,7 +182,8 @@ public sealed class EventsController : ApiControllerBase
             request.Address,
             request.MaxParticipants,
             request.MinParticipantAge,
-            request.MaxParticipantAge);
+            request.MaxParticipantAge,
+            request.SkillLevel);
 
         var result = await Sender.Send(command, cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -416,7 +419,8 @@ public sealed class EventsController : ApiControllerBase
         string Address,
         int? MaxParticipants,
         int MinParticipantAge,
-        int MaxParticipantAge);
+        int MaxParticipantAge,
+        short? SkillLevel = null);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 

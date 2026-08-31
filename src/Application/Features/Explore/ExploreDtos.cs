@@ -25,6 +25,7 @@ public sealed record ExploreEventItemResponse(
     int DurationMinutes,
     string Address,
     int? MaxParticipants,
+    short? SkillLevel,
     short Status,
     int OccupiedParticipantCount,
     double? DistanceKm,

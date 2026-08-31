@@ -15,6 +15,7 @@ public sealed record ExploreEventsQuery(
     decimal? Latitude = null,
     decimal? Longitude = null,
     double? RadiusKm = null,
+    short? SkillLevel = null,
     int Limit = 20) : IQuery<IReadOnlyList<ExploreEventItemResponse>>;
 
 public sealed class ExploreEventsQueryValidator : AbstractValidator<ExploreEventsQuery>
@@ -25,6 +26,10 @@ public sealed class ExploreEventsQueryValidator : AbstractValidator<ExploreEvent
         RuleFor(query => query.RadiusKm)
             .GreaterThan(0)
             .When(query => query.RadiusKm is not null);
+        RuleFor(query => query.SkillLevel)
+            .Must(level => level is not null && Enum.IsDefined((SkillLevel)level.Value))
+            .When(query => query.SkillLevel is not null)
+            .WithMessage("Skill level is invalid.");
     }
 }
 
@@ -63,6 +68,7 @@ internal sealed class ExploreEventsQueryHandler
                 request.Latitude,
                 request.Longitude,
                 request.RadiusKm,
+                request.SkillLevel,
                 request.Limit),
             cancellationToken);
 
@@ -94,6 +100,7 @@ internal sealed class ExploreEventsQueryHandler
                     @event.DurationMinutes,
                     @event.Address,
                     @event.MaxParticipants,
+                    SkillLevel = @event.SkillLevel != null ? (short?)@event.SkillLevel : null,
                     Status = (short)@event.Status,
                     OccupiedParticipantCount = _dbContext.EventParticipants.Count(participant =>
                         participant.EventId == @event.Id
@@ -126,6 +133,7 @@ internal sealed class ExploreEventsQueryHandler
                 detail.DurationMinutes,
                 detail.Address,
                 detail.MaxParticipants,
+                detail.SkillLevel,
                 detail.Status,
                 detail.OccupiedParticipantCount,
                 entry.Item.DistanceKm,

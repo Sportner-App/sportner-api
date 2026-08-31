@@ -196,6 +196,7 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.Status, entity.EventDate });
         modelBuilder.Entity<Event>()
             .HasIndex(entity => new { entity.Latitude, entity.Longitude });
+        modelBuilder.Entity<Event>().HasIndex(entity => entity.SkillLevel);
 
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.EventId);
         modelBuilder.Entity<EventParticipant>().HasIndex(entity => entity.UserId);
@@ -531,6 +532,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<UserDevice>().Property(entity => entity.Platform)
             .HasColumnType("smallint");
         modelBuilder.Entity<Event>().Property(entity => entity.Status)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<Event>().Property(entity => entity.SkillLevel)
             .HasColumnType("smallint");
         modelBuilder.Entity<EventParticipant>().Property(entity => entity.Status)
             .HasColumnType("smallint");

@@ -37,6 +37,8 @@ public class Event : AggregateRoot
 
     public int MaxParticipantAge { get; private set; }
 
+    public SkillLevel? SkillLevel { get; private set; }
+
     public EventStatus Status { get; private set; }
 
     public IReadOnlyCollection<EventParticipant> Participants => _participants.AsReadOnly();
@@ -56,7 +58,8 @@ public class Event : AggregateRoot
         string? description = null,
         int? maxParticipants = null,
         int minParticipantAge = 18,
-        int maxParticipantAge = 60)
+        int maxParticipantAge = 60,
+        SkillLevel? skillLevel = null)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -83,6 +86,7 @@ public class Event : AggregateRoot
             MaxParticipants = NormalizeMaxParticipants(maxParticipants),
             MinParticipantAge = NormalizeParticipantAge(minParticipantAge, nameof(minParticipantAge)),
             MaxParticipantAge = NormalizeParticipantAge(maxParticipantAge, nameof(maxParticipantAge)),
+            SkillLevel = NormalizeSkillLevel(skillLevel),
             Status = EventStatus.Draft,
             CreatedAt = utcNow
         };
@@ -841,6 +845,21 @@ public class Event : AggregateRoot
         }
 
         return age;
+    }
+
+    private static SkillLevel? NormalizeSkillLevel(SkillLevel? skillLevel)
+    {
+        if (skillLevel is null)
+        {
+            return null;
+        }
+
+        if (!Enum.IsDefined(skillLevel.Value))
+        {
+            throw new DomainException("Skill level is invalid.");
+        }
+
+        return skillLevel;
     }
 
 }

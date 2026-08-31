@@ -60,6 +60,7 @@ Every event record represents exactly one occurrence.
 | longitude          | DECIMAL(9,6) |       No | Event longitude                                |
 | address            | TEXT         |       No | Full formatted address                         |
 | max_participants   | INTEGER      |      Yes | Maximum occupied slots; `NULL` means unlimited |
+| skill_level        | SMALLINT     |      Yes | Optional informational skill (0–4); not a join gate |
 | status             | SMALLINT     |       No | Event lifecycle status                         |
 | created_at         | TIMESTAMPTZ  |       No | Creation timestamp                             |
 | updated_at         | TIMESTAMPTZ  |      Yes | Last update timestamp                          |
@@ -95,6 +96,7 @@ A future implementation should introduce an `event_series` model rather than sto
 - `INDEX(sport_id)`
 - `INDEX(event_date)`
 - `INDEX(status)`
+- `INDEX(skill_level)`
 - `INDEX(status, event_date)`
 
 The composite index supports common discovery queries for upcoming published events.

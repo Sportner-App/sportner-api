@@ -31,11 +31,12 @@ public sealed class ExploreController : ApiControllerBase
         [FromQuery] decimal? lat,
         [FromQuery] decimal? lng,
         [FromQuery] double? radiusKm,
+        [FromQuery] short? skillLevel,
         [FromQuery] int limit = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(
-            new ExploreEventsQuery(sportId, city, lat, lng, radiusKm, limit),
+            new ExploreEventsQuery(sportId, city, lat, lng, radiusKm, skillLevel, limit),
             cancellationToken);
         return result.ToActionResult();
     }

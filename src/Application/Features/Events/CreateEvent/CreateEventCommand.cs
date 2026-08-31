@@ -13,4 +13,5 @@ public sealed record CreateEventCommand(
     string Address,
     int? MaxParticipants,
     int MinParticipantAge,
-    int MaxParticipantAge) : ICommand<EventResponse>;
+    int MaxParticipantAge,
+    short? SkillLevel = null) : ICommand<EventResponse>;

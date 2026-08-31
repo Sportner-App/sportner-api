@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Time.Testing;
 using Sportner.Application.Features.Events.DiscoverEvents;
 using Sportner.Application.UnitTests.Infrastructure;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Sports;
 using Sportner.Domain.Users;
 using DomainEvent = Sportner.Domain.Events.Event;
@@ -46,6 +47,37 @@ public sealed class DiscoverEventsFilterTests
         result.Value!.Items.Should().ContainSingle(item => item.Id == matching.Id);
     }
 
+    [Fact]
+    public async Task Handle_FiltersByExactSkillLevelWhenProvided()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(
+            new DateTimeOffset(2026, 8, 28, 12, 0, 0, TimeSpan.Zero));
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+
+        var intermediate = CreateEvent(
+            organizer.Id, sport.Id, "Orta", 18, 40, time, SkillLevel.Intermediate);
+        var beginner = CreateEvent(
+            organizer.Id, sport.Id, "Baslangic", 18, 40, time, SkillLevel.Beginner);
+        var unlabeled = CreateEvent(
+            organizer.Id, sport.Id, "Serbest", 18, 40, time);
+
+        db.Users.Add(organizer);
+        db.Sports.Add(sport);
+        db.Events.AddRange(intermediate, beginner, unlabeled);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(null), time);
+        var result = await handler.Handle(
+            new DiscoverEventsQuery(SkillLevel: (short)SkillLevel.Intermediate),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().ContainSingle(item => item.Id == intermediate.Id);
+        result.Value.Items[0].SkillLevel.Should().Be((short)SkillLevel.Intermediate);
+    }
+
     private static UserProfile CreateProfile(
         Guid userId,
         string username,
@@ -63,7 +95,8 @@ public sealed class DiscoverEventsFilterTests
         string title,
         int minAge,
         int maxAge,
-        FakeTimeProvider time)
+        FakeTimeProvider time,
+        SkillLevel? skillLevel = null)
     {
         var @event = DomainEvent.Create(
             organizerId,
@@ -77,7 +110,8 @@ public sealed class DiscoverEventsFilterTests
             time.GetUtcNow(),
             maxParticipants: 10,
             minParticipantAge: minAge,
-            maxParticipantAge: maxAge);
+            maxParticipantAge: maxAge,
+            skillLevel: skillLevel);
         @event.Publish(time.GetUtcNow());
         return @event;
     }

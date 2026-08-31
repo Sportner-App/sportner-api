@@ -35,7 +35,7 @@ Nested actions stay on the same controller for v1.
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [x] | `CreateEvent` | Command | `POST /api/events` | Draft + auto organizer participant. Requires `CanCreateContent`. |
+| [x] | `CreateEvent` | Command | `POST /api/events` | Draft + auto organizer participant. Optional `skillLevel` (0–4, informational). Requires `CanCreateContent`. |
 | [x] | `UpdateEventDetails` | Command | `PUT /api/events/{id}` | Draft/Published/Full. |
 | [x] | `UpdateEventSchedule` | Command | `PUT /api/events/{id}/schedule` | Future date + duration > 0 (domain). |
 | [x] | `UpdateEventLocation` | Command | `PUT /api/events/{id}/location` | |
@@ -46,8 +46,8 @@ Nested actions stay on the same controller for v1.
 | [x] | `GetEventById` | Query | `GET /api/events/{id}` | Sport (`sportName`, `sportSlug`, `sportCoverImageUrl`), organizer snippet, counts, my participation / waitlist, conversation id. |
 | [x] | `ListMyOrganizedEvents` | Query | `GET /api/events/mine/organized` | Offset pagination. |
 | [x] | `ListMyParticipatingEvents` | Query | `GET /api/events/mine/participating?scope=` | Excludes self-organized; skips rejected/cancelled. Optional `scope=upcoming|past` (by start time). |
-| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId` + address city substring (V1 compat). Authenticated viewers exclude blocked organizers. List items include `sportCoverImageUrl`. |
-| [x] | `ExploreEvents` | Query | `GET /api/explore/events` | Ranked discover (V2); auth required; optional geo/sport/city; `limit`. Same sport cover field as list/detail. |
+| [x] | `DiscoverEvents` | Query | `GET /api/events` | Published/Full, future dates; optional `sportId`, city, age, gender, `skillLevel` (exact, informational). Authenticated viewers exclude blocked organizers. List items include `sportCoverImageUrl` and `skillLevel`. |
+| [x] | `ExploreEvents` | Query | `GET /api/explore/events` | Ranked discover (V2); auth required; optional geo/sport/city/`skillLevel`; `limit`. Same sport cover field as list/detail. |
 
 ### Participation
 

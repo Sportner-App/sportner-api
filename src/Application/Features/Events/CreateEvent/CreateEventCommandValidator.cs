@@ -1,4 +1,5 @@
 using FluentValidation;
+using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.CreateEvent;
 
@@ -19,5 +20,9 @@ public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventC
         RuleFor(command => command.MaxParticipantAge).InclusiveBetween(13, 120);
         RuleFor(command => command.MaxParticipantAge)
             .GreaterThanOrEqualTo(command => command.MinParticipantAge);
+        RuleFor(command => command.SkillLevel)
+            .Must(level => level is not null && Enum.IsDefined((SkillLevel)level.Value))
+            .When(command => command.SkillLevel is not null)
+            .WithMessage("Skill level is invalid.");
     }
 }

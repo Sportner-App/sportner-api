@@ -368,6 +368,12 @@ internal sealed class RecommendationService : IRecommendationService
             eventsQuery = eventsQuery.Where(@event => @event.SportId == request.SportId);
         }
 
+        if (request.SkillLevel is { } skill)
+        {
+            var skillLevel = (SkillLevel)skill;
+            eventsQuery = eventsQuery.Where(@event => @event.SkillLevel == skillLevel);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.City))
         {
             var city = request.City.Trim().ToLowerInvariant();

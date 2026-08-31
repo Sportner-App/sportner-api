@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Domain.Common.Enums;
 using DomainEvent = Sportner.Domain.Events.Event;
 
 namespace Sportner.Application.Features.Events.CreateEvent;
@@ -74,7 +75,8 @@ internal sealed class CreateEventCommandHandler
             request.Description,
             request.MaxParticipants,
             request.MinParticipantAge,
-            request.MaxParticipantAge);
+            request.MaxParticipantAge,
+            request.SkillLevel is { } skill ? (SkillLevel)skill : null);
 
         _dbContext.Events.Add(@event);
         await _dbContext.SaveChangesAsync(cancellationToken);
