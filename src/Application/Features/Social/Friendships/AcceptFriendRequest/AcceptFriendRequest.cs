@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
@@ -91,11 +92,17 @@ internal sealed class AcceptFriendRequestCommandHandler
                     cancellationToken);
             }
 
+            var acceptedCopy = await NotificationActor.TitleAsync(
+                _dbContext,
+                userId,
+                "arkadaşlık isteğini kabul etti",
+                cancellationToken);
+
             await _notificationPublisher.PublishAsync(
                 friendship.RequesterUserId,
                 NotificationType.FriendAccepted,
-                "Arkadaşlık isteği kabul edildi",
-                "Arkadaşlık isteğin kabul edildi.",
+                acceptedCopy,
+                acceptedCopy,
                 NotificationEntityType.User,
                 userId,
                 userId,

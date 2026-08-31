@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
@@ -74,8 +75,6 @@ internal sealed class AssignEventParticipantsCommandHandler
                     .Where(userId => userId != Guid.Empty)
                     .Distinct()
                     .ToList();
-                var inviterName = "Arkadaşın";
-
                 if (guests.Count == 0 && friendIds.Count == 0)
                 {
                     return Result.Failure(EventErrors.AssignmentEmpty);
@@ -86,21 +85,14 @@ internal sealed class AssignEventParticipantsCommandHandler
                     return Result.Failure(EventErrors.FriendAlreadyAssociated);
                 }
 
+                var inviteTitle = await NotificationActor.TitleAsync(
+                    DbContext,
+                    @event.OrganizerUserId,
+                    "seni etkinliğe davet etti",
+                    ct);
+
                 if (friendIds.Count > 0)
                 {
-                    var organizerProfile = await DbContext.UserProfiles.AsNoTracking()
-                        .Where(profile => profile.UserId == @event.OrganizerUserId)
-                        .Select(profile => new { profile.FirstName, profile.LastName, profile.Username })
-                        .FirstOrDefaultAsync(ct);
-
-                    if (organizerProfile is not null)
-                    {
-                        var fullName = $"{organizerProfile.FirstName} {organizerProfile.LastName}".Trim();
-                        inviterName = !string.IsNullOrWhiteSpace(fullName)
-                            ? fullName
-                            : organizerProfile.Username ?? inviterName;
-                    }
-
                     var acceptedFriendIds = await SocialQueries.AcceptedFriendIds(DbContext, @event.OrganizerUserId)
                         .ToListAsync(ct);
 
@@ -195,7 +187,7 @@ internal sealed class AssignEventParticipantsCommandHandler
                     await _notificationPublisher.PublishAsync(
                         userId,
                         NotificationType.EventInvitation,
-                        $"{inviterName} seni davet ediyor",
+                        inviteTitle,
                         $"\"{@event.Title}\" etkinliğine davet edildin.",
                         NotificationEntityType.Event,
                         @event.Id,

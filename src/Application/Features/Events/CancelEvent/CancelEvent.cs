@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.CancelEvent;
@@ -49,12 +50,18 @@ internal sealed class CancelEventCommandHandler
                         .Select(participant => participant.UserId!.Value)
                         .Distinct();
 
+                    var cancelTitle = await NotificationActor.TitleAsync(
+                        DbContext,
+                        @event.OrganizerUserId,
+                        "etkinliği iptal etti",
+                        ct);
+
                     foreach (var recipientId in recipients)
                     {
                         await _notificationPublisher.PublishAsync(
                             recipientId,
                             NotificationType.EventCancelled,
-                            "Etkinlik iptal edildi",
+                            cancelTitle,
                             $"\"{@event.Title}\" etkinliği iptal edildi.",
                             NotificationEntityType.Event,
                             @event.Id,

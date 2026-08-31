@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.PromoteFromWaitlist;
@@ -66,7 +67,11 @@ internal sealed class PromoteFromWaitlistCommandHandler
                 await _notificationPublisher.PublishAsync(
                     request.UserId,
                     NotificationType.EventRequestApproved,
-                    "Bekleme listesinden alındın",
+                    await NotificationActor.TitleAsync(
+                        DbContext,
+                        @event.OrganizerUserId,
+                        "seni etkinliğe aldı",
+                        ct),
                     $"\"{@event.Title}\" etkinliğine katılımın onaylandı.",
                     NotificationEntityType.Event,
                     @event.Id,

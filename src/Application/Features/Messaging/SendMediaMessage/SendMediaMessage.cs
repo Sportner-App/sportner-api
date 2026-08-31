@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 
@@ -155,6 +156,11 @@ internal sealed class SendMediaMessageCommandHandler
             : "Yeni medya mesajı";
 
         var notifyAt = utcNow;
+        var title = await NotificationActor.TitleAsync(
+            _dbContext,
+            userId,
+            "mesaj gönderdi",
+            cancellationToken);
         foreach (var member in conversation.Members.Where(member =>
                      member.IsActive()
                      && member.UserId != userId
@@ -163,7 +169,7 @@ internal sealed class SendMediaMessageCommandHandler
             await _notificationPublisher.PublishAsync(
                 member.UserId,
                 NotificationType.NewMessage,
-                conversation.Title ?? "Yeni mesaj",
+                title,
                 preview,
                 NotificationEntityType.Conversation,
                 conversation.Id,

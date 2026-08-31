@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 
@@ -135,7 +136,11 @@ internal sealed class SendTextMessageCommandHandler
     {
         var utcNow = _timeProvider.GetUtcNow();
         var preview = content.Length <= 120 ? content : content[..117] + "...";
-        var title = conversation.Title ?? "Yeni mesaj";
+        var title = await NotificationActor.TitleAsync(
+            _dbContext,
+            senderUserId,
+            "mesaj gönderdi",
+            cancellationToken);
 
         foreach (var member in conversation.Members.Where(member =>
                      member.IsActive()

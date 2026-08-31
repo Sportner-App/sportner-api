@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 
@@ -83,11 +84,17 @@ internal sealed class SendFriendRequestCommandHandler
         var friendship = Friendship.CreateRequest(requesterId, request.AddresseeUserId, utcNow);
         _dbContext.Friendships.Add(friendship);
 
+        var requestCopy = await NotificationActor.TitleAsync(
+            _dbContext,
+            requesterId,
+            "arkadaşlık isteği gönderdi",
+            cancellationToken);
+
         await _notificationPublisher.PublishAsync(
             request.AddresseeUserId,
             NotificationType.FriendRequest,
-            "Yeni arkadaşlık isteği",
-            "Sana bir arkadaşlık isteği gönderildi.",
+            requestCopy,
+            requestCopy,
             NotificationEntityType.User,
             requesterId,
             requesterId,

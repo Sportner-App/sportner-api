@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Social.Comments.CreateComment;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
@@ -142,19 +143,14 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
         root.IncrementReplyCount(utcNow);
         post.IncrementCommentCount(utcNow);
 
-        var actorUsername = await _dbContext.UserProfiles.AsNoTracking()
-            .Where(profile => profile.UserId == userId)
-            .Select(profile => profile.Username)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var notifyTitle = !string.IsNullOrWhiteSpace(actorUsername)
-            ? $"{actorUsername} kullanıcısı yorumuna yanıt verdi"
-            : "Bir kullanıcı yorumuna yanıt verdi";
-
         await _notificationPublisher.PublishAsync(
             target.UserId,
             NotificationType.CommentReplied,
-            notifyTitle,
+            await NotificationActor.TitleAsync(
+                _dbContext,
+                userId,
+                "yorumuna yanıt verdi",
+                cancellationToken),
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
             NotificationEntityType.Comment,
             reply.Id,

@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 
@@ -71,14 +72,11 @@ internal sealed class LikePostCommandHandler : ICommandHandler<LikePostCommand>
         _dbContext.PostLikes.Add(PostLike.Create(post.Id, userId, utcNow));
         post.IncrementLikeCount(utcNow);
 
-        var username = await _dbContext.UserProfiles.AsNoTracking()
-            .Where(profile => profile.UserId == userId)
-            .Select(profile => profile.Username)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var likeCopy = !string.IsNullOrWhiteSpace(username)
-            ? $"{username} kullanıcısı fotoğrafını beğendi"
-            : "Bir kullanıcı fotoğrafını beğendi";
+        var likeCopy = await NotificationActor.TitleAsync(
+            _dbContext,
+            userId,
+            "fotoğrafını beğendi",
+            cancellationToken);
 
         await _notificationPublisher.PublishAsync(
             post.UserId,

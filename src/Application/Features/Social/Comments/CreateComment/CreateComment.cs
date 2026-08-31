@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 
@@ -88,7 +89,11 @@ internal sealed class CreateCommentCommandHandler
         await _notificationPublisher.PublishAsync(
             post.UserId,
             NotificationType.PostCommented,
-            "Gönderine yorum yapıldı",
+            await NotificationActor.TitleAsync(
+                _dbContext,
+                userId,
+                "fotoğrafına yorum yaptı",
+                cancellationToken),
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
             NotificationEntityType.Comment,
             comment.Id,

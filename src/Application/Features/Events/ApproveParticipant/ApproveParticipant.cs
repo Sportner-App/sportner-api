@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.ApproveParticipant;
@@ -59,7 +60,11 @@ internal sealed class ApproveParticipantCommandHandler
                 await _notificationPublisher.PublishAsync(
                     request.UserId,
                     NotificationType.EventRequestApproved,
-                    "Başvurun onaylandı",
+                    await NotificationActor.TitleAsync(
+                        DbContext,
+                        @event.OrganizerUserId,
+                        "başvurunu onayladı",
+                        ct),
                     $"\"{@event.Title}\" etkinliğine katılımın onaylandı.",
                     NotificationEntityType.Event,
                     @event.Id,

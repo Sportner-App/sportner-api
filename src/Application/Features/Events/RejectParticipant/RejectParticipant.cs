@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Events.RejectParticipant;
@@ -41,7 +42,11 @@ internal sealed class RejectParticipantCommandHandler
                 await _notificationPublisher.PublishAsync(
                     request.UserId,
                     NotificationType.EventRequestRejected,
-                    "Başvurun reddedildi",
+                    await NotificationActor.TitleAsync(
+                        DbContext,
+                        @event.OrganizerUserId,
+                        "başvurunu reddetti",
+                        ct),
                     $"\"{@event.Title}\" etkinliğine başvurun reddedildi.",
                     NotificationEntityType.Event,
                     @event.Id,
