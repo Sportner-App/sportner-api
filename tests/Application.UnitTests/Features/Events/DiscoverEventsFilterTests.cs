@@ -3,6 +3,7 @@ using Microsoft.Extensions.Time.Testing;
 using Sportner.Application.Features.Events.DiscoverEvents;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Organizations;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
 using Sportner.Domain.Users;
@@ -111,6 +112,128 @@ public sealed class DiscoverEventsFilterTests
         result.Value!.Items.Should().ContainSingle(item => item.Id == friendEvent.Id);
     }
 
+    [Fact]
+    public async Task Handle_OrganizationsOnly_ReturnsEventsFromApprovedOrganizationsOnly()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(
+            new DateTimeOffset(2026, 8, 31, 12, 0, 0, TimeSpan.Zero));
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var viewer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+        var organizer = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+
+        var myOrganization = Organization.Create(
+            viewer.Id, "Benim Kulübüm", null, null, "ABCD2345", time.GetUtcNow());
+        var myMembership = OrganizationMember.CreateFounder(
+            myOrganization.Id, viewer.Id, time.GetUtcNow());
+
+        var otherOrganization = Organization.Create(
+            organizer.Id, "Başka Kulüp", null, null, "WXYZ6789", time.GetUtcNow());
+        var otherMembership = OrganizationMember.CreateFounder(
+            otherOrganization.Id, organizer.Id, time.GetUtcNow());
+
+        var myOrgEvent = CreateEvent(
+            viewer.Id, sport.Id, "Kulüp maçı", 18, 40, time,
+            organizationId: myOrganization.Id);
+        var otherOrgEvent = CreateEvent(
+            organizer.Id, sport.Id, "Başka kulüp maçı", 18, 40, time,
+            organizationId: otherOrganization.Id);
+        var personalEvent = CreateEvent(
+            viewer.Id, sport.Id, "Kişisel etkinlik", 18, 40, time);
+
+        db.Users.AddRange(viewer, organizer);
+        db.Sports.Add(sport);
+        db.Organizations.AddRange(myOrganization, otherOrganization);
+        db.OrganizationMembers.AddRange(myMembership, otherMembership);
+        db.Events.AddRange(myOrgEvent, otherOrgEvent, personalEvent);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(viewer.Id), time);
+        var result = await handler.Handle(
+            new DiscoverEventsQuery(OrganizationsOnly: true),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().ContainSingle(item => item.Id == myOrgEvent.Id);
+    }
+
+    [Fact]
+    public async Task Handle_OrganizationsOnly_WithOrganizationId_FiltersToThatOrganization()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(
+            new DateTimeOffset(2026, 8, 31, 12, 0, 0, TimeSpan.Zero));
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var viewer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+
+        var firstOrganization = Organization.Create(
+            viewer.Id, "Birinci Kulüp", null, null, "ABCD2345", time.GetUtcNow());
+        var firstMembership = OrganizationMember.CreateFounder(
+            firstOrganization.Id, viewer.Id, time.GetUtcNow());
+
+        var secondOrganization = Organization.Create(
+            viewer.Id, "Ikinci Kulüp", null, null, "WXYZ6789", time.GetUtcNow());
+        var secondMembership = OrganizationMember.CreateFounder(
+            secondOrganization.Id, viewer.Id, time.GetUtcNow());
+
+        var firstOrgEvent = CreateEvent(
+            viewer.Id, sport.Id, "Birinci kulüp maçı", 18, 40, time,
+            organizationId: firstOrganization.Id);
+        var secondOrgEvent = CreateEvent(
+            viewer.Id, sport.Id, "Ikinci kulüp maçı", 18, 40, time,
+            organizationId: secondOrganization.Id);
+
+        db.Users.Add(viewer);
+        db.Sports.Add(sport);
+        db.Organizations.AddRange(firstOrganization, secondOrganization);
+        db.OrganizationMembers.AddRange(firstMembership, secondMembership);
+        db.Events.AddRange(firstOrgEvent, secondOrgEvent);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(viewer.Id), time);
+        var result = await handler.Handle(
+            new DiscoverEventsQuery(
+                OrganizationsOnly: true,
+                OrganizationId: secondOrganization.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().ContainSingle(item => item.Id == secondOrgEvent.Id);
+    }
+
+    [Fact]
+    public async Task Handle_OrganizationsOnly_ReturnsEmptyForAnonymousViewer()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(
+            new DateTimeOffset(2026, 8, 31, 12, 0, 0, TimeSpan.Zero));
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+
+        var organization = Organization.Create(
+            organizer.Id, "Kulüp", null, null, "ABCD2345", time.GetUtcNow());
+        var membership = OrganizationMember.CreateFounder(
+            organization.Id, organizer.Id, time.GetUtcNow());
+        var orgEvent = CreateEvent(
+            organizer.Id, sport.Id, "Kulüp maçı", 18, 40, time,
+            organizationId: organization.Id);
+
+        db.Users.Add(organizer);
+        db.Sports.Add(sport);
+        db.Organizations.Add(organization);
+        db.OrganizationMembers.Add(membership);
+        db.Events.Add(orgEvent);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(null), time);
+        var result = await handler.Handle(
+            new DiscoverEventsQuery(OrganizationsOnly: true),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().BeEmpty();
+    }
+
     private static UserProfile CreateProfile(
         Guid userId,
         string username,
@@ -129,7 +252,8 @@ public sealed class DiscoverEventsFilterTests
         int minAge,
         int maxAge,
         FakeTimeProvider time,
-        SkillLevel? skillLevel = null)
+        SkillLevel? skillLevel = null,
+        Guid? organizationId = null)
     {
         var @event = DomainEvent.Create(
             organizerId,
@@ -144,7 +268,8 @@ public sealed class DiscoverEventsFilterTests
             maxParticipants: 10,
             minParticipantAge: minAge,
             maxParticipantAge: maxAge,
-            skillLevel: skillLevel);
+            skillLevel: skillLevel,
+            organizationId: organizationId);
         @event.Publish(time.GetUtcNow());
         return @event;
     }

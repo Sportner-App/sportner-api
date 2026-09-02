@@ -24,6 +24,8 @@ public sealed record DiscoverEventsQuery(
     short? SkillLevel = null,
     bool? IsPaid = null,
     bool FriendsOnly = false,
+    bool OrganizationsOnly = false,
+    Guid? OrganizationId = null,
     int Page = 1,
     int PageSize = 20) : IQuery<PagedResult<EventListItemResponse>>;
 
@@ -77,11 +79,42 @@ internal sealed class DiscoverEventsQueryHandler
             ? null
             : request.City.Trim();
 
+        if ((request.FriendsOnly || request.OrganizationsOnly) && _currentUser.UserId is null)
+        {
+            return Result<PagedResult<EventListItemResponse>>.Success(
+                PagedResult<EventListItemResponse>.Create(
+                    [],
+                    pagination.NormalizedPage,
+                    pagination.NormalizedPageSize,
+                    0));
+        }
+
         IQueryable<Event> events = _dbContext.Events.AsNoTracking()
             .Where(@event =>
-                @event.OrganizationId == null
-                && (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
+                (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
                 && @event.EventDate > utcNow);
+
+        if (request.OrganizationsOnly)
+        {
+            var myOrganizationIds = _dbContext.OrganizationMembers.AsNoTracking()
+                .Where(member =>
+                    member.UserId == _currentUser.UserId!.Value
+                    && member.Status == OrganizationMemberStatus.Approved)
+                .Select(member => member.OrganizationId);
+
+            events = events.Where(@event =>
+                @event.OrganizationId != null
+                && myOrganizationIds.Contains(@event.OrganizationId.Value));
+
+            if (request.OrganizationId is { } organizationId)
+            {
+                events = events.Where(@event => @event.OrganizationId == organizationId);
+            }
+        }
+        else
+        {
+            events = events.Where(@event => @event.OrganizationId == null);
+        }
 
         if (_currentUser.UserId is { } viewerId)
         {
@@ -93,15 +126,6 @@ internal sealed class DiscoverEventsQueryHandler
                 var friendIds = SocialQueries.AcceptedFriendIds(_dbContext, viewerId);
                 events = events.Where(@event => friendIds.Contains(@event.OrganizerUserId));
             }
-        }
-        else if (request.FriendsOnly)
-        {
-            return Result<PagedResult<EventListItemResponse>>.Success(
-                PagedResult<EventListItemResponse>.Create(
-                    [],
-                    pagination.NormalizedPage,
-                    pagination.NormalizedPageSize,
-                    0));
         }
 
         if (request.SportId is not null)

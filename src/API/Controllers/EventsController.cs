@@ -59,6 +59,8 @@ public sealed class EventsController : ApiControllerBase
         [FromQuery] short? skillLevel,
         [FromQuery] bool? isPaid,
         [FromQuery] bool friendsOnly = false,
+        [FromQuery] bool organizationsOnly = false,
+        [FromQuery] Guid? organizationId = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
@@ -76,6 +78,8 @@ public sealed class EventsController : ApiControllerBase
                 skillLevel,
                 isPaid,
                 friendsOnly,
+                organizationsOnly,
+                organizationId,
                 page,
                 pageSize),
             cancellationToken);
