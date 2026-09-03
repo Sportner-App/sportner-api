@@ -48,6 +48,8 @@ public sealed record EventListItemResponse(
     string Title,
     DateTimeOffset EventDate,
     int DurationMinutes,
+    decimal Latitude,
+    decimal Longitude,
     string Address,
     int? MaxParticipants,
     int MinParticipantAge,

@@ -197,6 +197,8 @@ internal sealed class DiscoverEventsQueryHandler
                 @event.Title,
                 @event.EventDate,
                 @event.DurationMinutes,
+                @event.Latitude,
+                @event.Longitude,
                 @event.Address,
                 @event.MaxParticipants,
                 @event.MinParticipantAge,

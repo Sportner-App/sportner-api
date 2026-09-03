@@ -12,7 +12,7 @@ public sealed class UpdatePersonalDetailsCommandValidator
     {
         // Gender stays a plain code until product approves an enum (docs/database/02-profiles.md).
         RuleFor(command => command.Gender)
-            .GreaterThanOrEqualTo((short)0)
+            .InclusiveBetween((short)0, (short)2)
             .When(command => command.Gender is not null);
 
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);

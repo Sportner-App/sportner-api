@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sportner.API.Common;
 using Sportner.Application.Features.Identity.UserSports.AddSport;
+using Sportner.Application.Features.Identity.UserSports.AddSports;
 using Sportner.Application.Features.Identity.UserSports.ChangeSportSkillLevel;
 using Sportner.Application.Features.Identity.UserSports.ListMySports;
 using Sportner.Application.Features.Identity.UserSports.RemoveSport;
@@ -27,6 +28,20 @@ public sealed class UserSportsController : ApiControllerBase
     {
         var result = await Sender.Send(
             new AddSportCommand(request.SportId, request.SkillLevel, request.IsPrimary),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status201Created);
+    }
+
+    [HttpPost("batch")]
+    public async Task<IActionResult> AddSports(
+        [FromBody] AddSportsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new AddSportsCommand(request.Sports
+                .Select(item => new AddSportsItem(item.SportId, item.SkillLevel, item.IsPrimary))
+                .ToArray()),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -60,6 +75,10 @@ public sealed class UserSportsController : ApiControllerBase
     }
 
     public sealed record AddSportRequest(Guid SportId, short SkillLevel, bool IsPrimary = false);
+
+    public sealed record AddSportsRequest(IReadOnlyList<AddSportsItemRequest> Sports);
+
+    public sealed record AddSportsItemRequest(Guid SportId, short SkillLevel, bool IsPrimary = false);
 
     public sealed record ChangeSkillLevelRequest(short SkillLevel);
 }

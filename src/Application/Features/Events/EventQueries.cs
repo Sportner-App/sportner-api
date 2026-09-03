@@ -189,6 +189,8 @@ internal static class EventQueries
             @event.Title,
             @event.EventDate,
             @event.DurationMinutes,
+            @event.Latitude,
+            @event.Longitude,
             @event.Address,
             @event.MaxParticipants,
             @event.MinParticipantAge,
