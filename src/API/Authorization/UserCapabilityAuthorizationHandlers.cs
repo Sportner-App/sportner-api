@@ -30,6 +30,7 @@ public sealed class ActiveUserAuthorizationHandler : AuthorizationHandler<Active
         }
 
         var user = await _dbContext.Users.AsNoTracking()
+            .Include(candidate => candidate.ExternalLogins)
             .FirstOrDefaultAsync(candidate => candidate.Id == userId);
 
         if (user is not null && user.CanAuthenticate())
@@ -63,6 +64,7 @@ public sealed class CanCreateContentAuthorizationHandler
         }
 
         var user = await _dbContext.Users.AsNoTracking()
+            .Include(candidate => candidate.ExternalLogins)
             .FirstOrDefaultAsync(candidate => candidate.Id == userId);
 
         if (user is not null && user.CanCreateContent())

@@ -10,6 +10,7 @@ public class User : AggregateRoot
     private readonly List<UserSavedLocation> _savedLocations = [];
     private readonly List<UserDevice> _devices = [];
     private readonly List<UserSession> _sessions = [];
+    private readonly List<UserExternalLogin> _externalLogins = [];
 
     private User()
     {
@@ -39,6 +40,8 @@ public class User : AggregateRoot
     public IReadOnlyCollection<UserDevice> Devices => _devices.AsReadOnly();
 
     public IReadOnlyCollection<UserSession> Sessions => _sessions.AsReadOnly();
+
+    public IReadOnlyCollection<UserExternalLogin> ExternalLogins => _externalLogins.AsReadOnly();
 
     public static User Create(string phoneNumber, DateTimeOffset utcNow)
     {
@@ -74,6 +77,27 @@ public class User : AggregateRoot
         };
 
         user.Statistics = UserStatistics.Create(user.Id, utcNow);
+
+        return user;
+    }
+
+    /// <summary>Social sign-in: the provider's identity assertion stands in for phone/password verification.</summary>
+    public static User RegisterWithExternalProvider(
+        ExternalLoginProvider provider,
+        string providerUserId,
+        string? email,
+        DateTimeOffset utcNow)
+    {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Status = UserStatus.Active,
+            CreatedAt = utcNow
+        };
+
+        user.Statistics = UserStatistics.Create(user.Id, utcNow);
+        user._externalLogins.Add(
+            UserExternalLogin.Create(user.Id, provider, providerUserId, email, utcNow));
 
         return user;
     }
@@ -464,7 +488,7 @@ public class User : AggregateRoot
     public bool CanAuthenticate()
     {
         return Status is UserStatus.Active
-            && !string.IsNullOrWhiteSpace(PasswordHash);
+            && (!string.IsNullOrWhiteSpace(PasswordHash) || _externalLogins.Count > 0);
     }
 
     public bool HasCompletedOnboarding()

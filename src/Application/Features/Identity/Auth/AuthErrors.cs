@@ -19,4 +19,16 @@ internal static class AuthErrors
     internal static readonly Error InvalidRefreshToken = Error.Unauthorized(
         "Auth.InvalidRefreshToken",
         "Oturum yenileme bilgisi geçersiz, süresi dolmuş veya iptal edilmiş.");
+
+    internal static readonly Error ExternalTokenInvalid = Error.Unauthorized(
+        "Auth.ExternalTokenInvalid",
+        "Kimlik doğrulama sağlayıcısından gelen bilgi doğrulanamadı.");
+
+    internal static readonly Error ExternalRegistrationTokenInvalid = Error.Unauthorized(
+        "Auth.ExternalRegistrationTokenInvalid",
+        "Sosyal kayıt oturumunun süresi dolmuş veya bilgi geçersiz.");
+
+    internal static readonly Error ExternalLoginAlreadyRegistered = Error.Conflict(
+        "Auth.ExternalLoginAlreadyRegistered",
+        "Bu sosyal hesap zaten kayıtlı. Giriş yapmayı tekrar dene.");
 }

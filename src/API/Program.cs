@@ -1,4 +1,6 @@
 using Serilog;
+using Microsoft.EntityFrameworkCore;
+using Sportner.Infrastructure.Persistence;
 using Sportner.API.Extensions.Authentication;
 using Sportner.API.Extensions.Collection;
 using Sportner.API.Extensions.Cors;
@@ -36,6 +38,26 @@ builder.Services.AddHostedService<ApiNotificationDeliveryService>();
 builder.Services.AddSingleton<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
 
 var app = builder.Build();
+
+var cleanupEmail = Environment.GetEnvironmentVariable("SPORTNER_DELETE_TEST_USER_EMAIL");
+if (!string.IsNullOrWhiteSpace(cleanupEmail))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var normalizedEmail = cleanupEmail.Trim().ToLowerInvariant();
+    var userIds = await dbContext.UserExternalLogins
+        .Where(login => login.Email != null && login.Email.ToLower() == normalizedEmail)
+        .Select(login => login.UserId)
+        .Distinct()
+        .ToListAsync();
+
+    var deletedCount = await dbContext.Users
+        .Where(user => userIds.Contains(user.Id))
+        .ExecuteDeleteAsync();
+
+    Console.WriteLine($"Deleted {deletedCount} test user(s) for the requested email.");
+    return;
+}
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseCustomLocalization();

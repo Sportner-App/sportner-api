@@ -9,6 +9,9 @@ using Sportner.Application.Features.Identity.Auth.Logout;
 using Sportner.Application.Features.Identity.Auth.LogoutAll;
 using Sportner.Application.Features.Identity.Auth.RefreshToken;
 using Sportner.Application.Features.Identity.Auth.Register;
+using Sportner.Application.Features.Identity.Auth.SignInWithApple;
+using Sportner.Application.Features.Identity.Auth.SignInWithGoogle;
+using Sportner.Application.Features.Identity.Auth.CompleteExternalRegistration;
 
 namespace Sportner.API.Controllers;
 
@@ -53,6 +56,59 @@ public sealed class AuthController : ApiControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("google")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> Google(
+        [FromBody] GoogleSignInRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new SignInWithGoogleCommand(
+            request.IdToken,
+            IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            UserAgent: HttpContext.Request.Headers.UserAgent.ToString());
+
+        var result = await Sender.Send(command, cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("apple")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> Apple(
+        [FromBody] AppleSignInRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new SignInWithAppleCommand(
+            request.IdentityToken,
+            request.FirstName,
+            request.LastName,
+            IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            UserAgent: HttpContext.Request.Headers.UserAgent.ToString());
+
+        var result = await Sender.Send(command, cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("external/complete")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> CompleteExternalRegistration(
+        [FromBody] CompleteExternalRegistrationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new CompleteExternalRegistrationCommand(
+            request.RegistrationToken,
+            request.Username,
+            request.FirstName,
+            request.LastName,
+            request.BirthDate,
+            request.Gender,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            HttpContext.Request.Headers.UserAgent.ToString()), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status201Created);
+    }
+
+    [AllowAnonymous]
     [HttpPost("refresh")]
     [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
     public async Task<IActionResult> Refresh(
@@ -93,6 +149,18 @@ public sealed class AuthController : ApiControllerBase
         DateOnly BirthDate);
 
     public sealed record LoginRequest(string Username, string Password);
+
+    public sealed record GoogleSignInRequest(string IdToken);
+
+    public sealed record AppleSignInRequest(string IdentityToken, string? FirstName, string? LastName);
+
+    public sealed record CompleteExternalRegistrationRequest(
+        string RegistrationToken,
+        string Username,
+        string FirstName,
+        string? LastName,
+        DateOnly BirthDate,
+        short Gender = 0);
 
     public sealed record RefreshTokenRequest(string RefreshToken);
 

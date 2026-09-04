@@ -40,6 +40,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
 
+    public DbSet<UserExternalLogin> UserExternalLogins => Set<UserExternalLogin>();
+
     public DbSet<UserSavedLocation> UserSavedLocations => Set<UserSavedLocation>();
 
     public DbSet<Event> Events => Set<Event>();

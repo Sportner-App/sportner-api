@@ -65,6 +65,10 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => entity.DeviceIdentifier)
             .IsUnique();
 
+        modelBuilder.Entity<UserExternalLogin>()
+            .HasIndex(entity => new { entity.Provider, entity.ProviderUserId })
+            .IsUnique();
+
         modelBuilder.Entity<EventParticipant>()
             .HasIndex(entity => new { entity.EventId, entity.UserId })
             .IsUnique()
@@ -198,6 +202,8 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<UserDevice>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<UserDevice>().HasIndex(entity => entity.LastSeenAt);
+
+        modelBuilder.Entity<UserExternalLogin>().HasIndex(entity => entity.UserId);
 
         modelBuilder.Entity<UserSavedLocation>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<UserSavedLocation>().HasIndex(entity => entity.City);
@@ -597,6 +603,8 @@ internal static class ModelBuilderExtensions
             .HasColumnType("smallint");
         modelBuilder.Entity<UserDevice>().Property(entity => entity.Platform)
             .HasColumnType("smallint");
+        modelBuilder.Entity<UserExternalLogin>().Property(entity => entity.Provider)
+            .HasColumnType("smallint");
         modelBuilder.Entity<Event>().Property(entity => entity.Status)
             .HasColumnType("smallint");
         modelBuilder.Entity<Event>().Property(entity => entity.SkillLevel)
@@ -705,6 +713,12 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<UserSavedLocation>()
             .HasOne<User>()
             .WithMany(user => user.SavedLocations)
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserExternalLogin>()
+            .HasOne<User>()
+            .WithMany(user => user.ExternalLogins)
             .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 

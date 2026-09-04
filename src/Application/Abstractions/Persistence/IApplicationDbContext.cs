@@ -25,6 +25,7 @@ public interface IApplicationDbContext
     DbSet<UserStatistics> UserStatistics { get; }
     DbSet<UserSession> UserSessions { get; }
     DbSet<UserDevice> UserDevices { get; }
+    DbSet<UserExternalLogin> UserExternalLogins { get; }
     DbSet<UserSavedLocation> UserSavedLocations { get; }
     DbSet<Event> Events { get; }
     DbSet<Organization> Organizations { get; }

@@ -44,6 +44,7 @@ internal sealed class RefreshTokenCommandHandler
         }
 
         var user = await _dbContext.Users
+            .Include(candidate => candidate.ExternalLogins)
             .FirstOrDefaultAsync(candidate => candidate.Id == session.UserId, cancellationToken);
 
         if (user is null || !user.CanAuthenticate())
