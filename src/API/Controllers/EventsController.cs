@@ -49,6 +49,7 @@ public sealed class EventsController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Discover(
         [FromQuery] Guid? sportId,
+        [FromQuery] Guid? sportCategoryId,
         [FromQuery] string? city,
         [FromQuery] decimal? lat,
         [FromQuery] decimal? lng,
@@ -68,6 +69,7 @@ public sealed class EventsController : ApiControllerBase
         var result = await Sender.Send(
             new DiscoverEventsQuery(
                 sportId,
+                sportCategoryId,
                 city,
                 lat,
                 lng,

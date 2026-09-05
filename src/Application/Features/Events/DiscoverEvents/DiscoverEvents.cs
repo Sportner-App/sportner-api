@@ -14,6 +14,7 @@ namespace Sportner.Application.Features.Events.DiscoverEvents;
 
 public sealed record DiscoverEventsQuery(
     Guid? SportId = null,
+    Guid? SportCategoryId = null,
     string? City = null,
     decimal? Latitude = null,
     decimal? Longitude = null,
@@ -131,6 +132,12 @@ internal sealed class DiscoverEventsQueryHandler
         if (request.SportId is not null)
         {
             events = events.Where(@event => @event.SportId == request.SportId);
+        }
+
+        if (request.SportCategoryId is { } sportCategoryId)
+        {
+            events = events.Where(@event => _dbContext.Sports.Any(sport =>
+                sport.Id == @event.SportId && sport.CategoryId == sportCategoryId));
         }
 
         if (cityFilter is not null)
