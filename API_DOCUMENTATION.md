@@ -306,21 +306,24 @@ Opsiyonel query parametreleri:
   - `all`: tüm etkinlikler
 - `sportType`: Spor türüne göre filtre
 - `search`: Başlık, açıklama ve adres içinde arama
-- `latitude`: Kullanıcı enlemi
-- `longitude`: Kullanıcı boylamı
-- `radiusKm`: Opsiyonel maksimum mesafe (km). Yalnızca `latitude` ve
-  `longitude` ile kullanılabilir. Gönderilmezse mesafe filtresi uygulanmaz.
+- `lat`: Kullanıcı enlemi
+- `lng`: Kullanıcı boylamı
+- `radiusKm`: Opsiyonel maksimum mesafe (km). Yalnızca `lat` ve
+  `lng` ile kullanılabilir. Gönderilmezse mesafe filtresi uygulanmaz.
 
-`latitude` ve `longitude` birlikte gönderildiğinde sonuçlar varsayılan olarak
-yakından uzağa sıralanır. `radiusKm` gönderilmediğinde etkinlik ne kadar uzakta
-olursa olsun sonuçlara dahil edilir.
+`lat` ve `lng` birlikte gönderildiğinde sonuçlar varsayılan sıralamayı
+(`eventDate`) geçersiz kılar ve yakından uzağa sıralanır — mesafe düz Öklid
+yaklaşıklığıyla veritabanında hesaplanır (PostGIS gerekmez). `radiusKm`
+gönderilmediğinde etkinlik ne kadar uzakta olursa olsun sonuçlara dahil edilir,
+yalnızca sıralama etkilenir. `lat`/`lng` verilmezse sıralama `eventDate`'e göre
+kalır.
 
 Geçmiş / gelecek ayrımı ayrı bir kolon veya tablo ile yapılmaz. `event_date` ile okuma anında hesaplanır; kullanıcı hiçbir şey yapmadan etkinlik saati geçince otomatik “past” sayılır.
 
 Örnekler:
 
 ```http
-GET /api/events?sportType=football&search=halı%20saha&latitude=41.0082&longitude=28.9784&radiusKm=10
+GET /api/events?sportType=football&search=halı%20saha&lat=41.0082&lng=28.9784&radiusKm=10
 GET /api/events?timeframe=past
 GET /api/events?timeframe=all&sportType=tennis
 ```

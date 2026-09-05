@@ -43,6 +43,20 @@ public sealed class DiscoverEventsQueryValidator : AbstractValidator<DiscoverEve
         RuleFor(query => query.MaxParticipantAge)
             .GreaterThanOrEqualTo(query => query.MinParticipantAge)
             .When(query => query.MinParticipantAge is not null && query.MaxParticipantAge is not null);
+        RuleFor(query => query.Latitude)
+            .InclusiveBetween(-90m, 90m)
+            .When(query => query.Latitude is not null);
+        RuleFor(query => query.Longitude)
+            .InclusiveBetween(-180m, 180m)
+            .When(query => query.Longitude is not null);
+        RuleFor(query => query.Longitude)
+            .NotNull()
+            .When(query => query.Latitude is not null)
+            .WithMessage("Longitude is required when latitude is supplied.");
+        RuleFor(query => query.Latitude)
+            .NotNull()
+            .When(query => query.Longitude is not null)
+            .WithMessage("Latitude is required when longitude is supplied.");
         RuleFor(query => query.OrganizerGender)
             .InclusiveBetween((short)0, (short)2)
             .When(query => query.OrganizerGender is not null);
@@ -186,44 +200,69 @@ internal sealed class DiscoverEventsQueryHandler
                 && @event.Longitude <= maxLng);
         }
 
-        var query =
+        var joined =
             from @event in events
             join sport in _dbContext.Sports.AsNoTracking() on @event.SportId equals sport.Id
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on @event.OrganizerUserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
-            orderby @event.EventDate
-            select new EventListItemResponse(
-                @event.Id,
-                @event.SportId,
-                sport.Name,
-                sport.Slug,
-                sport.CoverImageUrl,
-                @event.OrganizerUserId,
-                profile != null ? profile.Username : null,
-                @event.Title,
-                @event.EventDate,
-                @event.DurationMinutes,
-                @event.Latitude,
-                @event.Longitude,
-                @event.Address,
-                @event.MaxParticipants,
-                @event.MinParticipantAge,
-                @event.MaxParticipantAge,
-                @event.SkillLevel != null ? (short?)@event.SkillLevel : null,
-                @event.IsPaid,
-                @event.FeeAmount,
-                (short)@event.Status,
-                _dbContext.EventParticipants.Count(participant =>
-                    participant.EventId == @event.Id
-                    && (participant.Status == ParticipantStatus.Approved
-                        || participant.Status == ParticipantStatus.Attended
-                        || participant.Status == ParticipantStatus.NoShow)));
+            select new { Event = @event, Sport = sport, Profile = profile };
 
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query
+        var total = await joined.CountAsync(cancellationToken);
+
+        // Çağıran kendi konumunu verdiyse varsayılan sıralama yakından uzağa
+        // olur. Boylam farkını referans enlemin kosinüsüyle ölçekliyoruz;
+        // sonuç yerel ölçekte gerçek mesafeyle monoton artar ve düz SQL
+        // aritmetiğine çevrilir, PostGIS gerektirmez. Karekök almıyoruz —
+        // sıralama için gereksiz maliyet.
+        var hasOrigin = request.Latitude is not null && request.Longitude is not null;
+        var originLat = request.Latitude ?? 0m;
+        var originLng = request.Longitude ?? 0m;
+        var lngScale = (decimal)Math.Cos((double)originLat * Math.PI / 180.0);
+
+        var ordered = hasOrigin
+            ? joined
+                .OrderBy(row =>
+                    (row.Event.Latitude - originLat) * (row.Event.Latitude - originLat)
+                    + (row.Event.Longitude - originLng)
+                        * (row.Event.Longitude - originLng)
+                        * lngScale
+                        * lngScale)
+                .ThenBy(row => row.Event.EventDate)
+                .ThenBy(row => row.Event.Id)
+            : joined
+                .OrderBy(row => row.Event.EventDate)
+                .ThenBy(row => row.Event.Id);
+
+        var items = await ordered
             .Skip(pagination.Skip)
             .Take(pagination.NormalizedPageSize)
+            .Select(row => new EventListItemResponse(
+                row.Event.Id,
+                row.Event.SportId,
+                row.Sport.Name,
+                row.Sport.Slug,
+                row.Sport.CoverImageUrl,
+                row.Event.OrganizerUserId,
+                row.Profile != null ? row.Profile.Username : null,
+                row.Event.Title,
+                row.Event.EventDate,
+                row.Event.DurationMinutes,
+                row.Event.Latitude,
+                row.Event.Longitude,
+                row.Event.Address,
+                row.Event.MaxParticipants,
+                row.Event.MinParticipantAge,
+                row.Event.MaxParticipantAge,
+                row.Event.SkillLevel != null ? (short?)row.Event.SkillLevel : null,
+                row.Event.IsPaid,
+                row.Event.FeeAmount,
+                (short)row.Event.Status,
+                _dbContext.EventParticipants.Count(participant =>
+                    participant.EventId == row.Event.Id
+                    && (participant.Status == ParticipantStatus.Approved
+                        || participant.Status == ParticipantStatus.Attended
+                        || participant.Status == ParticipantStatus.NoShow))))
             .ToListAsync(cancellationToken);
 
         return Result<PagedResult<EventListItemResponse>>.Success(
