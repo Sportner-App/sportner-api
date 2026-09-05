@@ -64,6 +64,10 @@ internal static class EventErrors
         "Event.ParticipantAgeNotEligible",
         "Your age is outside the participation age range for this event.");
 
+    internal static readonly Error ParticipantBirthDateMissing = Error.Forbidden(
+        "Event.ParticipantBirthDateMissing",
+        "Age cannot be verified because the profile has no birth date.");
+
     internal static readonly Error InvitationNotFound = Error.NotFound(
         "Event.InvitationNotFound",
         "An active invitation was not found for this event.");

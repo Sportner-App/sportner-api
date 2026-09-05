@@ -33,6 +33,14 @@ try
         });
 
     builder.Services.AddCronJob(
+        "event-series",
+        options => options.EventSeriesCron,
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IEventSeriesDispatcher>().DispatchAsync(ct);
+        });
+
+    builder.Services.AddCronJob(
         "event-reminder",
         options => options.EventReminderCron,
         async (provider, ct) =>
@@ -50,7 +58,8 @@ try
 
     var host = builder.Build();
 
-    Log.Information("Sportner.Events.Worker starting (auto-complete + reminders + marathon badge sweep).");
+    Log.Information(
+        "Sportner.Events.Worker starting (auto-complete + recurring series + reminders + marathon badge sweep).");
     await host.RunAsync();
 }
 catch (Exception ex)

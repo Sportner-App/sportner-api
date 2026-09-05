@@ -122,9 +122,16 @@ internal sealed class AssignEventParticipantsCommandHandler
                         .Select(profile => profile.BirthDate)
                         .ToListAsync(ct);
 
+                    // Doğum tarihi bilinmiyorsa yaş "aralık dışı" değildir; organizatöre
+                    // ne yapacağını söyleyebilmek için iki durumu ayırıyoruz.
                     if (friendBirthDates.Count != friendIds.Count
-                        || friendBirthDates.Any(birthDate =>
-                            birthDate is null || !@event.IsParticipantAgeEligible(birthDate.Value)))
+                        || friendBirthDates.Any(birthDate => birthDate is null))
+                    {
+                        return Result.Failure(EventErrors.ParticipantBirthDateMissing);
+                    }
+
+                    if (friendBirthDates.Any(birthDate =>
+                            !@event.IsParticipantAgeEligible(birthDate!.Value)))
                     {
                         return Result.Failure(EventErrors.ParticipantAgeNotEligible);
                     }

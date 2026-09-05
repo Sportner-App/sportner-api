@@ -25,9 +25,15 @@ public sealed record CreateRecurringEventsCommand(
     bool IsPaid = false,
     decimal? FeeAmount = null) : ICommand<CreateRecurringEventsResponse>;
 
+/// <param name="EventIds">
+/// Şu an oluşturulmuş etkinlikler — seride yalnızca ilk halka. Kalan tekrarlar
+/// bir öncekinin bitişinden sonra arka planda açılır.
+/// </param>
 public sealed record CreateRecurringEventsResponse(
     Guid FirstEventId,
-    IReadOnlyList<Guid> EventIds);
+    IReadOnlyList<Guid> EventIds,
+    Guid SeriesId,
+    int TotalOccurrences);
 
 public sealed class CreateRecurringEventsCommandValidator
     : AbstractValidator<CreateRecurringEventsCommand>
@@ -45,7 +51,9 @@ public sealed class CreateRecurringEventsCommandValidator
         RuleFor(x => x.MaxParticipantAge).InclusiveBetween(13, 120)
             .GreaterThanOrEqualTo(x => x.MinParticipantAge);
         RuleFor(x => x.IntervalWeeks).Must(value => value is 1 or 2 or 4);
-        RuleFor(x => x.OccurrenceCount).InclusiveBetween(2, 12);
+        RuleFor(x => x.OccurrenceCount).InclusiveBetween(
+            DomainEvent.MinSeriesOccurrences,
+            DomainEvent.MaxSeriesOccurrences);
         RuleFor(x => x.FeeAmount)
             .NotNull()
             .GreaterThan(0)
@@ -92,31 +100,37 @@ internal sealed class CreateRecurringEventsCommandHandler
             return Result<CreateRecurringEventsResponse>.Failure(EventErrors.SportInactive);
 
         var utcNow = _timeProvider.GetUtcNow();
-        var events = Enumerable.Range(0, request.OccurrenceCount)
-            .Select(index => DomainEvent.Create(
-                userId,
-                request.SportId,
-                request.Title,
-                request.EventDate.AddDays(index * request.IntervalWeeks * 7),
-                request.DurationMinutes,
-                request.Latitude,
-                request.Longitude,
-                request.Address,
-                utcNow,
-                request.Description,
-                request.MaxParticipants,
-                request.MinParticipantAge,
-                request.MaxParticipantAge,
-                skillLevel: null,
-                isPaid: request.IsPaid,
-                feeAmount: request.FeeAmount))
-            .ToList();
 
-        foreach (var @event in events)
-            _dbContext.Events.Add(@event);
+        // Seriyi önden toplu üretmiyoruz: yalnızca ilk halka oluşur, sonraki
+        // tekrar bu halka bittiğinde arka plan işi tarafından açılır.
+        var firstOccurrence = DomainEvent.Create(
+            userId,
+            request.SportId,
+            request.Title,
+            request.EventDate,
+            request.DurationMinutes,
+            request.Latitude,
+            request.Longitude,
+            request.Address,
+            utcNow,
+            request.Description,
+            request.MaxParticipants,
+            request.MinParticipantAge,
+            request.MaxParticipantAge,
+            skillLevel: null,
+            isPaid: request.IsPaid,
+            feeAmount: request.FeeAmount);
+
+        firstOccurrence.StartSeries(request.IntervalWeeks, request.OccurrenceCount, utcNow);
+
+        _dbContext.Events.Add(firstOccurrence);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result<CreateRecurringEventsResponse>.Success(
-            new CreateRecurringEventsResponse(events[0].Id, events.Select(x => x.Id).ToArray()));
+            new CreateRecurringEventsResponse(
+                firstOccurrence.Id,
+                [firstOccurrence.Id],
+                firstOccurrence.SeriesId!.Value,
+                request.OccurrenceCount));
     }
 }

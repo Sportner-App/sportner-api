@@ -99,7 +99,13 @@ internal sealed class ApplyToEventCommandHandler
             .Select(profile => profile.BirthDate)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (birthDate is null || !@event.IsParticipantAgeEligible(birthDate.Value))
+        if (birthDate is null)
+        {
+            return Result<ApplyToEventResponse>.Failure(
+                EventErrors.ParticipantBirthDateMissing);
+        }
+
+        if (!@event.IsParticipantAgeEligible(birthDate.Value))
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
         }

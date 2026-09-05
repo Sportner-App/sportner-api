@@ -231,6 +231,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>().HasIndex(entity => entity.SkillLevel);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.IsPaid);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.OrganizationId);
+        modelBuilder.Entity<Event>()
+            .HasIndex(entity => new { entity.SeriesId, entity.SeriesSequence });
 
         modelBuilder.Entity<Organization>().HasIndex(entity => entity.FounderUserId);
         modelBuilder.Entity<Organization>().HasIndex(entity => entity.CityId);

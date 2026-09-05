@@ -47,7 +47,21 @@ public class Event : AggregateRoot
 
     public EventStatus Status { get; private set; }
 
+    /// <summary>Tekrarlayan seriye aitse serinin kimliği; değilse null.</summary>
+    public Guid? SeriesId { get; private set; }
+
+    /// <summary>Seri içindeki sıra (1 tabanlı).</summary>
+    public int? SeriesSequence { get; private set; }
+
+    public int? SeriesIntervalWeeks { get; private set; }
+
+    public int? SeriesTotalOccurrences { get; private set; }
+
     public const decimal MaxFeeAmount = 99_999.99m;
+
+    public const int MinSeriesOccurrences = 2;
+
+    public const int MaxSeriesOccurrences = 12;
 
     public IReadOnlyCollection<EventParticipant> Participants => _participants.AsReadOnly();
 
@@ -203,6 +217,92 @@ public class Event : AggregateRoot
 
         Status = HasAvailableCapacity() ? EventStatus.Published : EventStatus.Full;
         Touch(utcNow);
+    }
+
+    public bool IsSeriesOccurrence => SeriesId is not null;
+
+    /// <summary>Serinin kotası dolmadıysa true — bu halkadan sonra bir tekrar daha üretilir.</summary>
+    public bool HasRemainingSeriesOccurrences =>
+        SeriesId is not null
+        && SeriesSequence is { } sequence
+        && SeriesTotalOccurrences is { } total
+        && sequence < total;
+
+    /// <summary>
+    /// Bu etkinliği tekrarlayan bir serinin ilk halkası yapar. Kalan tekrarlar
+    /// önden toplu üretilmez; her biri bir öncekinin bitişinden sonra oluşur.
+    /// </summary>
+    public void StartSeries(int intervalWeeks, int totalOccurrences, DateTimeOffset utcNow)
+    {
+        if (SeriesId is not null)
+        {
+            throw new DomainException("Event already belongs to a series.");
+        }
+
+        if (intervalWeeks is not (1 or 2 or 4))
+        {
+            throw new DomainException("Series interval must be 1, 2 or 4 weeks.");
+        }
+
+        if (totalOccurrences < MinSeriesOccurrences || totalOccurrences > MaxSeriesOccurrences)
+        {
+            throw new DomainException(
+                $"Series occurrence count must be between {MinSeriesOccurrences} and {MaxSeriesOccurrences}.");
+        }
+
+        SeriesId = Guid.NewGuid();
+        SeriesSequence = 1;
+        SeriesIntervalWeeks = intervalWeeks;
+        SeriesTotalOccurrences = totalOccurrences;
+        Touch(utcNow);
+    }
+
+    /// <summary>
+    /// Serideki bir sonraki tekrarı, bu halkanın şablonundan üretir. Yalnızca bu
+    /// halka bittikten sonra çağrılır. İptal edilmiş bir halka seriyi durdurmaz.
+    /// </summary>
+    public Event CreateNextSeriesOccurrence(DateTimeOffset utcNow)
+    {
+        if (!HasRemainingSeriesOccurrences)
+        {
+            throw new DomainException("Event has no remaining series occurrences.");
+        }
+
+        var intervalDays = SeriesIntervalWeeks!.Value * 7;
+        var nextDate = EventDate.AddDays(intervalDays);
+
+        // Worker gecikirse haftalık ritmi bozmadan ilk gelecek slota taşı.
+        while (nextDate <= utcNow)
+        {
+            nextDate = nextDate.AddDays(intervalDays);
+        }
+
+        var next = Create(
+            OrganizerUserId,
+            SportId,
+            Title,
+            nextDate,
+            DurationMinutes,
+            Latitude,
+            Longitude,
+            Address,
+            utcNow,
+            Description,
+            MaxParticipants,
+            MinParticipantAge,
+            MaxParticipantAge,
+            SkillLevel,
+            IsPaid,
+            FeeAmount,
+            OrganizationId);
+
+        next.SeriesId = SeriesId;
+        next.SeriesSequence = SeriesSequence!.Value + 1;
+        next.SeriesIntervalWeeks = SeriesIntervalWeeks;
+        next.SeriesTotalOccurrences = SeriesTotalOccurrences;
+        next.Publish(utcNow);
+
+        return next;
     }
 
     public void Cancel(DateTimeOffset utcNow)

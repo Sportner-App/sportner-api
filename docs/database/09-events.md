@@ -27,9 +27,9 @@ Each event has its own:
 - Reviews
 - Lifecycle status
 
-Recurring event series are intentionally excluded from the first version.
-
-Every event record represents exactly one occurrence.
+Every event record represents exactly one occurrence. Recurring events are
+modelled as a chain of such occurrences linked by `series_id`; see
+[Recurring Series](#recurring-series).
 
 ---
 
@@ -65,12 +65,40 @@ Every event record represents exactly one occurrence.
 | is_paid            | BOOLEAN      |       No | Whether attendance has an advertised fee; default `false` |
 | fee_amount         | DECIMAL(10,2)|      Yes | Advertised TRY amount when paid; `NULL` when free |
 | status             | SMALLINT     |       No | Event lifecycle status                         |
+| series_id          | UUID         |      Yes | Groups the occurrences of one recurring series; `NULL` for standalone events |
+| series_sequence    | INTEGER      |      Yes | 1-based position within the series             |
+| series_interval_weeks | INTEGER   |      Yes | Weeks between occurrences (1, 2 or 4)          |
+| series_total_occurrences | INTEGER |     Yes | How many occurrences the series will produce in total |
 | created_at         | TIMESTAMPTZ  |       No | Creation timestamp                             |
 | updated_at         | TIMESTAMPTZ  |      Yes | Last update timestamp                          |
 | created_by_user_id | UUID         |      Yes | Audit field                                    |
 | updated_by_user_id | UUID         |      Yes | Audit field                                    |
 
 ---
+
+# Recurring Series
+
+Every event record still represents exactly one occurrence — each has its own
+participants, waiting list, attendance, conversation, reviews and cancellation
+status. A series is only a lightweight link between those occurrences.
+
+Occurrences are **not** materialised upfront. `POST /api/events/recurring`
+creates one event, stamps it with a fresh `series_id`, `series_sequence = 1`
+and the series quota. The `event-series` cron job in `Sportner.Events.Worker`
+then finds series whose newest occurrence has passed `event_date +
+duration_minutes` and, while `series_sequence < series_total_occurrences`,
+clones that occurrence forward by `series_interval_weeks` and publishes it.
+
+Consequences worth knowing:
+
+- Editing an occurrence changes the template the next one is cloned from.
+- Cancelling an occurrence does not stop the series; the job advances from the
+  newest occurrence regardless of its status.
+- If the worker is down, no occurrences are lost: the next run rolls the date
+  forward on the same weekly rhythm until it lands in the future.
+
+A dedicated `event_series` table was deliberately not introduced — the series
+carries no state beyond the template already stored on each occurrence.
 
 # Removed Fields
 
@@ -79,16 +107,8 @@ The following fields are not part of the first version:
 - `is_recurring`
 - `recurrence_rule`
 
-Recurring events require a separate series model because every occurrence may have different:
-
-- Participants
-- Waiting lists
-- Attendance
-- Conversation messages
-- Reviews
-- Cancellation status
-
-A future implementation should introduce an `event_series` model rather than storing recurrence rules directly on `events`.
+Recurrence is expressed by the `series_*` columns above rather than by an
+RFC 5545-style recurrence rule.
 
 ---
 
@@ -400,8 +420,6 @@ PostGIS may be introduced later without changing the core event ownership model.
 
 Possible future additions include:
 
-event_series for recurring event definitions
-Event instances generated from a series
 Skill-level requirements
 Friends-only or private visibility
 Invite-only participation

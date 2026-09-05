@@ -23,6 +23,11 @@ public sealed class BackgroundJobsOptions
 
     public int EventCompletionBatchSize { get; set; } = 50;
 
+    /// <summary>Every 10 minutes — open the next occurrence of recurring series whose latest event ended.</summary>
+    public string EventSeriesCron { get; set; } = "*/10 * * * *";
+
+    public int EventSeriesBatchSize { get; set; } = 50;
+
     /// <summary>Every 15 minutes.</summary>
     public string EventReminderCron { get; set; } = "*/15 * * * *";
 

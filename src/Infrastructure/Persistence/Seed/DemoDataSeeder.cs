@@ -104,16 +104,23 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
     }
     private List<User> CreateUsers(IReadOnlyList<Sport> sports, DateTimeOffset utcNow)
     {
+        // Gender/BirthDate zorunlu: doğum tarihi olmayan bir profil etkinlik yaş
+        // kontrolüne takılır (davet ve katılım reddedilir), yani demo kullanıcı
+        // bunlarsız kullanılamaz durumda doğar.
         var definitions = new[]
         {
             (Index: 1, Username: "ahmet", FirstName: "Ahmet", LastName: "Yılmaz", City: "İstanbul",
-                Bio: "Basketbol ve koşu. Hafta sonları sahadayım."),
+                Bio: "Basketbol ve koşu. Hafta sonları sahadayım.",
+                Gender: (short)1, BirthDate: new DateOnly(1995, 4, 12)),
             (Index: 2, Username: "elif", FirstName: "Elif", LastName: "Demir", City: "İstanbul",
-                Bio: "Voleybol ve pilates yapıyorum."),
+                Bio: "Voleybol ve pilates yapıyorum.",
+                Gender: (short)2, BirthDate: new DateOnly(1998, 9, 3)),
             (Index: 3, Username: "mert", FirstName: "Mert", LastName: "Kaya", City: "Ankara",
-                Bio: "Koşu ve bisiklet. Sürekli yeni rotalar arıyorum."),
+                Bio: "Koşu ve bisiklet. Sürekli yeni rotalar arıyorum.",
+                Gender: (short)1, BirthDate: new DateOnly(1992, 1, 27)),
             (Index: 4, Username: "zeynep", FirstName: "Zeynep", LastName: "Şahin", City: "İzmir",
-                Bio: "Tenis ve yoga.")
+                Bio: "Tenis ve yoga.",
+                Gender: (short)2, BirthDate: new DateOnly(2000, 6, 18))
         };
 
         var users = new List<User>();
@@ -134,6 +141,10 @@ public sealed class DemoDataSeeder : IDemoDataSeeder
 
             profile.UpdateBio(definition.Bio, utcNow);
             profile.UpdateLocation(definition.City, utcNow);
+            profile.UpdatePersonalDetails(
+                definition.Gender,
+                definition.BirthDate,
+                utcNow);
             user.AttachUserProfile(profile);
 
             var primarySport = sports[(definition.Index - 1) % sports.Count];
