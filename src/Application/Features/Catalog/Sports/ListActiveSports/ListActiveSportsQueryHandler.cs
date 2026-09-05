@@ -35,6 +35,13 @@ internal sealed class ListActiveSportsQueryHandler
                 || sport.Slug.ToLower().Contains(search));
         }
 
+        if (!string.IsNullOrWhiteSpace(request.CategorySlug))
+        {
+            var categorySlug = request.CategorySlug.Trim().ToLowerInvariant();
+            sports = sports.Where(sport => _dbContext.SportCategories.Any(category =>
+                category.Id == sport.CategoryId && category.Slug == categorySlug));
+        }
+
         var totalCount = await sports.CountAsync(cancellationToken);
 
         var items = await sports
@@ -48,7 +55,16 @@ internal sealed class ListActiveSportsQueryHandler
                 sport.Slug,
                 sport.IconUrl,
                 sport.CoverImageUrl,
-                sport.DisplayOrder))
+                sport.DisplayOrder,
+                sport.CategoryId,
+                _dbContext.SportCategories
+                    .Where(category => category.Id == sport.CategoryId)
+                    .Select(category => category.Name)
+                    .FirstOrDefault(),
+                _dbContext.SportCategories
+                    .Where(category => category.Id == sport.CategoryId)
+                    .Select(category => category.Slug)
+                    .FirstOrDefault()))
             .ToListAsync(cancellationToken);
 
         return Result<PagedResult<SportResponse>>.Success(

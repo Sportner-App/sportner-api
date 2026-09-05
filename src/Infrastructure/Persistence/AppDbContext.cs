@@ -32,6 +32,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Sport> Sports => Set<Sport>();
 
+    public DbSet<SportCategory> SportCategories => Set<SportCategory>();
+
     public DbSet<UserSport> UserSports => Set<UserSport>();
 
     public DbSet<UserStatistics> UserStatistics => Set<UserStatistics>();

@@ -8,6 +8,7 @@ using Sportner.Application.Features.Catalog.Sports.CreateSport;
 using Sportner.Application.Features.Catalog.Sports.DeactivateSport;
 using Sportner.Application.Features.Catalog.Sports.GetSportBySlug;
 using Sportner.Application.Features.Catalog.Sports.ListActiveSports;
+using Sportner.Application.Features.Catalog.Sports.ListSportCategories;
 using Sportner.Application.Features.Catalog.Sports.RenameSport;
 using Sportner.Application.Features.Catalog.Sports.UpdateSportCoverImage;
 
@@ -20,14 +21,23 @@ public sealed class SportsController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ListActiveSports(
         [FromQuery] string? q,
+        [FromQuery] string? categorySlug,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
         CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(
-            new ListActiveSportsQuery(q, page, pageSize),
+            new ListActiveSportsQuery(q, categorySlug, page, pageSize),
             cancellationToken);
 
+        return result.ToActionResult();
+    }
+
+    [HttpGet("categories")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ListCategories(CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new ListSportCategoriesQuery(), cancellationToken);
         return result.ToActionResult();
     }
 

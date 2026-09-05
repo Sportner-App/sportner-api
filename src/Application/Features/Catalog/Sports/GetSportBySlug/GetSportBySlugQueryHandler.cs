@@ -29,7 +29,16 @@ internal sealed class GetSportBySlugQueryHandler : IQueryHandler<GetSportBySlugQ
                 candidate.Slug,
                 candidate.IconUrl,
                 candidate.CoverImageUrl,
-                candidate.DisplayOrder))
+                candidate.DisplayOrder,
+                candidate.CategoryId,
+                _dbContext.SportCategories
+                    .Where(category => category.Id == candidate.CategoryId)
+                    .Select(category => category.Name)
+                    .FirstOrDefault(),
+                _dbContext.SportCategories
+                    .Where(category => category.Id == candidate.CategoryId)
+                    .Select(category => category.Slug)
+                    .FirstOrDefault()))
             .FirstOrDefaultAsync(cancellationToken);
 
         return sport is null

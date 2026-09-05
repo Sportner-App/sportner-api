@@ -35,7 +35,11 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
         var added = 0;
 
         added += await SeedCitiesAsync(utcNow, cancellationToken);
-        added += await SeedSportsAsync(utcNow, cancellationToken);
+
+        // Categories first: sports resolve their category id from the seeded rows.
+        var categoriesBySlug = await SeedSportCategoriesAsync(utcNow, cancellationToken);
+        added += categoriesBySlug.AddedCount;
+        added += await SeedSportsAsync(categoriesBySlug.BySlug, utcNow, cancellationToken);
         added += await SeedBadgesAsync(utcNow, cancellationToken);
         added += await SeedQuestsAsync(utcNow, cancellationToken);
         added += await SeedReportReasonsAsync(utcNow, cancellationToken);
@@ -75,7 +79,46 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
         return added;
     }
 
-    private async Task<int> SeedSportsAsync(DateTimeOffset utcNow, CancellationToken cancellationToken)
+    private async Task<(IReadOnlyDictionary<string, Guid> BySlug, int AddedCount)>
+        SeedSportCategoriesAsync(DateTimeOffset utcNow, CancellationToken cancellationToken)
+    {
+        var existingCategories = await _dbContext.SportCategories.ToListAsync(cancellationToken);
+        var bySlug = existingCategories.ToDictionary(
+            category => category.Slug,
+            StringComparer.OrdinalIgnoreCase);
+
+        var added = 0;
+        var idBySlug = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var seed in SeedData.SportCategories)
+        {
+            if (bySlug.TryGetValue(seed.Slug, out var current))
+            {
+                current.Rename(seed.Name, utcNow);
+                current.ChangeDisplayOrder(seed.DisplayOrder, utcNow);
+                current.Activate(utcNow);
+                idBySlug[seed.Slug] = current.Id;
+                continue;
+            }
+
+            var created = SportCategory.Create(
+                seed.Name,
+                seed.Slug,
+                seed.DisplayOrder,
+                utcNow);
+
+            _dbContext.SportCategories.Add(created);
+            idBySlug[seed.Slug] = created.Id;
+            added++;
+        }
+
+        return (idBySlug, added);
+    }
+
+    private async Task<int> SeedSportsAsync(
+        IReadOnlyDictionary<string, Guid> categoryIdBySlug,
+        DateTimeOffset utcNow,
+        CancellationToken cancellationToken)
     {
         var existingSports = await _dbContext.Sports.ToListAsync(cancellationToken);
         var bySlug = existingSports.ToDictionary(
@@ -86,10 +129,23 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
 
         foreach (var seed in SeedData.Sports)
         {
+            var categoryId = categoryIdBySlug.TryGetValue(seed.CategorySlug, out var resolved)
+                ? resolved
+                : (Guid?)null;
+
+            if (categoryId is null)
+            {
+                _logger.LogWarning(
+                    "Sport seed {Slug} references unknown category {CategorySlug}; left uncategorized.",
+                    seed.Slug,
+                    seed.CategorySlug);
+            }
+
             if (bySlug.TryGetValue(seed.Slug, out var current))
             {
                 current.Rename(seed.Name, utcNow);
                 current.ChangeDisplayOrder(seed.DisplayOrder, utcNow);
+                current.AssignCategory(categoryId, utcNow);
                 continue;
             }
 
@@ -99,10 +155,16 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
                 legacy.Rename(seed.Name, utcNow);
                 legacy.ChangeSlug(seed.Slug, utcNow);
                 legacy.ChangeDisplayOrder(seed.DisplayOrder, utcNow);
+                legacy.AssignCategory(categoryId, utcNow);
                 continue;
             }
 
-            _dbContext.Sports.Add(Sport.Create(seed.Name, seed.DisplayOrder, utcNow, seed.Slug));
+            _dbContext.Sports.Add(Sport.Create(
+                seed.Name,
+                seed.DisplayOrder,
+                utcNow,
+                seed.Slug,
+                categoryId: categoryId));
             added++;
         }
 

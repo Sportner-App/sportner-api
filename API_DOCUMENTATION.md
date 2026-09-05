@@ -675,26 +675,60 @@ Response — `200 OK`:
 
 ### Spor Branşlarını Listele
 
-`GET /api/sports`
+`GET /api/sports?q=&categorySlug=&page=1&pageSize=50`
+
+- `q`: ad veya slug içinde arama (opsiyonel)
+- `categorySlug`: kategoriye göre filtre (opsiyonel, örn. `raket-sporlari`)
+
+Response — `200 OK`:
+
+```json
+{
+  "items": [
+    {
+      "id": "1f2e...",
+      "name": "Futbol",
+      "slug": "futbol",
+      "iconUrl": null,
+      "coverImageUrl": "https://.../sport-covers/....jpg",
+      "displayOrder": 2,
+      "categoryId": "9a7c...",
+      "categoryName": "Takım Sporları",
+      "categorySlug": "takim-sporlari"
+    }
+  ],
+  "page": 1,
+  "pageSize": 50,
+  "totalCount": 34,
+  "totalPages": 1,
+  "hasPrevious": false,
+  "hasNext": false
+}
+```
+
+### Spor Kategorilerini Listele
+
+`GET /api/sports/categories`
+
+Kategoriler seed ile yönetilen referans veridir; `sportCount` yalnızca aktif sporları sayar.
 
 Response — `200 OK`:
 
 ```json
 [
   {
-    "id": "football",
-    "name": "Futbol",
-    "iconName": "football",
-    "category": "team"
-  },
-  {
-    "id": "tennis",
-    "name": "Tenis",
-    "iconName": "tennis",
-    "category": "racket"
+    "id": "9a7c...",
+    "name": "Takım Sporları",
+    "slug": "takim-sporlari",
+    "displayOrder": 1,
+    "sportCount": 6
   }
 ]
 ```
+
+Mevcut kategoriler: `takim-sporlari`, `raket-sporlari`, `fitness-kondisyon`,
+`dovus-sporlari`, `outdoor-dayaniklilik`, `su-sporlari`, `kis-sporlari`,
+`hedef-sporlari`.
 
 ---
 

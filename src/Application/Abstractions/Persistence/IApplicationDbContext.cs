@@ -21,6 +21,7 @@ public interface IApplicationDbContext
     DbSet<UserProfile> UserProfiles { get; }
     DbSet<City> Cities { get; }
     DbSet<Sport> Sports { get; }
+    DbSet<SportCategory> SportCategories { get; }
     DbSet<UserSport> UserSports { get; }
     DbSet<UserStatistics> UserStatistics { get; }
     DbSet<UserSession> UserSessions { get; }

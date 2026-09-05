@@ -19,6 +19,9 @@ public class Sport : AggregateRoot
 
     public string Slug { get; private set; } = null!;
 
+    /// <summary>Catalog grouping (<see cref="SportCategory"/>). Null until seeding assigns one.</summary>
+    public Guid? CategoryId { get; private set; }
+
     public string? IconUrl { get; private set; }
 
     public string? CoverImageUrl { get; private set; }
@@ -33,7 +36,8 @@ public class Sport : AggregateRoot
         DateTimeOffset utcNow,
         string? slug = null,
         string? iconUrl = null,
-        bool isActive = true)
+        bool isActive = true,
+        Guid? categoryId = null)
     {
         var normalizedName = NormalizeName(name);
         var normalizedSlug = string.IsNullOrWhiteSpace(slug)
@@ -45,12 +49,26 @@ public class Sport : AggregateRoot
             Id = Guid.NewGuid(),
             Name = normalizedName,
             Slug = normalizedSlug,
+            CategoryId = NormalizeCategoryId(categoryId),
             IconUrl = NormalizeOptionalStoragePath(iconUrl),
             CoverImageUrl = null,
             DisplayOrder = NormalizeDisplayOrder(displayOrder),
             IsActive = isActive,
             CreatedAt = utcNow
         };
+    }
+
+    public void AssignCategory(Guid? categoryId, DateTimeOffset utcNow)
+    {
+        var normalizedCategoryId = NormalizeCategoryId(categoryId);
+
+        if (CategoryId == normalizedCategoryId)
+        {
+            return;
+        }
+
+        CategoryId = normalizedCategoryId;
+        Touch(utcNow);
     }
 
     public void Activate(DateTimeOffset utcNow)
@@ -227,6 +245,16 @@ public class Sport : AggregateRoot
         }
 
         return displayOrder;
+    }
+
+    private static Guid? NormalizeCategoryId(Guid? categoryId)
+    {
+        if (categoryId is { } value && value == Guid.Empty)
+        {
+            throw new DomainException("Sport category id is invalid.");
+        }
+
+        return categoryId;
     }
 
     private static string? NormalizeOptionalStoragePath(string? path)

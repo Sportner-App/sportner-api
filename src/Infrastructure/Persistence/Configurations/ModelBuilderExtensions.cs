@@ -53,6 +53,14 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => entity.Slug)
             .IsUnique();
 
+        modelBuilder.Entity<SportCategory>()
+            .HasIndex(entity => entity.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<SportCategory>()
+            .HasIndex(entity => entity.Slug)
+            .IsUnique();
+
         modelBuilder.Entity<UserSport>()
             .HasIndex(entity => new { entity.UserId, entity.SportId })
             .IsUnique();
@@ -190,6 +198,10 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<Sport>().HasIndex(entity => entity.DisplayOrder);
         modelBuilder.Entity<Sport>().HasIndex(entity => entity.IsActive);
+        modelBuilder.Entity<Sport>().HasIndex(entity => entity.CategoryId);
+
+        modelBuilder.Entity<SportCategory>().HasIndex(entity => entity.DisplayOrder);
+        modelBuilder.Entity<SportCategory>().HasIndex(entity => entity.IsActive);
 
         modelBuilder.Entity<UserSport>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<UserSport>().HasIndex(entity => entity.SportId);
@@ -380,6 +392,13 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.Name)
             .HasMaxLength(100);
         modelBuilder.Entity<Sport>()
+            .Property(entity => entity.Slug)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<SportCategory>()
+            .Property(entity => entity.Name)
+            .HasMaxLength(100);
+        modelBuilder.Entity<SportCategory>()
             .Property(entity => entity.Slug)
             .HasMaxLength(100);
 
@@ -690,6 +709,12 @@ internal static class ModelBuilderExtensions
             .HasOne<Sport>()
             .WithMany()
             .HasForeignKey(entity => entity.SportId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Sport>()
+            .HasOne<SportCategory>()
+            .WithMany()
+            .HasForeignKey(entity => entity.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<UserSession>()

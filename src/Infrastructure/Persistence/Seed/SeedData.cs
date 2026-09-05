@@ -11,6 +11,14 @@ internal static class SeedData
 {
     internal sealed record CitySeed(short PlateCode, string Name);
 
+    internal sealed record SportCategorySeed(
+        string Name,
+        string Slug,
+        int DisplayOrder);
+
+    /// <param name="CategorySlug">
+    /// Matches a <see cref="SportCategorySeed.Slug"/>; the seeder resolves it to the category id.
+    /// </param>
     /// <param name="LegacySlug">
     /// Slug used by an earlier seed revision. When present in the database the row is renamed in
     /// place so existing foreign keys (events, user sports) keep pointing at the same sport.
@@ -19,6 +27,7 @@ internal static class SeedData
         string Name,
         string Slug,
         int DisplayOrder,
+        string CategorySlug,
         string? LegacySlug = null);
 
     internal sealed record BadgeSeed(
@@ -72,42 +81,55 @@ internal static class SeedData
     };
 
     // Slugs stay ASCII because they are URL identifiers; display names are Turkish.
+    internal static readonly IReadOnlyList<SportCategorySeed> SportCategories =
+        new SportCategorySeed[]
+    {
+        new("Takım Sporları", "takim-sporlari", 1),
+        new("Raket Sporları", "raket-sporlari", 2),
+        new("Fitness & Kondisyon", "fitness-kondisyon", 3),
+        new("Dövüş Sporları", "dovus-sporlari", 4),
+        new("Outdoor & Dayanıklılık", "outdoor-dayaniklilik", 5),
+        new("Su Sporları", "su-sporlari", 6),
+        new("Kış Sporları", "kis-sporlari", 7),
+        new("Hedef Sporları", "hedef-sporlari", 8)
+    };
+
     internal static readonly IReadOnlyList<SportSeed> Sports = new SportSeed[]
     {
-        new("Basketbol", "basketbol", 1, LegacySlug: "basketball"),
-        new("Futbol", "futbol", 2, LegacySlug: "football"),
-        new("Voleybol", "voleybol", 3, LegacySlug: "volleyball"),
-        new("Tenis", "tenis", 4, LegacySlug: "tennis"),
-        new("Masa Tenisi", "masa-tenisi", 5, LegacySlug: "table-tennis"),
-        new("Koşu", "kosu", 6, LegacySlug: "running"),
-        new("Bisiklet", "bisiklet", 7, LegacySlug: "cycling"),
-        new("Yüzme", "yuzme", 8, LegacySlug: "swimming"),
-        new("Fitness", "fitness", 9),
-        new("Doğa Yürüyüşü", "doga-yuruyusu", 10, LegacySlug: "hiking"),
-        new("Boks", "boks", 11, LegacySlug: "boxing"),
-        new("Pilates", "pilates", 12),
-        new("Yoga", "yoga", 13),
-        new("CrossFit", "crossfit", 14),
-        new("Badminton", "badminton", 15),
-        new("Padel", "padel", 16),
-        new("Pickleball", "pickleball", 17),
-        new("Squash", "squash", 18),
-        new("Hentbol", "hentbol", 19),
-        new("Plaj Voleybolu", "plaj-voleybolu", 20),
-        new("Kickboks", "kickboks", 21),
-        new("Judo", "judo", 22),
-        new("Jiu-Jitsu", "jiu-jitsu", 23),
-        new("Karate", "karate", 24),
-        new("Tırmanış", "tirmanis", 25),
-        new("Kayak", "kayak", 26),
-        new("Snowboard", "snowboard", 27),
-        new("Bowling", "bowling", 28),
-        new("Dans", "dans", 29),
-        new("Golf", "golf", 30),
-        new("Okçuluk", "okculuk", 31),
-        new("Dalış", "dalis", 32),
-        new("Yelken", "yelken", 33),
-        new("Rugby", "rugby", 34)
+        new("Basketbol", "basketbol", 1, "takim-sporlari", LegacySlug: "basketball"),
+        new("Futbol", "futbol", 2, "takim-sporlari", LegacySlug: "football"),
+        new("Voleybol", "voleybol", 3, "takim-sporlari", LegacySlug: "volleyball"),
+        new("Tenis", "tenis", 4, "raket-sporlari", LegacySlug: "tennis"),
+        new("Masa Tenisi", "masa-tenisi", 5, "raket-sporlari", LegacySlug: "table-tennis"),
+        new("Koşu", "kosu", 6, "outdoor-dayaniklilik", LegacySlug: "running"),
+        new("Bisiklet", "bisiklet", 7, "outdoor-dayaniklilik", LegacySlug: "cycling"),
+        new("Yüzme", "yuzme", 8, "su-sporlari", LegacySlug: "swimming"),
+        new("Fitness", "fitness", 9, "fitness-kondisyon"),
+        new("Doğa Yürüyüşü", "doga-yuruyusu", 10, "outdoor-dayaniklilik", LegacySlug: "hiking"),
+        new("Boks", "boks", 11, "dovus-sporlari", LegacySlug: "boxing"),
+        new("Pilates", "pilates", 12, "fitness-kondisyon"),
+        new("Yoga", "yoga", 13, "fitness-kondisyon"),
+        new("CrossFit", "crossfit", 14, "fitness-kondisyon"),
+        new("Badminton", "badminton", 15, "raket-sporlari"),
+        new("Padel", "padel", 16, "raket-sporlari"),
+        new("Pickleball", "pickleball", 17, "raket-sporlari"),
+        new("Squash", "squash", 18, "raket-sporlari"),
+        new("Hentbol", "hentbol", 19, "takim-sporlari"),
+        new("Plaj Voleybolu", "plaj-voleybolu", 20, "takim-sporlari"),
+        new("Kickboks", "kickboks", 21, "dovus-sporlari"),
+        new("Judo", "judo", 22, "dovus-sporlari"),
+        new("Jiu-Jitsu", "jiu-jitsu", 23, "dovus-sporlari"),
+        new("Karate", "karate", 24, "dovus-sporlari"),
+        new("Tırmanış", "tirmanis", 25, "outdoor-dayaniklilik"),
+        new("Kayak", "kayak", 26, "kis-sporlari"),
+        new("Snowboard", "snowboard", 27, "kis-sporlari"),
+        new("Bowling", "bowling", 28, "hedef-sporlari"),
+        new("Dans", "dans", 29, "fitness-kondisyon"),
+        new("Golf", "golf", 30, "hedef-sporlari"),
+        new("Okçuluk", "okculuk", 31, "hedef-sporlari"),
+        new("Dalış", "dalis", 32, "su-sporlari"),
+        new("Yelken", "yelken", 33, "su-sporlari"),
+        new("Rugby", "rugby", 34, "takim-sporlari")
     };
 
     internal static readonly IReadOnlyList<BadgeSeed> Badges = new BadgeSeed[]
