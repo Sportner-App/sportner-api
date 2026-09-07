@@ -1,101 +1,105 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class FriendshipErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Friendship.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Friendship_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Friendship.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Friendship_UserNotFound);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Friendship.NotFound",
-        "The friendship was not found.");
+        ErrorMessagesResource.Friendship_NotFound);
 
-    internal static readonly Error SelfRequest = Error.Validation(
+    internal static Error SelfRequest => Error.Validation(
         "Friendship.SelfRequest",
-        "Users cannot send a friend request to themselves.");
+        ErrorMessagesResource.Friendship_SelfRequest);
 
-    internal static readonly Error AlreadyExists = Error.Conflict(
+    internal static Error AlreadyExists => Error.Conflict(
         "Friendship.AlreadyExists",
-        "Bu kullanıcıyla zaten bir arkadaşlık veya bekleyen istek var.");
+        ErrorMessagesResource.Friendship_AlreadyExists);
 
-    internal static readonly Error Blocked = Error.Forbidden(
+    internal static Error Blocked => Error.Forbidden(
         "Friendship.Blocked",
-        "This relationship is blocked.");
+        ErrorMessagesResource.Friendship_Blocked);
 
-    internal static readonly Error NotAddressee = Error.Forbidden(
+    internal static Error NotAddressee => Error.Forbidden(
         "Friendship.NotAddressee",
-        "Only the addressee can respond to this request.");
+        ErrorMessagesResource.Friendship_NotAddressee);
 
-    internal static readonly Error NotParticipant = Error.Forbidden(
+    internal static Error NotParticipant => Error.Forbidden(
         "Friendship.NotParticipant",
-        "You are not a participant in this friendship.");
+        ErrorMessagesResource.Friendship_NotParticipant);
 
-    internal static readonly Error NotAccepted = Error.Conflict(
+    internal static Error NotAccepted => Error.Conflict(
         "Friendship.NotAccepted",
-        "Only an accepted friendship can be removed this way.");
+        ErrorMessagesResource.Friendship_NotAccepted);
 
-    internal static readonly Error NotVisible = Error.Forbidden(
+    internal static Error NotVisible => Error.Forbidden(
         "Friendship.NotVisible",
-        "Mutual friends are not available for this user.");
+        ErrorMessagesResource.Friendship_NotVisible);
 }
 
 internal static class PostErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Post.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Post_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Post.NotFound",
-        "The post was not found.");
+        ErrorMessagesResource.Post_NotFound);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Post.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Post_UserNotFound);
 
-    internal static readonly Error CannotCreateContent = Error.Forbidden(
+    internal static Error CannotCreateContent => Error.Forbidden(
         "Post.CannotCreateContent",
-        "This account cannot create content.");
+        ErrorMessagesResource.Post_CannotCreateContent);
 
-    internal static readonly Error NotOwner = Error.Forbidden(
+    internal static Error NotOwner => Error.Forbidden(
         "Post.NotOwner",
-        "Only the post owner can perform this action.");
+        ErrorMessagesResource.Post_NotOwner);
 
-    internal static readonly Error Forbidden = Error.Forbidden(
+    internal static Error Forbidden => Error.Forbidden(
         "Post.Forbidden",
-        "You cannot view this post.");
+        ErrorMessagesResource.Post_Forbidden);
 
-    internal static readonly Error AlreadyLiked = Error.Conflict(
+    internal static Error AlreadyLiked => Error.Conflict(
         "Post.AlreadyLiked",
-        "You have already liked this post.");
+        ErrorMessagesResource.Post_AlreadyLiked);
 
-    internal static readonly Error NotLiked = Error.NotFound(
+    internal static Error NotLiked => Error.NotFound(
         "Post.NotLiked",
-        "You have not liked this post.");
+        ErrorMessagesResource.Post_NotLiked);
 
-    internal static readonly Error SelfLike = Error.Validation(
+    internal static Error SelfLike => Error.Validation(
         "Post.SelfLike",
-        "Users cannot like their own posts.");
+        ErrorMessagesResource.Post_SelfLike);
 
-    internal static readonly Error InvalidMedia = Error.Validation(
+    internal static Error InvalidMedia => Error.Validation(
         "Post.InvalidMedia",
-        "The uploaded file is missing or has an unsupported content type.");
+        ErrorMessagesResource.Post_InvalidMedia);
 
-    internal static readonly Error MediaNotFound = Error.NotFound(
+    internal static Error MediaNotFound => Error.NotFound(
         "Post.MediaNotFound",
-        "The media item was not found.");
+        ErrorMessagesResource.Post_MediaNotFound);
 
-    internal static readonly Error CommentNotFound = Error.NotFound(
+    internal static Error CommentNotFound => Error.NotFound(
         "Post.CommentNotFound",
-        "The comment was not found.");
+        ErrorMessagesResource.Post_CommentNotFound);
 
-    internal static readonly Error InvalidCursor = Error.Validation(
+    internal static Error InvalidCursor => Error.Validation(
         "Post.InvalidCursor",
-        "The pagination cursor is invalid.");
+        ErrorMessagesResource.Post_InvalidCursor);
 }

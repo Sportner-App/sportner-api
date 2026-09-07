@@ -1,98 +1,106 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür ve
+/// istek anındaki <c>CurrentUICulture</c>'a göre dile göre değişir (bkz.
+/// LocalizationExtension.cs). Bu yüzden değerler <c>static readonly</c> alan
+/// değil, her erişimde yeniden hesaplanan property olmalı — aksi halde mesaj
+/// yalnızca ilk kullanıldığı andaki dile göre sabitlenip önbelleğe alınır.
+/// </summary>
 internal static class EventErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Event.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Event_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Event.NotFound",
-        "The event was not found.");
+        ErrorMessagesResource.Event_NotFound);
 
-    internal static readonly Error SportNotFound = Error.NotFound(
+    internal static Error SportNotFound => Error.NotFound(
         "Event.SportNotFound",
-        "The sport was not found.");
+        ErrorMessagesResource.Event_SportNotFound);
 
-    internal static readonly Error SportInactive = Error.Validation(
+    internal static Error SportInactive => Error.Validation(
         "Event.SportInactive",
-        "The sport is not currently available.");
+        ErrorMessagesResource.Event_SportInactive);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Event.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Event_UserNotFound);
 
-    internal static readonly Error CannotCreateContent = Error.Forbidden(
+    internal static Error CannotCreateContent => Error.Forbidden(
         "Event.CannotCreateContent",
-        "This account cannot create content.");
+        ErrorMessagesResource.Event_CannotCreateContent);
 
-    internal static readonly Error NotOrganizer = Error.Forbidden(
+    internal static Error NotOrganizer => Error.Forbidden(
         "Event.NotOrganizer",
-        "Only the organizer can perform this action.");
+        ErrorMessagesResource.Event_NotOrganizer);
 
-    internal static readonly Error AlreadyApplied = Error.Conflict(
+    internal static Error AlreadyApplied => Error.Conflict(
         "Event.AlreadyApplied",
-        "You are already associated with this event.");
+        ErrorMessagesResource.Event_AlreadyApplied);
 
-    internal static readonly Error OrganizerCannotApply = Error.Validation(
+    internal static Error OrganizerCannotApply => Error.Validation(
         "Event.OrganizerCannotApply",
-        "The organizer cannot apply to their own event.");
+        ErrorMessagesResource.Event_OrganizerCannotApply);
 
-    internal static readonly Error ParticipantNotFound = Error.NotFound(
+    internal static Error ParticipantNotFound => Error.NotFound(
         "Event.ParticipantNotFound",
-        "The participant was not found.");
+        ErrorMessagesResource.Event_ParticipantNotFound);
 
-    internal static readonly Error RemovalReasonNotFound = Error.Validation(
+    internal static Error RemovalReasonNotFound => Error.Validation(
         "Event.RemovalReasonNotFound",
-        "A valid participant removal reason is required.");
+        ErrorMessagesResource.Event_RemovalReasonNotFound);
 
-    internal static readonly Error WaitlistEntryNotFound = Error.NotFound(
+    internal static Error WaitlistEntryNotFound => Error.NotFound(
         "Event.WaitlistEntryNotFound",
-        "The waitlist entry was not found.");
+        ErrorMessagesResource.Event_WaitlistEntryNotFound);
 
-    internal static readonly Error NotAcceptingApplications = Error.Conflict(
+    internal static Error NotAcceptingApplications => Error.Conflict(
         "Event.NotAcceptingApplications",
-        "The event does not accept applications in its current status.");
+        ErrorMessagesResource.Event_NotAcceptingApplications);
 
-    internal static readonly Error CapacityFull = Error.Conflict(
+    internal static Error CapacityFull => Error.Conflict(
         "Event.CapacityFull",
-        "The event capacity is full.");
+        ErrorMessagesResource.Event_CapacityFull);
 
-    internal static readonly Error ParticipantAgeNotEligible = Error.Forbidden(
+    internal static Error ParticipantAgeNotEligible => Error.Forbidden(
         "Event.ParticipantAgeNotEligible",
-        "Your age is outside the participation age range for this event.");
+        ErrorMessagesResource.Event_ParticipantAgeNotEligible);
 
-    internal static readonly Error ParticipantBirthDateMissing = Error.Forbidden(
+    internal static Error ParticipantBirthDateMissing => Error.Forbidden(
         "Event.ParticipantBirthDateMissing",
-        "Age cannot be verified because the profile has no birth date.");
+        ErrorMessagesResource.Event_ParticipantBirthDateMissing);
 
-    internal static readonly Error InvitationNotFound = Error.NotFound(
+    internal static Error InvitationNotFound => Error.NotFound(
         "Event.InvitationNotFound",
-        "An active invitation was not found for this event.");
+        ErrorMessagesResource.Event_InvitationNotFound);
 
-    internal static readonly Error ParticipationLocked = Error.Conflict(
+    internal static Error ParticipationLocked => Error.Conflict(
         "Event.ParticipationLocked",
-        "Biten etkinlikten ayrılamazsın.");
+        ErrorMessagesResource.Event_ParticipationLocked);
 
-    internal static readonly Error AssignmentEmpty = Error.Validation(
+    internal static Error AssignmentEmpty => Error.Validation(
         "Event.AssignmentEmpty",
-        "At least one guest or friend must be assigned.");
+        ErrorMessagesResource.Event_AssignmentEmpty);
 
-    internal static readonly Error NotFriends = Error.Forbidden(
+    internal static Error NotFriends => Error.Forbidden(
         "Event.NotFriends",
-        "Only accepted friends can be added to the event.");
+        ErrorMessagesResource.Event_NotFriends);
 
-    internal static readonly Error RelationshipBlocked = Error.Forbidden(
+    internal static Error RelationshipBlocked => Error.Forbidden(
         "Event.RelationshipBlocked",
-        "This relationship is blocked.");
+        ErrorMessagesResource.Event_RelationshipBlocked);
 
-    internal static readonly Error NotOrganizationMember = Error.Forbidden(
+    internal static Error NotOrganizationMember => Error.Forbidden(
         "Event.NotOrganizationMember",
-        "Only approved organization members can join this event.");
+        ErrorMessagesResource.Event_NotOrganizationMember);
 
-    internal static readonly Error FriendAlreadyAssociated = Error.Conflict(
+    internal static Error FriendAlreadyAssociated => Error.Conflict(
         "Event.FriendAlreadyAssociated",
-        "One of the selected friends is already associated with this event.");
+        ErrorMessagesResource.Event_FriendAlreadyAssociated);
 }

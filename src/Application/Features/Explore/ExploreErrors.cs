@@ -1,10 +1,14 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Explore;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class ExploreErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Explore.NotAuthenticated",
-        "Authentication is required.");
+        ErrorMessagesResource.Explore_NotAuthenticated);
 }

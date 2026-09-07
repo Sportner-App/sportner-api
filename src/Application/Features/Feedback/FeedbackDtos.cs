@@ -1,20 +1,24 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Feedback;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class FeedbackErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "AppFeedback.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.AppFeedback_NotAuthenticated);
 
-    internal static readonly Error TooFrequent = Error.TooManyRequests(
+    internal static Error TooFrequent => Error.TooManyRequests(
         "AppFeedback.TooFrequent",
-        "Please wait a moment before sending another suggestion.");
+        ErrorMessagesResource.AppFeedback_TooFrequent);
 
-    internal static readonly Error InvalidContent = Error.Validation(
+    internal static Error InvalidContent => Error.Validation(
         "AppFeedback.InvalidContent",
-        "Feedback content is invalid.");
+        ErrorMessagesResource.AppFeedback_InvalidContent);
 }
 
 public sealed record AppFeedbackResponse(

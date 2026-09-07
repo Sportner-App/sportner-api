@@ -1,34 +1,38 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.Auth;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class AuthErrors
 {
-    internal static readonly Error InvalidCredentials = Error.Unauthorized(
+    internal static Error InvalidCredentials => Error.Unauthorized(
         "Auth.InvalidCredentials",
-        "Kullanıcı adı veya şifre hatalı.");
+        ErrorMessagesResource.Auth_InvalidCredentials);
 
-    internal static readonly Error UsernameTaken = Error.Conflict(
+    internal static Error UsernameTaken => Error.Conflict(
         "Auth.UsernameTaken",
-        "Bu kullanıcı adı zaten alınmış.");
+        ErrorMessagesResource.Auth_UsernameTaken);
 
-    internal static readonly Error AccountNotAccessible = Error.Forbidden(
+    internal static Error AccountNotAccessible => Error.Forbidden(
         "Auth.AccountNotAccessible",
-        "Bu hesapla giriş yapılamıyor.");
+        ErrorMessagesResource.Auth_AccountNotAccessible);
 
-    internal static readonly Error InvalidRefreshToken = Error.Unauthorized(
+    internal static Error InvalidRefreshToken => Error.Unauthorized(
         "Auth.InvalidRefreshToken",
-        "Oturum yenileme bilgisi geçersiz, süresi dolmuş veya iptal edilmiş.");
+        ErrorMessagesResource.Auth_InvalidRefreshToken);
 
-    internal static readonly Error ExternalTokenInvalid = Error.Unauthorized(
+    internal static Error ExternalTokenInvalid => Error.Unauthorized(
         "Auth.ExternalTokenInvalid",
-        "Kimlik doğrulama sağlayıcısından gelen bilgi doğrulanamadı.");
+        ErrorMessagesResource.Auth_ExternalTokenInvalid);
 
-    internal static readonly Error ExternalRegistrationTokenInvalid = Error.Unauthorized(
+    internal static Error ExternalRegistrationTokenInvalid => Error.Unauthorized(
         "Auth.ExternalRegistrationTokenInvalid",
-        "Sosyal kayıt oturumunun süresi dolmuş veya bilgi geçersiz.");
+        ErrorMessagesResource.Auth_ExternalRegistrationTokenInvalid);
 
-    internal static readonly Error ExternalLoginAlreadyRegistered = Error.Conflict(
+    internal static Error ExternalLoginAlreadyRegistered => Error.Conflict(
         "Auth.ExternalLoginAlreadyRegistered",
-        "Bu sosyal hesap zaten kayıtlı. Giriş yapmayı tekrar dene.");
+        ErrorMessagesResource.Auth_ExternalLoginAlreadyRegistered);
 }

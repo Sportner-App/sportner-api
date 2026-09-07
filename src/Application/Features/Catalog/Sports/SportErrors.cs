@@ -1,22 +1,26 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Catalog.Sports;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class SportErrors
 {
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Sport.NotFound",
-        "The sport was not found.");
+        ErrorMessagesResource.Sport_NotFound);
 
-    internal static readonly Error NameTaken = Error.Conflict(
+    internal static Error NameTaken => Error.Conflict(
         "Sport.NameTaken",
-        "A sport with this name already exists.");
+        ErrorMessagesResource.Sport_NameTaken);
 
-    internal static readonly Error SlugTaken = Error.Conflict(
+    internal static Error SlugTaken => Error.Conflict(
         "Sport.SlugTaken",
-        "A sport with this slug already exists.");
+        ErrorMessagesResource.Sport_SlugTaken);
 
-    internal static readonly Error InvalidMedia = Error.Validation(
+    internal static Error InvalidMedia => Error.Validation(
         "Sport.InvalidMedia",
-        "The uploaded file is missing or has an unsupported content type.");
+        ErrorMessagesResource.Sport_InvalidMedia);
 }

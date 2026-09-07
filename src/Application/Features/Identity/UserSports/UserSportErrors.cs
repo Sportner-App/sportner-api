@@ -1,30 +1,34 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.UserSports;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class UserSportErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "UserSport.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.UserSport_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "UserSport.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.UserSport_UserNotFound);
 
-    internal static readonly Error SportNotFound = Error.NotFound(
+    internal static Error SportNotFound => Error.NotFound(
         "UserSport.SportNotFound",
-        "The sport was not found.");
+        ErrorMessagesResource.UserSport_SportNotFound);
 
-    internal static readonly Error SportInactive = Error.Validation(
+    internal static Error SportInactive => Error.Validation(
         "UserSport.SportInactive",
-        "The sport is not currently available.");
+        ErrorMessagesResource.UserSport_SportInactive);
 
-    internal static readonly Error AlreadyAdded = Error.Conflict(
+    internal static Error AlreadyAdded => Error.Conflict(
         "UserSport.AlreadyAdded",
-        "This sport is already associated with the user.");
+        ErrorMessagesResource.UserSport_AlreadyAdded);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "UserSport.NotFound",
-        "This sport is not associated with the user.");
+        ErrorMessagesResource.UserSport_NotFound);
 }

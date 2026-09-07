@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Event_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Event_NotFound" xml:space="preserve">
+    <value>The event was not found.</value>
+  </data>
+  <data name="Event_SportNotFound" xml:space="preserve">
+    <value>The sport was not found.</value>
+  </data>
+  <data name="Event_SportInactive" xml:space="preserve">
+    <value>The sport is not currently available.</value>
+  </data>
+  <data name="Event_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Event_CannotCreateContent" xml:space="preserve">
+    <value>This account cannot create content.</value>
+  </data>
+  <data name="Event_NotOrganizer" xml:space="preserve">
+    <value>Only the organizer can perform this action.</value>
+  </data>
+  <data name="Event_AlreadyApplied" xml:space="preserve">
+    <value>You are already associated with this event.</value>
+  </data>
+  <data name="Event_OrganizerCannotApply" xml:space="preserve">
+    <value>The organizer cannot apply to their own event.</value>
+  </data>
+  <data name="Event_ParticipantNotFound" xml:space="preserve">
+    <value>The participant was not found.</value>
+  </data>
+  <data name="Event_RemovalReasonNotFound" xml:space="preserve">
+    <value>A valid participant removal reason is required.</value>
+  </data>
+  <data name="Event_WaitlistEntryNotFound" xml:space="preserve">
+    <value>The waitlist entry was not found.</value>
+  </data>
+  <data name="Event_NotAcceptingApplications" xml:space="preserve">
+    <value>The event does not accept applications in its current status.</value>
+  </data>
+  <data name="Event_CapacityFull" xml:space="preserve">
+    <value>The event capacity is full.</value>
+  </data>
+  <data name="Event_ParticipantAgeNotEligible" xml:space="preserve">
+    <value>Your age is outside the participation age range for this event.</value>
+  </data>
+  <data name="Event_ParticipantBirthDateMissing" xml:space="preserve">
+    <value>Age cannot be verified because the profile has no birth date.</value>
+  </data>
+  <data name="Event_InvitationNotFound" xml:space="preserve">
+    <value>An active invitation was not found for this event.</value>
+  </data>
+  <data name="Event_ParticipationLocked" xml:space="preserve">
+    <value>You can't leave an event that has ended.</value>
+  </data>
+  <data name="Event_AssignmentEmpty" xml:space="preserve">
+    <value>At least one guest or friend must be assigned.</value>
+  </data>
+  <data name="Event_NotFriends" xml:space="preserve">
+    <value>Only accepted friends can be added to the event.</value>
+  </data>
+  <data name="Event_RelationshipBlocked" xml:space="preserve">
+    <value>This relationship is blocked.</value>
+  </data>
+  <data name="Event_NotOrganizationMember" xml:space="preserve">
+    <value>Only approved organization members can join this event.</value>
+  </data>
+  <data name="Event_FriendAlreadyAssociated" xml:space="preserve">
+    <value>One of the selected friends is already associated with this event.</value>
+  </data>
+  <data name="Organization_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Organization_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Organization_CannotCreateContent" xml:space="preserve">
+    <value>This account cannot create content.</value>
+  </data>
+  <data name="Organization_NotFound" xml:space="preserve">
+    <value>The organization was not found.</value>
+  </data>
+  <data name="Organization_CityNotFound" xml:space="preserve">
+    <value>The city was not found.</value>
+  </data>
+  <data name="Organization_InvalidInviteCode" xml:space="preserve">
+    <value>The invite code was not found.</value>
+  </data>
+  <data name="Organization_AlreadyMember" xml:space="preserve">
+    <value>You are already a member of this organization.</value>
+  </data>
+  <data name="Organization_AlreadyPending" xml:space="preserve">
+    <value>A membership request is already pending.</value>
+  </data>
+  <data name="Organization_NotApprovedMember" xml:space="preserve">
+    <value>Only approved members can perform this action.</value>
+  </data>
+  <data name="Organization_CannotManageMembers" xml:space="preserve">
+    <value>Only the founder or an admin can manage members.</value>
+  </data>
+  <data name="Organization_CannotCreateEvents" xml:space="preserve">
+    <value>Only approved organization members can create organization events.</value>
+  </data>
+  <data name="Organization_CannotModerateMember" xml:space="preserve">
+    <value>You cannot manage this member.</value>
+  </data>
+  <data name="Organization_MemberBlocked" xml:space="preserve">
+    <value>This user is blocked from the organization.</value>
+  </data>
+  <data name="Organization_NotFounder" xml:space="preserve">
+    <value>Only the founder can perform this action.</value>
+  </data>
+  <data name="Organization_FounderCannotLeave" xml:space="preserve">
+    <value>The founder cannot leave the organization.</value>
+  </data>
+  <data name="Organization_MemberNotFound" xml:space="preserve">
+    <value>The membership was not found.</value>
+  </data>
+  <data name="Organization_InviteCodeUnavailable" xml:space="preserve">
+    <value>A unique invite code could not be allocated. Try again.</value>
+  </data>
+  <data name="Auth_InvalidCredentials" xml:space="preserve">
+    <value>Username or password is incorrect.</value>
+  </data>
+  <data name="Auth_UsernameTaken" xml:space="preserve">
+    <value>This username is already taken.</value>
+  </data>
+  <data name="Auth_AccountNotAccessible" xml:space="preserve">
+    <value>You can't sign in with this account.</value>
+  </data>
+  <data name="Auth_InvalidRefreshToken" xml:space="preserve">
+    <value>The refresh token is invalid, expired, or revoked.</value>
+  </data>
+  <data name="Auth_ExternalTokenInvalid" xml:space="preserve">
+    <value>The identity provider token could not be verified.</value>
+  </data>
+  <data name="Auth_ExternalRegistrationTokenInvalid" xml:space="preserve">
+    <value>The social registration session has expired or the information is invalid.</value>
+  </data>
+  <data name="Auth_ExternalLoginAlreadyRegistered" xml:space="preserve">
+    <value>This social account is already registered. Try signing in instead.</value>
+  </data>
+  <data name="Friendship_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Friendship_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Friendship_NotFound" xml:space="preserve">
+    <value>The friendship was not found.</value>
+  </data>
+  <data name="Friendship_SelfRequest" xml:space="preserve">
+    <value>You can't send a friend request to yourself.</value>
+  </data>
+  <data name="Friendship_AlreadyExists" xml:space="preserve">
+    <value>You already have a friendship or pending request with this user.</value>
+  </data>
+  <data name="Friendship_Blocked" xml:space="preserve">
+    <value>This relationship is blocked.</value>
+  </data>
+  <data name="Friendship_NotAddressee" xml:space="preserve">
+    <value>Only the addressee can respond to this request.</value>
+  </data>
+  <data name="Friendship_NotParticipant" xml:space="preserve">
+    <value>You are not a participant in this friendship.</value>
+  </data>
+  <data name="Friendship_NotAccepted" xml:space="preserve">
+    <value>Only an accepted friendship can be removed this way.</value>
+  </data>
+  <data name="Friendship_NotVisible" xml:space="preserve">
+    <value>Mutual friends are not available for this user.</value>
+  </data>
+  <data name="Post_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Post_NotFound" xml:space="preserve">
+    <value>The post was not found.</value>
+  </data>
+  <data name="Post_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Post_CannotCreateContent" xml:space="preserve">
+    <value>This account cannot create content.</value>
+  </data>
+  <data name="Post_NotOwner" xml:space="preserve">
+    <value>Only the post owner can perform this action.</value>
+  </data>
+  <data name="Post_Forbidden" xml:space="preserve">
+    <value>You can't view this post.</value>
+  </data>
+  <data name="Post_AlreadyLiked" xml:space="preserve">
+    <value>You have already liked this post.</value>
+  </data>
+  <data name="Post_NotLiked" xml:space="preserve">
+    <value>You have not liked this post.</value>
+  </data>
+  <data name="Post_SelfLike" xml:space="preserve">
+    <value>You can't like your own posts.</value>
+  </data>
+  <data name="Post_InvalidMedia" xml:space="preserve">
+    <value>The uploaded file is missing or has an unsupported content type.</value>
+  </data>
+  <data name="Post_MediaNotFound" xml:space="preserve">
+    <value>The media item was not found.</value>
+  </data>
+  <data name="Post_CommentNotFound" xml:space="preserve">
+    <value>The comment was not found.</value>
+  </data>
+  <data name="Post_InvalidCursor" xml:space="preserve">
+    <value>The pagination cursor is invalid.</value>
+  </data>
+  <data name="Messaging_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Messaging_ConversationNotFound" xml:space="preserve">
+    <value>The conversation was not found.</value>
+  </data>
+  <data name="Messaging_MessageNotFound" xml:space="preserve">
+    <value>The message was not found.</value>
+  </data>
+  <data name="Messaging_NotMember" xml:space="preserve">
+    <value>You are not an active member of this conversation.</value>
+  </data>
+  <data name="Messaging_CannotSend" xml:space="preserve">
+    <value>You can't send messages in this conversation.</value>
+  </data>
+  <data name="Messaging_ConversationClosed" xml:space="preserve">
+    <value>This conversation is closed.</value>
+  </data>
+  <data name="Messaging_NotSender" xml:space="preserve">
+    <value>Only the sender can modify this message.</value>
+  </data>
+  <data name="Messaging_InvalidMedia" xml:space="preserve">
+    <value>The uploaded file is missing or has an unsupported content type.</value>
+  </data>
+  <data name="Messaging_InvalidCursor" xml:space="preserve">
+    <value>The pagination cursor is invalid.</value>
+  </data>
+  <data name="Messaging_ReplyNotFound" xml:space="preserve">
+    <value>The message being replied to was not found in this conversation.</value>
+  </data>
+  <data name="Messaging_PeerNotFound" xml:space="preserve">
+    <value>The other user was not found.</value>
+  </data>
+  <data name="Messaging_NotFriends" xml:space="preserve">
+    <value>You can only start a conversation with an accepted friend.</value>
+  </data>
+  <data name="Messaging_Blocked" xml:space="preserve">
+    <value>This relationship is blocked.</value>
+  </data>
+  <data name="Messaging_CannotMessageSelf" xml:space="preserve">
+    <value>You can't create a direct conversation with yourself.</value>
+  </data>
+  <data name="Messaging_CannotInvite" xml:space="preserve">
+    <value>You can't invite members to this conversation.</value>
+  </data>
+  <data name="Messaging_GroupFull" xml:space="preserve">
+    <value>The group conversation is full.</value>
+  </data>
+  <data name="Messaging_InvalidOperation" xml:space="preserve">
+    <value>The conversation operation is not allowed in the current state.</value>
+  </data>
+  <data name="Messaging_UserNotFound" xml:space="preserve">
+    <value>One or more users were not found.</value>
+  </data>
+  <data name="Review_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Review_NotFound" xml:space="preserve">
+    <value>The review was not found.</value>
+  </data>
+  <data name="Review_EventNotFound" xml:space="preserve">
+    <value>The event was not found.</value>
+  </data>
+  <data name="Review_EventNotCompleted" xml:space="preserve">
+    <value>Reviews can only be created for completed events.</value>
+  </data>
+  <data name="Review_NotEligible" xml:space="preserve">
+    <value>Reviews are limited to the organizer and participants marked as attended.</value>
+  </data>
+  <data name="Review_SelfReview" xml:space="preserve">
+    <value>You can't review yourself.</value>
+  </data>
+  <data name="Review_AlreadyExists" xml:space="preserve">
+    <value>A review for this participant on this event already exists.</value>
+  </data>
+  <data name="Review_RelationshipBlocked" xml:space="preserve">
+    <value>This relationship is blocked.</value>
+  </data>
+  <data name="Review_NotReviewer" xml:space="preserve">
+    <value>Only the reviewer can update this review.</value>
+  </data>
+  <data name="Sport_NotFound" xml:space="preserve">
+    <value>The sport was not found.</value>
+  </data>
+  <data name="Sport_NameTaken" xml:space="preserve">
+    <value>A sport with this name already exists.</value>
+  </data>
+  <data name="Sport_SlugTaken" xml:space="preserve">
+    <value>A sport with this slug already exists.</value>
+  </data>
+  <data name="Sport_InvalidMedia" xml:space="preserve">
+    <value>The uploaded file is missing or has an unsupported content type.</value>
+  </data>
+  <data name="Profile_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Profile_NotFound" xml:space="preserve">
+    <value>The profile was not found.</value>
+  </data>
+  <data name="Profile_AlreadyExists" xml:space="preserve">
+    <value>This user already has a profile.</value>
+  </data>
+  <data name="Profile_UsernameTaken" xml:space="preserve">
+    <value>This username is already in use.</value>
+  </data>
+  <data name="Profile_UsernameChangeTooSoon" xml:space="preserve">
+    <value>You can only change your username once every 30 days.</value>
+  </data>
+  <data name="Profile_NotPublic" xml:space="preserve">
+    <value>This profile is private.</value>
+  </data>
+  <data name="Profile_InvalidMedia" xml:space="preserve">
+    <value>The uploaded file is missing or has an unsupported content type.</value>
+  </data>
+  <data name="Profile_InvalidCity" xml:space="preserve">
+    <value>The selected city is not in the supported city catalog.</value>
+  </data>
+  <data name="UserSport_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="UserSport_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="UserSport_SportNotFound" xml:space="preserve">
+    <value>The sport was not found.</value>
+  </data>
+  <data name="UserSport_SportInactive" xml:space="preserve">
+    <value>The sport is not currently available.</value>
+  </data>
+  <data name="UserSport_AlreadyAdded" xml:space="preserve">
+    <value>This sport is already associated with the user.</value>
+  </data>
+  <data name="UserSport_NotFound" xml:space="preserve">
+    <value>This sport is not associated with the user.</value>
+  </data>
+  <data name="SavedLocation_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="SavedLocation_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="SavedLocation_NotFound" xml:space="preserve">
+    <value>The saved location was not found.</value>
+  </data>
+  <data name="Session_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Session_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Session_NotFound" xml:space="preserve">
+    <value>The session was not found.</value>
+  </data>
+  <data name="Onboarding_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Onboarding_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Onboarding_ProfileRequired" xml:space="preserve">
+    <value>You need to create a profile before completing onboarding.</value>
+  </data>
+  <data name="Onboarding_SportRequired" xml:space="preserve">
+    <value>Select at least one sport with a skill level before completing onboarding.</value>
+  </data>
+  <data name="Onboarding_PersonalDetailsRequired" xml:space="preserve">
+    <value>Gender and birth date are required before completing onboarding.</value>
+  </data>
+  <data name="Onboarding_AvatarRequired" xml:space="preserve">
+    <value>A profile photo is required before completing onboarding.</value>
+  </data>
+  <data name="Device_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Device_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Device_NotFound" xml:space="preserve">
+    <value>The device was not found.</value>
+  </data>
+  <data name="Explore_NotAuthenticated" xml:space="preserve">
+    <value>Authentication is required.</value>
+  </data>
+  <data name="Album_NotAuthenticated" xml:space="preserve">
+    <value>Authentication is required.</value>
+  </data>
+  <data name="Album_NotFound" xml:space="preserve">
+    <value>The album was not found.</value>
+  </data>
+  <data name="Album_Forbidden" xml:space="preserve">
+    <value>You are not allowed to access this album.</value>
+  </data>
+  <data name="Album_NotOwner" xml:space="preserve">
+    <value>Only the album owner can perform this action.</value>
+  </data>
+  <data name="Album_EventNotFound" xml:space="preserve">
+    <value>The event was not found.</value>
+  </data>
+  <data name="Album_NotOrganizer" xml:space="preserve">
+    <value>Only the event organizer can create event albums.</value>
+  </data>
+  <data name="Album_CannotUpload" xml:space="preserve">
+    <value>You are not allowed to upload media to this album.</value>
+  </data>
+  <data name="Album_InvalidMedia" xml:space="preserve">
+    <value>Only image media (jpeg, png, webp) is supported.</value>
+  </data>
+  <data name="Album_MediaNotFound" xml:space="preserve">
+    <value>The album media was not found.</value>
+  </data>
+  <data name="Album_ProfileAlbumLimit" xml:space="preserve">
+    <value>A profile may have at most {0} albums.</value>
+  </data>
+  <data name="Album_EventAlbumLimit" xml:space="preserve">
+    <value>An event may have at most {0} albums.</value>
+  </data>
+  <data name="Album_InvalidVisibility" xml:space="preserve">
+    <value>Album visibility is invalid for this album kind.</value>
+  </data>
+  <data name="Report_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Report_NotFound" xml:space="preserve">
+    <value>The report was not found.</value>
+  </data>
+  <data name="Report_ReasonNotFound" xml:space="preserve">
+    <value>The report reason was not found or is not selectable.</value>
+  </data>
+  <data name="Report_TargetNotFound" xml:space="preserve">
+    <value>The reported entity was not found.</value>
+  </data>
+  <data name="Report_AlreadyExists" xml:space="preserve">
+    <value>You have already reported this entity.</value>
+  </data>
+  <data name="Report_CannotReportSelf" xml:space="preserve">
+    <value>You cannot report your own content or profile.</value>
+  </data>
+  <data name="Report_InvalidEntityType" xml:space="preserve">
+    <value>The report entity type is invalid.</value>
+  </data>
+  <data name="Report_NotOwner" xml:space="preserve">
+    <value>Only the reporter can update this report.</value>
+  </data>
+  <data name="Report_InvalidOperation" xml:space="preserve">
+    <value>The report cannot be updated in its current status.</value>
+  </data>
+  <data name="EventQuestion_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="EventQuestion_CannotCreateContent" xml:space="preserve">
+    <value>This account cannot create content.</value>
+  </data>
+  <data name="EventQuestion_EventNotFound" xml:space="preserve">
+    <value>The event was not found.</value>
+  </data>
+  <data name="EventQuestion_NotFound" xml:space="preserve">
+    <value>The question was not found.</value>
+  </data>
+  <data name="EventQuestion_Closed" xml:space="preserve">
+    <value>Questions are closed because the event has ended.</value>
+  </data>
+  <data name="EventQuestion_OrganizerCannotAsk" xml:space="preserve">
+    <value>The organizer cannot ask a question on their own event.</value>
+  </data>
+  <data name="EventQuestion_Blocked" xml:space="preserve">
+    <value>This relationship is blocked.</value>
+  </data>
+  <data name="EventQuestion_TooFrequent" xml:space="preserve">
+    <value>Please wait a moment before sending another question.</value>
+  </data>
+  <data name="EventQuestion_InvalidContent" xml:space="preserve">
+    <value>The question content is invalid.</value>
+  </data>
+  <data name="Badge_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Badge_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Badge_ShowcaseTooMany" xml:space="preserve">
+    <value>At most {0} badges can be showcased.</value>
+  </data>
+  <data name="Badge_ShowcaseDuplicate" xml:space="preserve">
+    <value>Showcase badge ids must be unique.</value>
+  </data>
+  <data name="Badge_ShowcaseNotOwned" xml:space="preserve">
+    <value>Only earned badges can be showcased.</value>
+  </data>
+  <data name="Notification_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Notification_NotFound" xml:space="preserve">
+    <value>The notification was not found.</value>
+  </data>
+  <data name="Notification_SettingNotFound" xml:space="preserve">
+    <value>The notification setting was not found.</value>
+  </data>
+  <data name="Notification_InvalidType" xml:space="preserve">
+    <value>The notification type is invalid.</value>
+  </data>
+  <data name="Notification_InvalidCursor" xml:space="preserve">
+    <value>The pagination cursor is invalid.</value>
+  </data>
+  <data name="AppFeedback_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="AppFeedback_TooFrequent" xml:space="preserve">
+    <value>Please wait a moment before sending another suggestion.</value>
+  </data>
+  <data name="AppFeedback_InvalidContent" xml:space="preserve">
+    <value>Feedback content is invalid.</value>
+  </data>
+  <data name="Block_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+  <data name="Block_UserNotFound" xml:space="preserve">
+    <value>The user was not found.</value>
+  </data>
+  <data name="Block_SelfBlock" xml:space="preserve">
+    <value>Users cannot block themselves.</value>
+  </data>
+  <data name="Quest_NotAuthenticated" xml:space="preserve">
+    <value>The request is not associated with an authenticated user.</value>
+  </data>
+</root>

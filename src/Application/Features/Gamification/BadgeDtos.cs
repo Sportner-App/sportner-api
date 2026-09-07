@@ -1,28 +1,34 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Gamification;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class BadgeErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Badge.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Badge_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Badge.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Badge_UserNotFound);
 
-    internal static readonly Error ShowcaseTooMany = Error.Validation(
+    internal static Error ShowcaseTooMany => Error.Validation(
         "Badge.ShowcaseTooMany",
-        $"At most {Domain.Badges.UserBadge.MaxShowcaseSlots} badges can be showcased.");
+        string.Format(
+            ErrorMessagesResource.Badge_ShowcaseTooMany,
+            Domain.Badges.UserBadge.MaxShowcaseSlots));
 
-    internal static readonly Error ShowcaseDuplicate = Error.Validation(
+    internal static Error ShowcaseDuplicate => Error.Validation(
         "Badge.ShowcaseDuplicate",
-        "Showcase badge ids must be unique.");
+        ErrorMessagesResource.Badge_ShowcaseDuplicate);
 
-    internal static readonly Error ShowcaseNotOwned = Error.Validation(
+    internal static Error ShowcaseNotOwned => Error.Validation(
         "Badge.ShowcaseNotOwned",
-        "Only earned badges can be showcased.");
+        ErrorMessagesResource.Badge_ShowcaseNotOwned);
 }
 
 public sealed record BadgeResponse(

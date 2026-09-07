@@ -1,42 +1,46 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Reviews;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class ReviewErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Review.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Review_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Review.NotFound",
-        "The review was not found.");
+        ErrorMessagesResource.Review_NotFound);
 
-    internal static readonly Error EventNotFound = Error.NotFound(
+    internal static Error EventNotFound => Error.NotFound(
         "Review.EventNotFound",
-        "The event was not found.");
+        ErrorMessagesResource.Review_EventNotFound);
 
-    internal static readonly Error EventNotCompleted = Error.Conflict(
+    internal static Error EventNotCompleted => Error.Conflict(
         "Review.EventNotCompleted",
-        "Reviews can only be created for completed events.");
+        ErrorMessagesResource.Review_EventNotCompleted);
 
-    internal static readonly Error NotEligible = Error.Forbidden(
+    internal static Error NotEligible => Error.Forbidden(
         "Review.NotEligible",
-        "Reviews are limited to the organizer and participants marked as attended.");
+        ErrorMessagesResource.Review_NotEligible);
 
-    internal static readonly Error SelfReview = Error.Validation(
+    internal static Error SelfReview => Error.Validation(
         "Review.SelfReview",
-        "Users cannot review themselves.");
+        ErrorMessagesResource.Review_SelfReview);
 
-    internal static readonly Error AlreadyExists = Error.Conflict(
+    internal static Error AlreadyExists => Error.Conflict(
         "Review.AlreadyExists",
-        "A review for this participant on this event already exists.");
+        ErrorMessagesResource.Review_AlreadyExists);
 
-    internal static readonly Error RelationshipBlocked = Error.Forbidden(
+    internal static Error RelationshipBlocked => Error.Forbidden(
         "Review.RelationshipBlocked",
-        "This relationship is blocked.");
+        ErrorMessagesResource.Review_RelationshipBlocked);
 
-    internal static readonly Error NotReviewer = Error.Forbidden(
+    internal static Error NotReviewer => Error.Forbidden(
         "Review.NotReviewer",
-        "Only the reviewer can update this review.");
+        ErrorMessagesResource.Review_NotReviewer);
 }

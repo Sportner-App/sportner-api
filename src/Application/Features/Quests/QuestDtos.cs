@@ -1,12 +1,16 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Quests;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class QuestErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Quest.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Quest_NotAuthenticated);
 }
 
 public sealed record QuestItemResponse(

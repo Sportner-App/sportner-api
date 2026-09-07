@@ -1,56 +1,64 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Albums;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class AlbumErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Album.NotAuthenticated",
-        "Authentication is required.");
+        ErrorMessagesResource.Album_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Album.NotFound",
-        "The album was not found.");
+        ErrorMessagesResource.Album_NotFound);
 
-    internal static readonly Error Forbidden = Error.Forbidden(
+    internal static Error Forbidden => Error.Forbidden(
         "Album.Forbidden",
-        "You are not allowed to access this album.");
+        ErrorMessagesResource.Album_Forbidden);
 
-    internal static readonly Error NotOwner = Error.Forbidden(
+    internal static Error NotOwner => Error.Forbidden(
         "Album.NotOwner",
-        "Only the album owner can perform this action.");
+        ErrorMessagesResource.Album_NotOwner);
 
-    internal static readonly Error EventNotFound = Error.NotFound(
+    internal static Error EventNotFound => Error.NotFound(
         "Album.EventNotFound",
-        "The event was not found.");
+        ErrorMessagesResource.Album_EventNotFound);
 
-    internal static readonly Error NotOrganizer = Error.Forbidden(
+    internal static Error NotOrganizer => Error.Forbidden(
         "Album.NotOrganizer",
-        "Only the event organizer can create event albums.");
+        ErrorMessagesResource.Album_NotOrganizer);
 
-    internal static readonly Error CannotUpload = Error.Forbidden(
+    internal static Error CannotUpload => Error.Forbidden(
         "Album.CannotUpload",
-        "You are not allowed to upload media to this album.");
+        ErrorMessagesResource.Album_CannotUpload);
 
-    internal static readonly Error InvalidMedia = Error.Validation(
+    internal static Error InvalidMedia => Error.Validation(
         "Album.InvalidMedia",
-        "Only image media (jpeg, png, webp) is supported.");
+        ErrorMessagesResource.Album_InvalidMedia);
 
-    internal static readonly Error MediaNotFound = Error.NotFound(
+    internal static Error MediaNotFound => Error.NotFound(
         "Album.MediaNotFound",
-        "The album media was not found.");
+        ErrorMessagesResource.Album_MediaNotFound);
 
-    internal static readonly Error ProfileAlbumLimit = Error.Validation(
+    internal static Error ProfileAlbumLimit => Error.Validation(
         "Album.ProfileAlbumLimit",
-        $"A profile may have at most {Domain.Social.Album.MaxAlbumsPerProfile} albums.");
+        string.Format(
+            ErrorMessagesResource.Album_ProfileAlbumLimit,
+            Domain.Social.Album.MaxAlbumsPerProfile));
 
-    internal static readonly Error EventAlbumLimit = Error.Validation(
+    internal static Error EventAlbumLimit => Error.Validation(
         "Album.EventAlbumLimit",
-        $"An event may have at most {Domain.Social.Album.MaxAlbumsPerEvent} albums.");
+        string.Format(
+            ErrorMessagesResource.Album_EventAlbumLimit,
+            Domain.Social.Album.MaxAlbumsPerEvent));
 
-    internal static readonly Error InvalidVisibility = Error.Validation(
+    internal static Error InvalidVisibility => Error.Validation(
         "Album.InvalidVisibility",
-        "Album visibility is invalid for this album kind.");
+        ErrorMessagesResource.Album_InvalidVisibility);
 }
 
 public sealed record AlbumMediaResponse(

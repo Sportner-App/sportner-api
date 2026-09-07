@@ -1,18 +1,22 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.Devices;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class DeviceErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Device.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Device_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Device.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Device_UserNotFound);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Device.NotFound",
-        "The device was not found.");
+        ErrorMessagesResource.Device_NotFound);
 }

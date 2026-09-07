@@ -1,18 +1,22 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.Sessions;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class SessionErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Session.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Session_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Session.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Session_UserNotFound);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Session.NotFound",
-        "The session was not found.");
+        ErrorMessagesResource.Session_NotFound);
 }

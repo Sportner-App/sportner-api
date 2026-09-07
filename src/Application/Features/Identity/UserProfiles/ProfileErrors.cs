@@ -1,38 +1,42 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.UserProfiles;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class ProfileErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Profile.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Profile_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Profile.NotFound",
-        "The profile was not found.");
+        ErrorMessagesResource.Profile_NotFound);
 
-    internal static readonly Error AlreadyExists = Error.Conflict(
+    internal static Error AlreadyExists => Error.Conflict(
         "Profile.AlreadyExists",
-        "This user already has a profile.");
+        ErrorMessagesResource.Profile_AlreadyExists);
 
-    internal static readonly Error UsernameTaken = Error.Conflict(
+    internal static Error UsernameTaken => Error.Conflict(
         "Profile.UsernameTaken",
-        "This username is already in use.");
+        ErrorMessagesResource.Profile_UsernameTaken);
 
-    internal static readonly Error UsernameChangeTooSoon = Error.Conflict(
+    internal static Error UsernameChangeTooSoon => Error.Conflict(
         "Profile.UsernameChangeTooSoon",
-        "The username can only be changed once every 30 days.");
+        ErrorMessagesResource.Profile_UsernameChangeTooSoon);
 
-    internal static readonly Error NotPublic = Error.Forbidden(
+    internal static Error NotPublic => Error.Forbidden(
         "Profile.NotPublic",
-        "This profile is private.");
+        ErrorMessagesResource.Profile_NotPublic);
 
-    internal static readonly Error InvalidMedia = Error.Validation(
+    internal static Error InvalidMedia => Error.Validation(
         "Profile.InvalidMedia",
-        "The uploaded file is missing or has an unsupported content type.");
+        ErrorMessagesResource.Profile_InvalidMedia);
 
-    internal static readonly Error InvalidCity = Error.Validation(
+    internal static Error InvalidCity => Error.Validation(
         "Profile.InvalidCity",
-        "The selected city is not in the supported city catalog.");
+        ErrorMessagesResource.Profile_InvalidCity);
 }

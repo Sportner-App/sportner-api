@@ -1,30 +1,34 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.Onboarding;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class OnboardingErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Onboarding.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Onboarding_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Onboarding.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Onboarding_UserNotFound);
 
-    internal static readonly Error ProfileRequired = Error.Conflict(
+    internal static Error ProfileRequired => Error.Conflict(
         "Onboarding.ProfileRequired",
-        "The profile must be created before onboarding can be completed.");
+        ErrorMessagesResource.Onboarding_ProfileRequired);
 
-    internal static readonly Error SportRequired = Error.Conflict(
+    internal static Error SportRequired => Error.Conflict(
         "Onboarding.SportRequired",
-        "At least one sport with a skill level must be selected before onboarding can be completed.");
+        ErrorMessagesResource.Onboarding_SportRequired);
 
-    internal static readonly Error PersonalDetailsRequired = Error.Conflict(
+    internal static Error PersonalDetailsRequired => Error.Conflict(
         "Onboarding.PersonalDetailsRequired",
-        "Gender and birth date are required before onboarding can be completed.");
+        ErrorMessagesResource.Onboarding_PersonalDetailsRequired);
 
-    internal static readonly Error AvatarRequired = Error.Conflict(
+    internal static Error AvatarRequired => Error.Conflict(
         "Onboarding.AvatarRequired",
-        "A profile photo is required before onboarding can be completed.");
+        ErrorMessagesResource.Onboarding_AvatarRequired);
 }

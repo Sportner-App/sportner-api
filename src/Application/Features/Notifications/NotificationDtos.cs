@@ -1,28 +1,32 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Notifications;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class NotificationErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Notification.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Notification_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Notification.NotFound",
-        "The notification was not found.");
+        ErrorMessagesResource.Notification_NotFound);
 
-    internal static readonly Error SettingNotFound = Error.NotFound(
+    internal static Error SettingNotFound => Error.NotFound(
         "Notification.SettingNotFound",
-        "The notification setting was not found.");
+        ErrorMessagesResource.Notification_SettingNotFound);
 
-    internal static readonly Error InvalidType = Error.Validation(
+    internal static Error InvalidType => Error.Validation(
         "Notification.InvalidType",
-        "The notification type is invalid.");
+        ErrorMessagesResource.Notification_InvalidType);
 
-    internal static readonly Error InvalidCursor = Error.Validation(
+    internal static Error InvalidCursor => Error.Validation(
         "Notification.InvalidCursor",
-        "The pagination cursor is invalid.");
+        ErrorMessagesResource.Notification_InvalidCursor);
 }
 
 public sealed record NotificationResponse(

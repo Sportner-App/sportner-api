@@ -1,18 +1,22 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Identity.SavedLocations;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class SavedLocationErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "SavedLocation.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.SavedLocation_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "SavedLocation.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.SavedLocation_UserNotFound);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "SavedLocation.NotFound",
-        "The saved location was not found.");
+        ErrorMessagesResource.SavedLocation_NotFound);
 }

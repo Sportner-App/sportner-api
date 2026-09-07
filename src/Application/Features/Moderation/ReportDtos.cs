@@ -1,44 +1,48 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Moderation;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class ReportErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Report.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Report_NotAuthenticated);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Report.NotFound",
-        "The report was not found.");
+        ErrorMessagesResource.Report_NotFound);
 
-    internal static readonly Error ReasonNotFound = Error.NotFound(
+    internal static Error ReasonNotFound => Error.NotFound(
         "Report.ReasonNotFound",
-        "The report reason was not found or is not selectable.");
+        ErrorMessagesResource.Report_ReasonNotFound);
 
-    internal static readonly Error TargetNotFound = Error.NotFound(
+    internal static Error TargetNotFound => Error.NotFound(
         "Report.TargetNotFound",
-        "The reported entity was not found.");
+        ErrorMessagesResource.Report_TargetNotFound);
 
-    internal static readonly Error AlreadyExists = Error.Conflict(
+    internal static Error AlreadyExists => Error.Conflict(
         "Report.AlreadyExists",
-        "You have already reported this entity.");
+        ErrorMessagesResource.Report_AlreadyExists);
 
-    internal static readonly Error CannotReportSelf = Error.Validation(
+    internal static Error CannotReportSelf => Error.Validation(
         "Report.CannotReportSelf",
-        "You cannot report your own content or profile.");
+        ErrorMessagesResource.Report_CannotReportSelf);
 
-    internal static readonly Error InvalidEntityType = Error.Validation(
+    internal static Error InvalidEntityType => Error.Validation(
         "Report.InvalidEntityType",
-        "The report entity type is invalid.");
+        ErrorMessagesResource.Report_InvalidEntityType);
 
-    internal static readonly Error NotOwner = Error.Forbidden(
+    internal static Error NotOwner => Error.Forbidden(
         "Report.NotOwner",
-        "Only the reporter can update this report.");
+        ErrorMessagesResource.Report_NotOwner);
 
-    internal static readonly Error InvalidOperation = Error.Conflict(
+    internal static Error InvalidOperation => Error.Conflict(
         "Report.InvalidOperation",
-        "The report cannot be updated in its current status.");
+        ErrorMessagesResource.Report_InvalidOperation);
 }
 
 public sealed record ReportReasonResponse(

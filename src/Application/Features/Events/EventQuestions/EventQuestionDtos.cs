@@ -1,44 +1,48 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.EventQuestions;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class EventQuestionErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "EventQuestion.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.EventQuestion_NotAuthenticated);
 
-    internal static readonly Error CannotCreateContent = Error.Forbidden(
+    internal static Error CannotCreateContent => Error.Forbidden(
         "EventQuestion.CannotCreateContent",
-        "This account cannot create content.");
+        ErrorMessagesResource.EventQuestion_CannotCreateContent);
 
-    internal static readonly Error EventNotFound = Error.NotFound(
+    internal static Error EventNotFound => Error.NotFound(
         "EventQuestion.EventNotFound",
-        "The event was not found.");
+        ErrorMessagesResource.EventQuestion_EventNotFound);
 
-    internal static readonly Error QuestionNotFound = Error.NotFound(
+    internal static Error QuestionNotFound => Error.NotFound(
         "EventQuestion.NotFound",
-        "The question was not found.");
+        ErrorMessagesResource.EventQuestion_NotFound);
 
-    internal static readonly Error Closed = Error.Conflict(
+    internal static Error Closed => Error.Conflict(
         "EventQuestion.Closed",
-        "Questions are closed because the event has ended.");
+        ErrorMessagesResource.EventQuestion_Closed);
 
-    internal static readonly Error OrganizerCannotAsk = Error.Validation(
+    internal static Error OrganizerCannotAsk => Error.Validation(
         "EventQuestion.OrganizerCannotAsk",
-        "The organizer cannot ask a question on their own event.");
+        ErrorMessagesResource.EventQuestion_OrganizerCannotAsk);
 
-    internal static readonly Error Blocked = Error.Forbidden(
+    internal static Error Blocked => Error.Forbidden(
         "EventQuestion.Blocked",
-        "This relationship is blocked.");
+        ErrorMessagesResource.EventQuestion_Blocked);
 
-    internal static readonly Error TooFrequent = Error.TooManyRequests(
+    internal static Error TooFrequent => Error.TooManyRequests(
         "EventQuestion.TooFrequent",
-        "Please wait a moment before sending another question.");
+        ErrorMessagesResource.EventQuestion_TooFrequent);
 
-    internal static readonly Error InvalidContent = Error.Validation(
+    internal static Error InvalidContent => Error.Validation(
         "EventQuestion.InvalidContent",
-        "The question content is invalid.");
+        ErrorMessagesResource.EventQuestion_InvalidContent);
 }
 
 public sealed record EventQuestionResponse(

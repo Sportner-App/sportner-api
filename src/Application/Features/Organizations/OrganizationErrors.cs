@@ -1,74 +1,78 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Organizations;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class OrganizationErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Organization.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Organization_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Organization.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Organization_UserNotFound);
 
-    internal static readonly Error CannotCreateContent = Error.Forbidden(
+    internal static Error CannotCreateContent => Error.Forbidden(
         "Organization.CannotCreateContent",
-        "This account cannot create content.");
+        ErrorMessagesResource.Organization_CannotCreateContent);
 
-    internal static readonly Error NotFound = Error.NotFound(
+    internal static Error NotFound => Error.NotFound(
         "Organization.NotFound",
-        "The organization was not found.");
+        ErrorMessagesResource.Organization_NotFound);
 
-    internal static readonly Error CityNotFound = Error.NotFound(
+    internal static Error CityNotFound => Error.NotFound(
         "Organization.CityNotFound",
-        "The city was not found.");
+        ErrorMessagesResource.Organization_CityNotFound);
 
-    internal static readonly Error InvalidInviteCode = Error.NotFound(
+    internal static Error InvalidInviteCode => Error.NotFound(
         "Organization.InvalidInviteCode",
-        "The invite code was not found.");
+        ErrorMessagesResource.Organization_InvalidInviteCode);
 
-    internal static readonly Error AlreadyMember = Error.Conflict(
+    internal static Error AlreadyMember => Error.Conflict(
         "Organization.AlreadyMember",
-        "You are already a member of this organization.");
+        ErrorMessagesResource.Organization_AlreadyMember);
 
-    internal static readonly Error AlreadyPending = Error.Conflict(
+    internal static Error AlreadyPending => Error.Conflict(
         "Organization.AlreadyPending",
-        "A membership request is already pending.");
+        ErrorMessagesResource.Organization_AlreadyPending);
 
-    internal static readonly Error NotApprovedMember = Error.Forbidden(
+    internal static Error NotApprovedMember => Error.Forbidden(
         "Organization.NotApprovedMember",
-        "Only approved members can perform this action.");
+        ErrorMessagesResource.Organization_NotApprovedMember);
 
-    internal static readonly Error CannotManageMembers = Error.Forbidden(
+    internal static Error CannotManageMembers => Error.Forbidden(
         "Organization.CannotManageMembers",
-        "Only the founder or an admin can manage members.");
+        ErrorMessagesResource.Organization_CannotManageMembers);
 
-    internal static readonly Error CannotCreateEvents = Error.Forbidden(
+    internal static Error CannotCreateEvents => Error.Forbidden(
         "Organization.CannotCreateEvents",
-        "Only approved organization members can create organization events.");
+        ErrorMessagesResource.Organization_CannotCreateEvents);
 
-    internal static readonly Error CannotModerateMember = Error.Forbidden(
+    internal static Error CannotModerateMember => Error.Forbidden(
         "Organization.CannotModerateMember",
-        "You cannot manage this member.");
+        ErrorMessagesResource.Organization_CannotModerateMember);
 
-    internal static readonly Error MemberBlocked = Error.Forbidden(
+    internal static Error MemberBlocked => Error.Forbidden(
         "Organization.MemberBlocked",
-        "This user is blocked from the organization.");
+        ErrorMessagesResource.Organization_MemberBlocked);
 
-    internal static readonly Error NotFounder = Error.Forbidden(
+    internal static Error NotFounder => Error.Forbidden(
         "Organization.NotFounder",
-        "Only the founder can perform this action.");
+        ErrorMessagesResource.Organization_NotFounder);
 
-    internal static readonly Error FounderCannotLeave = Error.Conflict(
+    internal static Error FounderCannotLeave => Error.Conflict(
         "Organization.FounderCannotLeave",
-        "The founder cannot leave the organization.");
+        ErrorMessagesResource.Organization_FounderCannotLeave);
 
-    internal static readonly Error MemberNotFound = Error.NotFound(
+    internal static Error MemberNotFound => Error.NotFound(
         "Organization.MemberNotFound",
-        "The membership was not found.");
+        ErrorMessagesResource.Organization_MemberNotFound);
 
-    internal static readonly Error InviteCodeUnavailable = Error.Conflict(
+    internal static Error InviteCodeUnavailable => Error.Conflict(
         "Organization.InviteCodeUnavailable",
-        "A unique invite code could not be allocated. Try again.");
+        ErrorMessagesResource.Organization_InviteCodeUnavailable);
 }

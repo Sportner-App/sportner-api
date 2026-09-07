@@ -1,20 +1,24 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class BlockErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Block.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Block_NotAuthenticated);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Block.UserNotFound",
-        "The user was not found.");
+        ErrorMessagesResource.Block_UserNotFound);
 
-    internal static readonly Error SelfBlock = Error.Validation(
+    internal static Error SelfBlock => Error.Validation(
         "Block.SelfBlock",
-        "Users cannot block themselves.");
+        ErrorMessagesResource.Block_SelfBlock);
 }
 
 public sealed record BlockedUserResponse(

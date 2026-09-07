@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Event_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Event_NotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadı.</value>
+  </data>
+  <data name="Event_SportNotFound" xml:space="preserve">
+    <value>Spor bulunamadı.</value>
+  </data>
+  <data name="Event_SportInactive" xml:space="preserve">
+    <value>Bu spor şu anda kullanılamıyor.</value>
+  </data>
+  <data name="Event_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Event_CannotCreateContent" xml:space="preserve">
+    <value>Bu hesap içerik oluşturamaz.</value>
+  </data>
+  <data name="Event_NotOrganizer" xml:space="preserve">
+    <value>Bu işlemi yalnızca organizatör yapabilir.</value>
+  </data>
+  <data name="Event_AlreadyApplied" xml:space="preserve">
+    <value>Bu etkinlikle zaten bir bağlantın var.</value>
+  </data>
+  <data name="Event_OrganizerCannotApply" xml:space="preserve">
+    <value>Organizatör kendi etkinliğine başvuramaz.</value>
+  </data>
+  <data name="Event_ParticipantNotFound" xml:space="preserve">
+    <value>Katılımcı bulunamadı.</value>
+  </data>
+  <data name="Event_RemovalReasonNotFound" xml:space="preserve">
+    <value>Geçerli bir çıkarma sebebi gerekiyor.</value>
+  </data>
+  <data name="Event_WaitlistEntryNotFound" xml:space="preserve">
+    <value>Bekleme listesi kaydı bulunamadı.</value>
+  </data>
+  <data name="Event_NotAcceptingApplications" xml:space="preserve">
+    <value>Etkinlik şu anki durumunda başvuru kabul etmiyor.</value>
+  </data>
+  <data name="Event_CapacityFull" xml:space="preserve">
+    <value>Etkinlik kapasitesi dolu.</value>
+  </data>
+  <data name="Event_ParticipantAgeNotEligible" xml:space="preserve">
+    <value>Yaşın bu etkinliğin katılım yaş aralığının dışında.</value>
+  </data>
+  <data name="Event_ParticipantBirthDateMissing" xml:space="preserve">
+    <value>Profilde doğum tarihi olmadığı için yaş doğrulanamıyor.</value>
+  </data>
+  <data name="Event_InvitationNotFound" xml:space="preserve">
+    <value>Bu etkinlik için aktif bir davet bulunamadı.</value>
+  </data>
+  <data name="Event_ParticipationLocked" xml:space="preserve">
+    <value>Biten etkinlikten ayrılamazsın.</value>
+  </data>
+  <data name="Event_AssignmentEmpty" xml:space="preserve">
+    <value>En az bir misafir veya arkadaş eklemelisin.</value>
+  </data>
+  <data name="Event_NotFriends" xml:space="preserve">
+    <value>Etkinliğe yalnızca kabul edilmiş arkadaşlar eklenebilir.</value>
+  </data>
+  <data name="Event_RelationshipBlocked" xml:space="preserve">
+    <value>Bu ilişki engellenmiş durumda.</value>
+  </data>
+  <data name="Event_NotOrganizationMember" xml:space="preserve">
+    <value>Bu etkinliğe yalnızca onaylı organizasyon üyeleri katılabilir.</value>
+  </data>
+  <data name="Event_FriendAlreadyAssociated" xml:space="preserve">
+    <value>Seçtiğin arkadaşlardan biri bu etkinlikle zaten ilişkili.</value>
+  </data>
+  <data name="Organization_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Organization_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Organization_CannotCreateContent" xml:space="preserve">
+    <value>Bu hesap içerik oluşturamaz.</value>
+  </data>
+  <data name="Organization_NotFound" xml:space="preserve">
+    <value>Organizasyon bulunamadı.</value>
+  </data>
+  <data name="Organization_CityNotFound" xml:space="preserve">
+    <value>Şehir bulunamadı.</value>
+  </data>
+  <data name="Organization_InvalidInviteCode" xml:space="preserve">
+    <value>Davet kodu bulunamadı.</value>
+  </data>
+  <data name="Organization_AlreadyMember" xml:space="preserve">
+    <value>Bu organizasyonun zaten üyesisin.</value>
+  </data>
+  <data name="Organization_AlreadyPending" xml:space="preserve">
+    <value>Zaten bekleyen bir üyelik isteğin var.</value>
+  </data>
+  <data name="Organization_NotApprovedMember" xml:space="preserve">
+    <value>Bu işlemi yalnızca onaylı üyeler yapabilir.</value>
+  </data>
+  <data name="Organization_CannotManageMembers" xml:space="preserve">
+    <value>Üyeleri yalnızca kurucu veya yönetici yönetebilir.</value>
+  </data>
+  <data name="Organization_CannotCreateEvents" xml:space="preserve">
+    <value>Organizasyon etkinliği oluşturmak için onaylı üye olmalısın.</value>
+  </data>
+  <data name="Organization_CannotModerateMember" xml:space="preserve">
+    <value>Bu üyeyi yönetemezsin.</value>
+  </data>
+  <data name="Organization_MemberBlocked" xml:space="preserve">
+    <value>Bu kullanıcı organizasyondan engellenmiş.</value>
+  </data>
+  <data name="Organization_NotFounder" xml:space="preserve">
+    <value>Bu işlemi yalnızca kurucu yapabilir.</value>
+  </data>
+  <data name="Organization_FounderCannotLeave" xml:space="preserve">
+    <value>Kurucu organizasyondan ayrılamaz.</value>
+  </data>
+  <data name="Organization_MemberNotFound" xml:space="preserve">
+    <value>Üyelik bulunamadı.</value>
+  </data>
+  <data name="Organization_InviteCodeUnavailable" xml:space="preserve">
+    <value>Benzersiz bir davet kodu oluşturulamadı. Tekrar dene.</value>
+  </data>
+  <data name="Auth_InvalidCredentials" xml:space="preserve">
+    <value>Kullanıcı adı veya şifre hatalı.</value>
+  </data>
+  <data name="Auth_UsernameTaken" xml:space="preserve">
+    <value>Bu kullanıcı adı zaten alınmış.</value>
+  </data>
+  <data name="Auth_AccountNotAccessible" xml:space="preserve">
+    <value>Bu hesapla giriş yapılamıyor.</value>
+  </data>
+  <data name="Auth_InvalidRefreshToken" xml:space="preserve">
+    <value>Oturum yenileme bilgisi geçersiz, süresi dolmuş veya iptal edilmiş.</value>
+  </data>
+  <data name="Auth_ExternalTokenInvalid" xml:space="preserve">
+    <value>Kimlik doğrulama sağlayıcısından gelen bilgi doğrulanamadı.</value>
+  </data>
+  <data name="Auth_ExternalRegistrationTokenInvalid" xml:space="preserve">
+    <value>Sosyal kayıt oturumunun süresi dolmuş veya bilgi geçersiz.</value>
+  </data>
+  <data name="Auth_ExternalLoginAlreadyRegistered" xml:space="preserve">
+    <value>Bu sosyal hesap zaten kayıtlı. Giriş yapmayı tekrar dene.</value>
+  </data>
+  <data name="Friendship_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Friendship_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Friendship_NotFound" xml:space="preserve">
+    <value>Arkadaşlık bulunamadı.</value>
+  </data>
+  <data name="Friendship_SelfRequest" xml:space="preserve">
+    <value>Kendine arkadaşlık isteği gönderemezsin.</value>
+  </data>
+  <data name="Friendship_AlreadyExists" xml:space="preserve">
+    <value>Bu kullanıcıyla zaten bir arkadaşlık veya bekleyen istek var.</value>
+  </data>
+  <data name="Friendship_Blocked" xml:space="preserve">
+    <value>Bu ilişki engellenmiş durumda.</value>
+  </data>
+  <data name="Friendship_NotAddressee" xml:space="preserve">
+    <value>Bu isteğe yalnızca alıcı yanıt verebilir.</value>
+  </data>
+  <data name="Friendship_NotParticipant" xml:space="preserve">
+    <value>Bu arkadaşlığın tarafı değilsin.</value>
+  </data>
+  <data name="Friendship_NotAccepted" xml:space="preserve">
+    <value>Bu şekilde yalnızca kabul edilmiş bir arkadaşlık kaldırılabilir.</value>
+  </data>
+  <data name="Friendship_NotVisible" xml:space="preserve">
+    <value>Bu kullanıcı için ortak arkadaşlar görüntülenemiyor.</value>
+  </data>
+  <data name="Post_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Post_NotFound" xml:space="preserve">
+    <value>Gönderi bulunamadı.</value>
+  </data>
+  <data name="Post_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Post_CannotCreateContent" xml:space="preserve">
+    <value>Bu hesap içerik oluşturamaz.</value>
+  </data>
+  <data name="Post_NotOwner" xml:space="preserve">
+    <value>Bu işlemi yalnızca gönderi sahibi yapabilir.</value>
+  </data>
+  <data name="Post_Forbidden" xml:space="preserve">
+    <value>Bu gönderiyi görüntüleyemezsin.</value>
+  </data>
+  <data name="Post_AlreadyLiked" xml:space="preserve">
+    <value>Bu gönderiyi zaten beğendin.</value>
+  </data>
+  <data name="Post_NotLiked" xml:space="preserve">
+    <value>Bu gönderiyi beğenmedin.</value>
+  </data>
+  <data name="Post_SelfLike" xml:space="preserve">
+    <value>Kendi gönderilerini beğenemezsin.</value>
+  </data>
+  <data name="Post_InvalidMedia" xml:space="preserve">
+    <value>Yüklenen dosya eksik veya desteklenmeyen bir içerik türünde.</value>
+  </data>
+  <data name="Post_MediaNotFound" xml:space="preserve">
+    <value>Medya bulunamadı.</value>
+  </data>
+  <data name="Post_CommentNotFound" xml:space="preserve">
+    <value>Yorum bulunamadı.</value>
+  </data>
+  <data name="Post_InvalidCursor" xml:space="preserve">
+    <value>Sayfalama imleci geçersiz.</value>
+  </data>
+  <data name="Messaging_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Messaging_ConversationNotFound" xml:space="preserve">
+    <value>Sohbet bulunamadı.</value>
+  </data>
+  <data name="Messaging_MessageNotFound" xml:space="preserve">
+    <value>Mesaj bulunamadı.</value>
+  </data>
+  <data name="Messaging_NotMember" xml:space="preserve">
+    <value>Bu sohbetin aktif bir üyesi değilsin.</value>
+  </data>
+  <data name="Messaging_CannotSend" xml:space="preserve">
+    <value>Bu sohbette mesaj gönderemezsin.</value>
+  </data>
+  <data name="Messaging_ConversationClosed" xml:space="preserve">
+    <value>Bu sohbet kapandı.</value>
+  </data>
+  <data name="Messaging_NotSender" xml:space="preserve">
+    <value>Bu mesajı yalnızca gönderen düzenleyebilir.</value>
+  </data>
+  <data name="Messaging_InvalidMedia" xml:space="preserve">
+    <value>Yüklenen dosya eksik veya desteklenmeyen bir içerik türünde.</value>
+  </data>
+  <data name="Messaging_InvalidCursor" xml:space="preserve">
+    <value>Sayfalama imleci geçersiz.</value>
+  </data>
+  <data name="Messaging_ReplyNotFound" xml:space="preserve">
+    <value>Yanıtlanacak mesaj bu sohbette bulunamadı.</value>
+  </data>
+  <data name="Messaging_PeerNotFound" xml:space="preserve">
+    <value>Diğer kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Messaging_NotFriends" xml:space="preserve">
+    <value>Sohbeti yalnızca kabul edilmiş bir arkadaşınla başlatabilirsin.</value>
+  </data>
+  <data name="Messaging_Blocked" xml:space="preserve">
+    <value>Bu ilişki engellenmiş durumda.</value>
+  </data>
+  <data name="Messaging_CannotMessageSelf" xml:space="preserve">
+    <value>Kendinle birebir sohbet başlatamazsın.</value>
+  </data>
+  <data name="Messaging_CannotInvite" xml:space="preserve">
+    <value>Bu sohbete üye davet edemezsin.</value>
+  </data>
+  <data name="Messaging_GroupFull" xml:space="preserve">
+    <value>Grup sohbeti dolu.</value>
+  </data>
+  <data name="Messaging_InvalidOperation" xml:space="preserve">
+    <value>Bu sohbet işlemi mevcut durumda yapılamaz.</value>
+  </data>
+  <data name="Messaging_UserNotFound" xml:space="preserve">
+    <value>Bir veya daha fazla kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Review_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Review_NotFound" xml:space="preserve">
+    <value>Değerlendirme bulunamadı.</value>
+  </data>
+  <data name="Review_EventNotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadı.</value>
+  </data>
+  <data name="Review_EventNotCompleted" xml:space="preserve">
+    <value>Değerlendirme yalnızca tamamlanmış etkinlikler için yapılabilir.</value>
+  </data>
+  <data name="Review_NotEligible" xml:space="preserve">
+    <value>Değerlendirme yalnızca organizatör ve katıldı olarak işaretlenen katılımcılar için yapılabilir.</value>
+  </data>
+  <data name="Review_SelfReview" xml:space="preserve">
+    <value>Kendini değerlendiremezsin.</value>
+  </data>
+  <data name="Review_AlreadyExists" xml:space="preserve">
+    <value>Bu katılımcı için bu etkinlikte zaten bir değerlendirme var.</value>
+  </data>
+  <data name="Review_RelationshipBlocked" xml:space="preserve">
+    <value>Bu ilişki engellenmiş durumda.</value>
+  </data>
+  <data name="Review_NotReviewer" xml:space="preserve">
+    <value>Bu değerlendirmeyi yalnızca değerlendiren güncelleyebilir.</value>
+  </data>
+  <data name="Sport_NotFound" xml:space="preserve">
+    <value>Spor bulunamadı.</value>
+  </data>
+  <data name="Sport_NameTaken" xml:space="preserve">
+    <value>Bu isimde bir spor zaten var.</value>
+  </data>
+  <data name="Sport_SlugTaken" xml:space="preserve">
+    <value>Bu slug ile bir spor zaten var.</value>
+  </data>
+  <data name="Sport_InvalidMedia" xml:space="preserve">
+    <value>Yüklenen dosya eksik veya desteklenmeyen bir içerik türünde.</value>
+  </data>
+  <data name="Profile_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Profile_NotFound" xml:space="preserve">
+    <value>Profil bulunamadı.</value>
+  </data>
+  <data name="Profile_AlreadyExists" xml:space="preserve">
+    <value>Bu kullanıcının zaten bir profili var.</value>
+  </data>
+  <data name="Profile_UsernameTaken" xml:space="preserve">
+    <value>Bu kullanıcı adı zaten kullanılıyor.</value>
+  </data>
+  <data name="Profile_UsernameChangeTooSoon" xml:space="preserve">
+    <value>Kullanıcı adını 30 günde yalnızca bir kez değiştirebilirsin.</value>
+  </data>
+  <data name="Profile_NotPublic" xml:space="preserve">
+    <value>Bu profil gizli.</value>
+  </data>
+  <data name="Profile_InvalidMedia" xml:space="preserve">
+    <value>Yüklenen dosya eksik veya desteklenmeyen bir içerik türünde.</value>
+  </data>
+  <data name="Profile_InvalidCity" xml:space="preserve">
+    <value>Seçtiğin şehir desteklenen şehir listesinde yok.</value>
+  </data>
+  <data name="UserSport_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="UserSport_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="UserSport_SportNotFound" xml:space="preserve">
+    <value>Spor bulunamadı.</value>
+  </data>
+  <data name="UserSport_SportInactive" xml:space="preserve">
+    <value>Bu spor şu anda kullanılamıyor.</value>
+  </data>
+  <data name="UserSport_AlreadyAdded" xml:space="preserve">
+    <value>Bu spor zaten profiline ekli.</value>
+  </data>
+  <data name="UserSport_NotFound" xml:space="preserve">
+    <value>Bu spor profiline ekli değil.</value>
+  </data>
+  <data name="SavedLocation_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="SavedLocation_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="SavedLocation_NotFound" xml:space="preserve">
+    <value>Kayıtlı konum bulunamadı.</value>
+  </data>
+  <data name="Session_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Session_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Session_NotFound" xml:space="preserve">
+    <value>Oturum bulunamadı.</value>
+  </data>
+  <data name="Onboarding_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Onboarding_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Onboarding_ProfileRequired" xml:space="preserve">
+    <value>Onboarding'i tamamlamak için önce profil oluşturmalısın.</value>
+  </data>
+  <data name="Onboarding_SportRequired" xml:space="preserve">
+    <value>Onboarding'i tamamlamak için en az bir spor ve seviye seçmelisin.</value>
+  </data>
+  <data name="Onboarding_PersonalDetailsRequired" xml:space="preserve">
+    <value>Onboarding'i tamamlamak için cinsiyet ve doğum tarihi gerekiyor.</value>
+  </data>
+  <data name="Onboarding_AvatarRequired" xml:space="preserve">
+    <value>Onboarding'i tamamlamak için profil fotoğrafı gerekiyor.</value>
+  </data>
+  <data name="Device_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Device_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Device_NotFound" xml:space="preserve">
+    <value>Cihaz bulunamadı.</value>
+  </data>
+  <data name="Explore_NotAuthenticated" xml:space="preserve">
+    <value>Bu işlem için giriş yapmalısın.</value>
+  </data>
+  <data name="Album_NotAuthenticated" xml:space="preserve">
+    <value>Bu işlem için giriş yapmalısın.</value>
+  </data>
+  <data name="Album_NotFound" xml:space="preserve">
+    <value>Albüm bulunamadı.</value>
+  </data>
+  <data name="Album_Forbidden" xml:space="preserve">
+    <value>Bu albüme erişim iznin yok.</value>
+  </data>
+  <data name="Album_NotOwner" xml:space="preserve">
+    <value>Bu işlemi yalnızca albüm sahibi yapabilir.</value>
+  </data>
+  <data name="Album_EventNotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadı.</value>
+  </data>
+  <data name="Album_NotOrganizer" xml:space="preserve">
+    <value>Etkinlik albümünü yalnızca organizatör oluşturabilir.</value>
+  </data>
+  <data name="Album_CannotUpload" xml:space="preserve">
+    <value>Bu albüme medya yükleyemezsin.</value>
+  </data>
+  <data name="Album_InvalidMedia" xml:space="preserve">
+    <value>Yalnızca jpeg, png ve webp görselleri desteklenir.</value>
+  </data>
+  <data name="Album_MediaNotFound" xml:space="preserve">
+    <value>Albüm medyası bulunamadı.</value>
+  </data>
+  <data name="Album_ProfileAlbumLimit" xml:space="preserve">
+    <value>Profilde en fazla {0} albüm olabilir.</value>
+  </data>
+  <data name="Album_EventAlbumLimit" xml:space="preserve">
+    <value>Bir etkinlikte en fazla {0} albüm olabilir.</value>
+  </data>
+  <data name="Album_InvalidVisibility" xml:space="preserve">
+    <value>Bu albüm türü için görünürlük geçersiz.</value>
+  </data>
+  <data name="Report_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Report_NotFound" xml:space="preserve">
+    <value>Şikayet bulunamadı.</value>
+  </data>
+  <data name="Report_ReasonNotFound" xml:space="preserve">
+    <value>Şikayet sebebi bulunamadı veya seçilemiyor.</value>
+  </data>
+  <data name="Report_TargetNotFound" xml:space="preserve">
+    <value>Bildirilen içerik bulunamadı.</value>
+  </data>
+  <data name="Report_AlreadyExists" xml:space="preserve">
+    <value>Bu içeriği zaten bildirdin.</value>
+  </data>
+  <data name="Report_CannotReportSelf" xml:space="preserve">
+    <value>Kendi içeriğini veya profilini bildiremezsin.</value>
+  </data>
+  <data name="Report_InvalidEntityType" xml:space="preserve">
+    <value>Bildirim türü geçersiz.</value>
+  </data>
+  <data name="Report_NotOwner" xml:space="preserve">
+    <value>Bu şikayeti yalnızca bildiren güncelleyebilir.</value>
+  </data>
+  <data name="Report_InvalidOperation" xml:space="preserve">
+    <value>Şikayet mevcut durumda güncellenemez.</value>
+  </data>
+  <data name="EventQuestion_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="EventQuestion_CannotCreateContent" xml:space="preserve">
+    <value>Bu hesap içerik oluşturamaz.</value>
+  </data>
+  <data name="EventQuestion_EventNotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadı.</value>
+  </data>
+  <data name="EventQuestion_NotFound" xml:space="preserve">
+    <value>Soru bulunamadı.</value>
+  </data>
+  <data name="EventQuestion_Closed" xml:space="preserve">
+    <value>Etkinlik bittiği için soru sorma kapandı.</value>
+  </data>
+  <data name="EventQuestion_OrganizerCannotAsk" xml:space="preserve">
+    <value>Organizatör kendi etkinliğine soru soramaz.</value>
+  </data>
+  <data name="EventQuestion_Blocked" xml:space="preserve">
+    <value>Bu ilişki engellenmiş durumda.</value>
+  </data>
+  <data name="EventQuestion_TooFrequent" xml:space="preserve">
+    <value>Yeni bir soru göndermeden önce biraz beklemelisin.</value>
+  </data>
+  <data name="EventQuestion_InvalidContent" xml:space="preserve">
+    <value>Soru metni geçersiz.</value>
+  </data>
+  <data name="Badge_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Badge_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Badge_ShowcaseTooMany" xml:space="preserve">
+    <value>En fazla {0} rozet vitrinde sergilenebilir.</value>
+  </data>
+  <data name="Badge_ShowcaseDuplicate" xml:space="preserve">
+    <value>Vitrin rozetleri benzersiz olmalı.</value>
+  </data>
+  <data name="Badge_ShowcaseNotOwned" xml:space="preserve">
+    <value>Vitrinde yalnızca kazandığın rozetler gösterilebilir.</value>
+  </data>
+  <data name="Notification_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Notification_NotFound" xml:space="preserve">
+    <value>Bildirim bulunamadı.</value>
+  </data>
+  <data name="Notification_SettingNotFound" xml:space="preserve">
+    <value>Bildirim ayarı bulunamadı.</value>
+  </data>
+  <data name="Notification_InvalidType" xml:space="preserve">
+    <value>Bildirim türü geçersiz.</value>
+  </data>
+  <data name="Notification_InvalidCursor" xml:space="preserve">
+    <value>Sayfalama imleci geçersiz.</value>
+  </data>
+  <data name="AppFeedback_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="AppFeedback_TooFrequent" xml:space="preserve">
+    <value>Yeni bir öneri göndermeden önce biraz beklemelisin.</value>
+  </data>
+  <data name="AppFeedback_InvalidContent" xml:space="preserve">
+    <value>Geri bildirim metni geçersiz.</value>
+  </data>
+  <data name="Block_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+  <data name="Block_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Block_SelfBlock" xml:space="preserve">
+    <value>Kendini engelleyemezsin.</value>
+  </data>
+  <data name="Quest_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
+</root>

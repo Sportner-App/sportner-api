@@ -1,78 +1,82 @@
 using Sportner.Application.Common.Results;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Messaging;
 
+/// <summary>
+/// Her hata mesajı <see cref="ErrorMessagesResource"/> üzerinden çözülür.
+/// </summary>
 internal static class MessagingErrors
 {
-    internal static readonly Error NotAuthenticated = Error.Unauthorized(
+    internal static Error NotAuthenticated => Error.Unauthorized(
         "Messaging.NotAuthenticated",
-        "The request is not associated with an authenticated user.");
+        ErrorMessagesResource.Messaging_NotAuthenticated);
 
-    internal static readonly Error ConversationNotFound = Error.NotFound(
+    internal static Error ConversationNotFound => Error.NotFound(
         "Messaging.ConversationNotFound",
-        "The conversation was not found.");
+        ErrorMessagesResource.Messaging_ConversationNotFound);
 
-    internal static readonly Error MessageNotFound = Error.NotFound(
+    internal static Error MessageNotFound => Error.NotFound(
         "Messaging.MessageNotFound",
-        "The message was not found.");
+        ErrorMessagesResource.Messaging_MessageNotFound);
 
-    internal static readonly Error NotMember = Error.Forbidden(
+    internal static Error NotMember => Error.Forbidden(
         "Messaging.NotMember",
-        "You are not an active member of this conversation.");
+        ErrorMessagesResource.Messaging_NotMember);
 
-    internal static readonly Error CannotSend = Error.Forbidden(
+    internal static Error CannotSend => Error.Forbidden(
         "Messaging.CannotSend",
-        "You cannot send messages in this conversation.");
+        ErrorMessagesResource.Messaging_CannotSend);
 
-    internal static readonly Error ConversationClosed = Error.Conflict(
+    internal static Error ConversationClosed => Error.Conflict(
         "Messaging.ConversationClosed",
-        "This conversation is closed.");
+        ErrorMessagesResource.Messaging_ConversationClosed);
 
-    internal static readonly Error NotSender = Error.Forbidden(
+    internal static Error NotSender => Error.Forbidden(
         "Messaging.NotSender",
-        "Only the sender can modify this message.");
+        ErrorMessagesResource.Messaging_NotSender);
 
-    internal static readonly Error InvalidMedia = Error.Validation(
+    internal static Error InvalidMedia => Error.Validation(
         "Messaging.InvalidMedia",
-        "The uploaded file is missing or has an unsupported content type.");
+        ErrorMessagesResource.Messaging_InvalidMedia);
 
-    internal static readonly Error InvalidCursor = Error.Validation(
+    internal static Error InvalidCursor => Error.Validation(
         "Messaging.InvalidCursor",
-        "The pagination cursor is invalid.");
+        ErrorMessagesResource.Messaging_InvalidCursor);
 
-    internal static readonly Error ReplyNotFound = Error.NotFound(
+    internal static Error ReplyNotFound => Error.NotFound(
         "Messaging.ReplyNotFound",
-        "The message being replied to was not found in this conversation.");
+        ErrorMessagesResource.Messaging_ReplyNotFound);
 
-    internal static readonly Error PeerNotFound = Error.NotFound(
+    internal static Error PeerNotFound => Error.NotFound(
         "Messaging.PeerNotFound",
-        "The other user was not found.");
+        ErrorMessagesResource.Messaging_PeerNotFound);
 
-    internal static readonly Error NotFriends = Error.Forbidden(
+    internal static Error NotFriends => Error.Forbidden(
         "Messaging.NotFriends",
-        "You can only start a conversation with an accepted friend.");
+        ErrorMessagesResource.Messaging_NotFriends);
 
-    internal static readonly Error Blocked = Error.Forbidden(
+    internal static Error Blocked => Error.Forbidden(
         "Messaging.Blocked",
-        "This relationship is blocked.");
+        ErrorMessagesResource.Messaging_Blocked);
 
-    internal static readonly Error CannotMessageSelf = Error.Validation(
+    internal static Error CannotMessageSelf => Error.Validation(
         "Messaging.CannotMessageSelf",
-        "You cannot create a direct conversation with yourself.");
+        ErrorMessagesResource.Messaging_CannotMessageSelf);
 
-    internal static readonly Error CannotInvite = Error.Forbidden(
+    internal static Error CannotInvite => Error.Forbidden(
         "Messaging.CannotInvite",
-        "You cannot invite members to this conversation.");
+        ErrorMessagesResource.Messaging_CannotInvite);
 
-    internal static readonly Error GroupFull = Error.Conflict(
+    internal static Error GroupFull => Error.Conflict(
         "Messaging.GroupFull",
-        "The group conversation is full.");
+        ErrorMessagesResource.Messaging_GroupFull);
 
-    internal static readonly Error InvalidOperation = Error.Conflict(
+    internal static Error InvalidOperation => Error.Conflict(
         "Messaging.InvalidOperation",
-        "The conversation operation is not allowed in the current state.");
+        ErrorMessagesResource.Messaging_InvalidOperation);
 
-    internal static readonly Error UserNotFound = Error.NotFound(
+    internal static Error UserNotFound => Error.NotFound(
         "Messaging.UserNotFound",
-        "One or more users were not found.");
+        ErrorMessagesResource.Messaging_UserNotFound);
 }
