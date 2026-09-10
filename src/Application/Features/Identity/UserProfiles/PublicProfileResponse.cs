@@ -11,7 +11,6 @@ public sealed record PublicProfileResponse(
     string? Bio,
     string? City,
     string? ProfileImageUrl,
-    string? IntroVideoUrl,
     decimal AverageRating,
     int ReviewCount,
     IReadOnlyList<ProfileSportResponse> Sports,

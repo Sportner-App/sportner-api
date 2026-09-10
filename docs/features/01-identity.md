@@ -81,7 +81,6 @@ OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 | [x] | `UpdateDisplayName` | Command | `PUT /api/user-profiles/me/display-name` | |
 | [x] | `UpdateBio` | Command | `PUT /api/user-profiles/me/bio` | ≤500. |
 | [x] | `UpdateAvatar` | Command | `PUT /api/user-profiles/me/avatar` | Multipart upload to the `avatars` bucket via `IFileStorage`; stores the path. Empty body clears it. |
-| [x] | `UpdateIntroVideo` | Command | `PUT /api/user-profiles/me/intro-video` | Same pattern against the `intro-videos` bucket. |
 | [x] | `UpdateLocation` | Command | `PUT /api/user-profiles/me/location` | City on profile. |
 | [x] | `UpdatePersonalDetails` | Command | `PUT /api/user-profiles/me/personal-details` | Gender code + birth date; 13–120 age range enforced by the validator. |
 | [x] | `UpdateVisibility` | Command | `PUT /api/user-profiles/me/visibility` | `IsProfilePublic`. |
@@ -95,7 +94,7 @@ OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 | [x] | `CompleteOnboarding` | Command | `POST /api/me/onboarding/complete` | `User.CompleteOnboarding` stamps `OnboardingCompletedAt`. Requires an existing profile (username + first name) → 409 `Onboarding.ProfileRequired`, and at least one sport with a skill level → 409 `Onboarding.SportRequired`. Idempotent: already-completed users get 204 and keep their original date. |
 
 Onboarding is the second step after login: the client collects profile and sport data through the
-existing profile / sports endpoints (including optional `PUT .../avatar` and `PUT .../intro-video`)
+existing profile / sports endpoints (including optional `PUT .../avatar`)
 and calls this endpoint last to close the flow. Media uploads store the public URL so clients can
 render the file without a second lookup.
 

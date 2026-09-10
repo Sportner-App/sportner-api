@@ -10,7 +10,6 @@ public sealed record MyProfileResponse(
     DateOnly? BirthDate,
     string? City,
     string? ProfileImageUrl,
-    string? IntroVideoUrl,
     decimal AverageRating,
     int ReviewCount,
     bool IsProfilePublic,

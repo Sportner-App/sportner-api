@@ -8,7 +8,6 @@ using Sportner.Application.Features.Identity.UserProfiles.GetPublicProfile;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateAvatar;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateBio;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateDisplayName;
-using Sportner.Application.Features.Identity.UserProfiles.UpdateIntroVideo;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateLocation;
 using Sportner.Application.Features.Identity.UserProfiles.UpdatePersonalDetails;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateUsername;
@@ -137,20 +136,6 @@ public sealed class UserProfilesController : ApiControllerBase
 
         var result = await Sender.Send(
             new UpdateAvatarCommand(content, file?.ContentType, file?.FileName),
-            cancellationToken);
-
-        return result.ToActionResult();
-    }
-
-    [HttpPut("me/intro-video")]
-    public async Task<IActionResult> UpdateIntroVideo(
-        IFormFile? file,
-        CancellationToken cancellationToken)
-    {
-        await using var content = file?.OpenReadStream();
-
-        var result = await Sender.Send(
-            new UpdateIntroVideoCommand(content, file?.ContentType, file?.FileName),
             cancellationToken);
 
         return result.ToActionResult();

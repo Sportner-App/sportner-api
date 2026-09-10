@@ -29,8 +29,6 @@ public class UserProfile : AuditableEntity
 
     public string? ProfileImageUrl { get; private set; }
 
-    public string? IntroVideoUrl { get; private set; }
-
     public decimal AverageRating { get; private set; }
 
     public int ReviewCount { get; private set; }
@@ -107,12 +105,6 @@ public class UserProfile : AuditableEntity
     public void UpdateAvatar(string? profileImageUrl, DateTimeOffset utcNow)
     {
         ProfileImageUrl = NormalizeOptionalUrl(profileImageUrl);
-        Touch(utcNow);
-    }
-
-    public void UpdateIntroVideo(string? introVideoUrl, DateTimeOffset utcNow)
-    {
-        IntroVideoUrl = NormalizeOptionalUrl(introVideoUrl);
         Touch(utcNow);
     }
 

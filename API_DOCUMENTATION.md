@@ -146,7 +146,6 @@ Response — `200 OK`:
   "avatarUrl": "https://example.com/avatar.jpg",
   "bio": "Futbol ve tenis oyuncusu",
   "sports": ["football", "tennis"],
-  "introVideoUrl": "https://example.com/intro.mp4",
   "isOnboarded": true,
   "birthDate": "1998-06-12T00:00:00Z",
   "skillLevels": {
@@ -178,7 +177,6 @@ Request:
   "avatarUrl": "https://example.com/avatar.jpg",
   "bio": "Futbol ve tenis oyuncusu",
   "sports": ["football", "tennis"],
-  "introVideoUrl": "https://example.com/intro.mp4",
   "birthDate": "1998-06-12T00:00:00Z",
   "isOnboarded": true,
   "skillLevels": {
@@ -202,7 +200,6 @@ Response — `200 OK`:
   "avatarUrl": "https://example.com/avatar.jpg",
   "bio": "Futbol ve tenis oyuncusu",
   "sports": ["football", "tennis"],
-  "introVideoUrl": "https://example.com/intro.mp4",
   "isOnboarded": true,
   "birthDate": "1998-06-12T00:00:00Z",
   "skillLevels": {
