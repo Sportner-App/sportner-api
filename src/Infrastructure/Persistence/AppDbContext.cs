@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Domain.Badges;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
 using Sportner.Domain.Locations;
@@ -108,6 +109,35 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public void MarkAsAdded<TEntity>(TEntity entity) where TEntity : class =>
         Entry(entity).State = EntityState.Added;
+
+    public async Task<IReadOnlyList<Guid>> ClaimNotificationDeliveryOutboxAsync(
+        int batchSize,
+        DateTimeOffset utcNow,
+        DateTimeOffset staleClaimBefore,
+        CancellationToken cancellationToken = default)
+    {
+        const short pending = (short)NotificationDeliveryStatus.Pending;
+        const short processing = (short)NotificationDeliveryStatus.Processing;
+
+        // Single atomic statement: FOR UPDATE SKIP LOCKED lets a concurrently-running
+        // dispatcher (API + worker, or multiple replicas of either) skip rows already
+        // locked by this claim instead of racing to send the same push twice.
+        return await Database.SqlQuery<Guid>(
+            $"""
+             UPDATE "NotificationDeliveryOutbox" AS o
+             SET "Status" = {processing}, "UpdatedAt" = {utcNow}
+             FROM (
+                 SELECT "Id" FROM "NotificationDeliveryOutbox"
+                 WHERE ("Status" = {pending} AND ("NextAttemptAt" IS NULL OR "NextAttemptAt" <= {utcNow}))
+                    OR ("Status" = {processing} AND "UpdatedAt" <= {staleClaimBefore})
+                 ORDER BY "CreatedAt"
+                 LIMIT {batchSize}
+                 FOR UPDATE SKIP LOCKED
+             ) AS claimed
+             WHERE o."Id" = claimed."Id"
+             RETURNING o."Id" AS "Value"
+             """).ToListAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

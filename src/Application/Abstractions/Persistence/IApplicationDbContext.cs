@@ -65,5 +65,18 @@ public interface IApplicationDbContext
     /// </summary>
     void MarkAsAdded<TEntity>(TEntity entity) where TEntity : class;
 
+    /// <summary>
+    /// Atomically claims up to <paramref name="batchSize"/> due (or abandoned) push outbox
+    /// rows by flipping them to <see cref="Domain.Common.Enums.NotificationDeliveryStatus.Processing"/>
+    /// in a single statement, so a concurrently-running dispatcher (the API's inline delivery
+    /// service and the dedicated Notifications worker, or multiple replicas of either) cannot
+    /// claim the same row and send the same push twice.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ClaimNotificationDeliveryOutboxAsync(
+        int batchSize,
+        DateTimeOffset utcNow,
+        DateTimeOffset staleClaimBefore,
+        CancellationToken cancellationToken = default);
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

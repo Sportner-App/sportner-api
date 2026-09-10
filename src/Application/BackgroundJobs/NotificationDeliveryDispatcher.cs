@@ -11,6 +11,13 @@ namespace Sportner.Application.BackgroundJobs;
 
 internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDispatcher
 {
+    /// <summary>
+    /// The API's inline delivery service and the dedicated Notifications worker both poll
+    /// this outbox concurrently. A row claimed for delivery but never resolved (process
+    /// crash/restart mid-send) is treated as abandoned and re-claimable after this long.
+    /// </summary>
+    private static readonly TimeSpan StaleClaimTimeout = TimeSpan.FromMinutes(2);
+
     private readonly IApplicationDbContext _dbContext;
     private readonly IPushSender _pushSender;
     private readonly TimeProvider _timeProvider;
@@ -35,19 +42,25 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
     {
         var utcNow = _timeProvider.GetUtcNow();
         var batchSize = Math.Max(1, _options.NotificationDeliveryBatchSize);
+        var staleBefore = utcNow - StaleClaimTimeout;
 
-        var pending = await _dbContext.NotificationDeliveryOutbox
-            .Where(item =>
-                item.Status == NotificationDeliveryStatus.Pending
-                && (item.NextAttemptAt == null || item.NextAttemptAt <= utcNow))
-            .OrderBy(item => item.CreatedAt)
-            .Take(batchSize)
-            .ToListAsync(cancellationToken);
+        // Atomically claim a batch so a concurrently-running dispatcher (the API's inline
+        // delivery service and the dedicated Notifications worker, or multiple replicas of
+        // either) cannot pick up the same rows and send the same push twice.
+        var claimedIds = await _dbContext.ClaimNotificationDeliveryOutboxAsync(
+            batchSize,
+            utcNow,
+            staleBefore,
+            cancellationToken);
 
-        if (pending.Count == 0)
+        if (claimedIds.Count == 0)
         {
             return;
         }
+
+        var pending = await _dbContext.NotificationDeliveryOutbox
+            .Where(item => claimedIds.Contains(item.Id))
+            .ToListAsync(cancellationToken);
 
         _logger.LogInformation("Processing {Count} notification delivery outbox rows.", pending.Count);
 
