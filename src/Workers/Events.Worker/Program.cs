@@ -56,10 +56,18 @@ try
             await provider.GetRequiredService<IBadgeAwarder>().SweepMarathonRunnersAsync(ct);
         });
 
+    builder.Services.AddCronJob(
+        "attendance-auto-confirm",
+        options => options.AttendanceAutoConfirmCron,
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IAttendanceAutoConfirmDispatcher>().DispatchAsync(ct);
+        });
+
     var host = builder.Build();
 
     Log.Information(
-        "Sportner.Events.Worker starting (auto-complete + recurring series + reminders + marathon badge sweep).");
+        "Sportner.Events.Worker starting (auto-complete + recurring series + reminders + marathon badge sweep + attendance auto-confirm).");
     await host.RunAsync();
 }
 catch (Exception ex)

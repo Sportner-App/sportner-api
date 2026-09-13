@@ -35,6 +35,8 @@ Depends on: [03-events.md](03-events.md) (event Completed + `EventParticipant.Ca
 | [x] | `ListReviewsForUser` | Query | `GET /api/users/{userId}/reviews` | Received, non-reported; paginated. |
 | [x] | `ListReviewsForEvent` | Query | `GET /api/events/{eventId}/reviews` | Non-reported; paginated. |
 | [x] | `ListReviewablePeers` | Query | `GET /api/events/{eventId}/reviewable` | Organizer or Attended reviewer; Attended peers (plus organizer for attendees) not yet reviewed by me. |
+| [x] | `ListPendingAttendanceEvents` | Query | `GET /api/events/mine/pending-attendance` | Events I organized that are Completed but still have Approved (attendance-unconfirmed) participants — nobody there can review anyone yet. Drives the app-launch prompt. |
+| [x] | `ConfirmAllAttendance` | Command | `POST /api/events/{eventId}/attendance/confirm-all` | Organizer's one-tap close-out: every still-Approved participant → Attended, except any listed in `absentUserIds` (→ No-Show instead). Requires the event already be Completed. |
 
 ---
 
@@ -45,6 +47,7 @@ Depends on: [03-events.md](03-events.md) (event Completed + `EventParticipant.Ca
 3. Optional `FIRST_REVIEW` badge + `IncreaseBadgesCount` for the reviewer.
 4. `Review.MarkAsReported` — deferred to Moderation.
 5. `NotificationType.EventReviewPrompt` prompts each newly review-eligible user to go rate their teammates — organizer at event completion, each participant at their own attendance confirmation (see [07-notifications.md](07-notifications.md)). The app also surfaces a prominent in-app CTA on the event-detail screen for attended participants once the event is completed.
+6. **Attendance safety net** — an organizer who never opens the app to take attendance would otherwise block reviews for everyone in that event forever. Two mechanisms cover this: (a) `ListPendingAttendanceEvents` + `ConfirmAllAttendance` back an app-launch prompt (dismissible) that lets the organizer close out attendance in one tap; (b) `AttendanceAutoConfirmDispatcher` (hourly cron, `BackgroundJobsOptions.AttendanceAutoConfirmCron`) auto-confirms every still-Approved participant `AttendanceAutoConfirmGraceDays` (default 3) after the event's scheduled end, regardless of whether the organizer ever returns. Note: `Event.Create` auto-enrolls the organizer as an Approved participant of their own event, so the organizer's own attendance is swept by these same mechanisms.
 
 ---
 

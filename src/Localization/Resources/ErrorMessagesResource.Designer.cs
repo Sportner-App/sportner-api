@@ -116,6 +116,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Event_NotCompleted {
+            get {
+                return ResourceManager.GetString("Event_NotCompleted", resourceCulture);
+            }
+        }
+
         public static string Event_RemovalReasonNotFound {
             get {
                 return ResourceManager.GetString("Event_RemovalReasonNotFound", resourceCulture);

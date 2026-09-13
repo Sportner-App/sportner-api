@@ -41,4 +41,13 @@ public sealed class BackgroundJobsOptions
 
     /// <summary>Daily 04:00 UTC — MARATHON_RUNNER streak sweep.</summary>
     public string MarathonRunnerBadgeCron { get; set; } = "0 4 * * *";
+
+    /// <summary>Hourly — safety net for organizers who never take attendance.</summary>
+    public string AttendanceAutoConfirmCron { get; set; } = "0 * * * *";
+
+    /// <summary>
+    /// Days after an event's scheduled end before still-Approved participants are
+    /// auto-confirmed as Attended, unblocking reviews even if the organizer never returns.
+    /// </summary>
+    public int AttendanceAutoConfirmGraceDays { get; set; } = 3;
 }

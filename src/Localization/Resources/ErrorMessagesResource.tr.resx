@@ -42,6 +42,9 @@
   <data name="Event_ParticipantNotFound" xml:space="preserve">
     <value>Katılımcı bulunamadı.</value>
   </data>
+  <data name="Event_NotCompleted" xml:space="preserve">
+    <value>Yoklama ancak etkinlik tamamlandıktan sonra alınabilir.</value>
+  </data>
   <data name="Event_RemovalReasonNotFound" xml:space="preserve">
     <value>Geçerli bir çıkarma sebebi gerekiyor.</value>
   </data>

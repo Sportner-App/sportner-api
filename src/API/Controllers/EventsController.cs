@@ -12,6 +12,7 @@ using Sportner.Application.Features.Events.AssignEventParticipants;
 using Sportner.Application.Features.Events.CancelEvent;
 using Sportner.Application.Features.Events.CancelParticipation;
 using Sportner.Application.Features.Events.CompleteEvent;
+using Sportner.Application.Features.Events.ConfirmAllAttendance;
 using Sportner.Application.Features.Events.ConfirmAttendance;
 using Sportner.Application.Features.Events.CreateEvent;
 using Sportner.Application.Features.Events.CreateRecurringEvents;
@@ -24,6 +25,7 @@ using Sportner.Application.Features.Events.ListMyParticipatingEvents;
 using Sportner.Application.Features.Events.ListParticipants;
 using Sportner.Application.Features.Events.ListWaitlist;
 using Sportner.Application.Features.Events.MarkNoShow;
+using Sportner.Application.Features.Events.PendingAttendance;
 using Sportner.Application.Features.Events.PromoteFromWaitlist;
 using Sportner.Application.Features.Events.PublishEvent;
 using Sportner.Application.Features.Events.RejectParticipant;
@@ -99,6 +101,13 @@ public sealed class EventsController : ApiControllerBase
             new ListMyOrganizedEventsQuery(page, pageSize),
             cancellationToken);
 
+        return result.ToActionResult();
+    }
+
+    [HttpGet("mine/pending-attendance")]
+    public async Task<IActionResult> ListPendingAttendance(CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new ListPendingAttendanceEventsQuery(), cancellationToken);
         return result.ToActionResult();
     }
 
@@ -438,6 +447,19 @@ public sealed class EventsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpPost("{eventId:guid}/attendance/confirm-all")]
+    public async Task<IActionResult> ConfirmAllAttendance(
+        Guid eventId,
+        [FromBody] ConfirmAllAttendanceRequest? request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new ConfirmAllAttendanceCommand(eventId, request?.AbsentUserIds),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
     [HttpGet("{eventId:guid}/waitlist")]
     public async Task<IActionResult> ListWaitlist(Guid eventId, CancellationToken cancellationToken)
     {
@@ -536,6 +558,8 @@ public sealed class EventsController : ApiControllerBase
     public sealed record UpdateCapacityRequest(int? MaxParticipants);
 
     public sealed record UpdateFeeRequest(bool IsPaid, decimal? FeeAmount);
+
+    public sealed record ConfirmAllAttendanceRequest(IReadOnlyList<Guid>? AbsentUserIds);
 
     public sealed record AssignParticipantsRequest(
         IReadOnlyList<GuestAssignmentRequest>? Guests,

@@ -42,6 +42,9 @@
   <data name="Event_ParticipantNotFound" xml:space="preserve">
     <value>The participant was not found.</value>
   </data>
+  <data name="Event_NotCompleted" xml:space="preserve">
+    <value>Attendance can only be taken after the event is completed.</value>
+  </data>
   <data name="Event_RemovalReasonNotFound" xml:space="preserve">
     <value>A valid participant removal reason is required.</value>
   </data>

@@ -103,4 +103,8 @@ internal static class EventErrors
     internal static Error FriendAlreadyAssociated => Error.Conflict(
         "Event.FriendAlreadyAssociated",
         ErrorMessagesResource.Event_FriendAlreadyAssociated);
+
+    internal static Error NotCompleted => Error.Conflict(
+        "Event.NotCompleted",
+        ErrorMessagesResource.Event_NotCompleted);
 }
