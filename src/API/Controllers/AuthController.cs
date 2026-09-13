@@ -13,6 +13,8 @@ using Sportner.Application.Features.Identity.Auth.SignInWithApple;
 using Sportner.Application.Features.Identity.Auth.SignInWithGoogle;
 using Sportner.Application.Features.Identity.Auth.CompleteExternalRegistration;
 using Sportner.Application.Features.Identity.Auth.DeleteAccount;
+using Sportner.Application.Features.Identity.Auth.ResendEmailVerification;
+using Sportner.Application.Features.Identity.Auth.VerifyEmail;
 
 namespace Sportner.API.Controllers;
 
@@ -28,6 +30,7 @@ public sealed class AuthController : ApiControllerBase
         var command = new RegisterCommand(
             request.Username,
             request.Password,
+            request.Email,
             request.FirstName,
             request.LastName,
             request.Gender,
@@ -153,15 +156,38 @@ public sealed class AuthController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
+    [Authorize(Policy = AuthorizationPolicies.Authenticated)]
+    [HttpPost("email/verify")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> VerifyEmail(
+        [FromBody] VerifyEmailRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new VerifyEmailCommand(request.Code), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    [Authorize(Policy = AuthorizationPolicies.Authenticated)]
+    [HttpPost("email/resend")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> ResendEmailVerification(CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new ResendEmailVerificationCommand(), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
     public sealed record RegisterRequest(
         string Username,
         string Password,
+        string Email,
         string FirstName,
         string? LastName,
     short? Gender,
         DateOnly BirthDate);
 
     public sealed record LoginRequest(string Username, string Password);
+
+    public sealed record VerifyEmailRequest(string Code);
 
     public sealed record GoogleSignInRequest(string IdToken);
 

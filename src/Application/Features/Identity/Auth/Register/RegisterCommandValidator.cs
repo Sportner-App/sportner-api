@@ -17,6 +17,11 @@ internal sealed class RegisterCommandValidator : AbstractValidator<RegisterComma
             .MinimumLength(8)
             .MaximumLength(128);
 
+        RuleFor(command => command.Email)
+            .NotEmpty()
+            .MaximumLength(254)
+            .EmailAddress();
+
         RuleFor(command => command.FirstName)
             .NotEmpty()
             .MaximumLength(50);

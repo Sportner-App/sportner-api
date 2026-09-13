@@ -56,6 +56,22 @@ internal sealed class SignInWithGoogleCommandHandler
 
         if (externalLogin is null)
         {
+            // No link to this provider identity yet — but if the email it reports already
+            // belongs to a different account (password or another provider), don't send the
+            // user through registration only to fail at the end; tell them now to sign in the
+            // way they originally did.
+            if (!string.IsNullOrWhiteSpace(identity.Email))
+            {
+                var normalizedEmail = identity.Email.Trim().ToLowerInvariant();
+                var emailTaken = await _dbContext.Users.AsNoTracking()
+                    .AnyAsync(candidate => candidate.Email == normalizedEmail, cancellationToken);
+
+                if (emailTaken)
+                {
+                    return Result<ExternalSignInResponse>.Failure(AuthErrors.EmailTaken);
+                }
+            }
+
             var ticketData = new ExternalRegistrationTicket(
                 ExternalLoginProvider.Google,
                 identity.ProviderUserId,
@@ -110,6 +126,7 @@ internal sealed class SignInWithGoogleCommandHandler
                 refreshToken.Token,
                 refreshToken.ExpiresAt,
                 IsNewUser: false,
-                IsOnboardingCompleted: user.HasCompletedOnboarding())));
+                IsOnboardingCompleted: user.HasCompletedOnboarding(),
+                IsEmailVerified: user.EmailVerifiedAt is not null)));
     }
 }

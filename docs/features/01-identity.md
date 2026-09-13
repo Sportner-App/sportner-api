@@ -43,14 +43,20 @@ All except `Register` / `Login` / `Refresh` require `[Authorize]` unless noted.
 
 | Status | Use case | Type | Endpoint | Domain / notes |
 | ------ | -------- | ---- | -------- | -------------- |
-| [x] | `Register` | Command | `POST /api/auth/register` | Username + password + firstName → `User.RegisterWithPassword` + `UserProfile` + session. Seeds notification settings. |
+| [x] | `Register` | Command | `POST /api/auth/register` | Username + password + email + firstName → `User.RegisterWithPassword` + `UserProfile` + session. Email must be unique across all accounts (any signup method) → 409 `Auth.EmailTaken`. Issues a 6-digit verification code (best-effort send via `IEmailSender`; doesn't fail registration if delivery fails). Seeds notification settings. |
 | [x] | `Login` | Command | `POST /api/auth/login` | Lookup profile username → verify password hash → JWT + refresh. |
 | [x] | `RefreshToken` | Command | `POST /api/auth/refresh` | Validate hash, user `CanAuthenticate`, session active → `RotateRefreshToken` → new access token. |
 | [x] | `Logout` | Command | `POST /api/auth/logout` | Revokes the session for the given refresh token (idempotent). |
 | [x] | `LogoutAll` | Command | `POST /api/auth/logout-all` | `RevokeAllSessions` for current user. |
 | [x] | `DeleteAccount` | Command | `DELETE /api/auth/me` | Self-service. `User.Delete` → `Status = Deleted` + revokes all sessions. Soft delete only, per project convention (no row/related data removed). Login/refresh/social sign-in already reject `Deleted` users. |
+| [x] | `VerifyEmail` | Command | `POST /api/auth/email/verify` | Authenticated. Compares the submitted code against `EmailVerificationCodeHash` (via `ITokenHasher`, never the raw code) and its expiry → `User.ConfirmEmailVerified`. |
+| [x] | `ResendEmailVerification` | Command | `POST /api/auth/email/resend` | Authenticated. Re-issues a code, gated by a 60s cooldown (`Auth.EmailVerificationCooldown`) and a no-op if already verified (`Auth.EmailAlreadyVerified`). |
 
-`Register` / `Login` / `RefreshToken` return `isOnboardingCompleted` (sport still required for full onboarding).
+`Register` / `Login` / `RefreshToken` / `CompleteExternalRegistration` / social sign-in return `isOnboardingCompleted` and `isEmailVerified` (sport still required for full onboarding; email verification is currently soft/non-blocking — see `docs/database/01-users.md`).
+
+Google/Apple sign-in also reject with `Auth.EmailTaken` at the "no existing link" check when the provider's email already belongs to a different account (password or the other provider) — sends the user back to their original sign-in method instead of into a registration flow that would fail at the end.
+
+`IEmailSender` (Resend, HTTP) sends verification codes; falls back to `LoggingEmailSender` (logs the code) when `Resend:ApiKey` isn't configured, so registration/verification work end to end before a Resend account exists.
 
 OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 

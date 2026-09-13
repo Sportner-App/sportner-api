@@ -36,8 +36,12 @@ internal sealed class GetMyProfileQueryHandler : IQueryHandler<GetMyProfileQuery
 
         var sports = await ProfileQueries.GetSportsAsync(_dbContext, userId, cancellationToken);
         var statistics = await ProfileQueries.GetStatisticsAsync(_dbContext, userId, cancellationToken);
+        var (email, isEmailVerified) = await ProfileQueries.GetEmailStatusAsync(
+            _dbContext,
+            userId,
+            cancellationToken);
 
         return Result<MyProfileResponse>.Success(
-            ProfileQueries.ToMyProfileResponse(profile, sports, statistics));
+            ProfileQueries.ToMyProfileResponse(profile, sports, statistics, email, isEmailVerified));
     }
 }

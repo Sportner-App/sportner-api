@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Email;
 using Sportner.Application.Features.Identity.Auth.Login;
 using Sportner.Application.Features.Identity.Auth.Register;
 using Sportner.Application.UnitTests.Infrastructure;
@@ -25,16 +26,76 @@ public sealed class PasswordAuthCommandHandlerTests
             passwordHasher.Object,
             jwt.Object,
             tokenHasher.Object,
+            Mock.Of<IEmailSender>(),
             TimeProvider.System);
 
         var result = await handler.Handle(
-            new RegisterCommand("AhmetX", "Password1!", "Ahmet", "Yilmaz", 0, new DateOnly(2000, 1, 1), null, null),
+            new RegisterCommand(
+                "AhmetX",
+                "Password1!",
+                "ahmet@example.com",
+                "Ahmet",
+                "Yilmaz",
+                0,
+                new DateOnly(2000, 1, 1),
+                null,
+                null),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.IsNewUser.Should().BeTrue();
         db.Users.Should().ContainSingle();
         db.UserProfiles.Should().ContainSingle(p => p.Username == "ahmetx");
+    }
+
+    [Fact]
+    public async Task Register_Fails_WhenEmailAlreadyTaken()
+    {
+        await using var db = InMemoryDb.Create();
+        var passwordHasher = new Mock<IPasswordHasher>();
+        passwordHasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hashed");
+
+        var jwt = CreateJwtMock();
+        var tokenHasher = new Mock<ITokenHasher>();
+        tokenHasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hash");
+
+        var handler = new RegisterCommandHandler(
+            db,
+            passwordHasher.Object,
+            jwt.Object,
+            tokenHasher.Object,
+            Mock.Of<IEmailSender>(),
+            TimeProvider.System);
+
+        var first = await handler.Handle(
+            new RegisterCommand(
+                "firstuser",
+                "Password1!",
+                "shared@example.com",
+                "First",
+                null,
+                0,
+                new DateOnly(2000, 1, 1),
+                null,
+                null),
+            CancellationToken.None);
+        first.IsSuccess.Should().BeTrue();
+
+        var second = await handler.Handle(
+            new RegisterCommand(
+                "seconduser",
+                "Password1!",
+                "SHARED@example.com",
+                "Second",
+                null,
+                0,
+                new DateOnly(2000, 1, 1),
+                null,
+                null),
+            CancellationToken.None);
+
+        second.IsSuccess.Should().BeFalse();
+        second.Errors.Should().Contain(e => e.Code == "Auth.EmailTaken");
     }
 
     [Fact]
@@ -54,10 +115,20 @@ public sealed class PasswordAuthCommandHandlerTests
             passwordHasher.Object,
             jwt.Object,
             tokenHasher.Object,
+            Mock.Of<IEmailSender>(),
             TimeProvider.System);
 
         await register.Handle(
-            new RegisterCommand("player1", "Password1!", "Player", null, 1, new DateOnly(2000, 1, 1), null, null),
+            new RegisterCommand(
+                "player1",
+                "Password1!",
+                "player1@example.com",
+                "Player",
+                null,
+                1,
+                new DateOnly(2000, 1, 1),
+                null,
+                null),
             CancellationToken.None);
 
         db.ChangeTracker.Clear();
@@ -94,10 +165,20 @@ public sealed class PasswordAuthCommandHandlerTests
             passwordHasher.Object,
             jwt.Object,
             tokenHasher.Object,
+            Mock.Of<IEmailSender>(),
             TimeProvider.System);
 
         await register.Handle(
-            new RegisterCommand("player2", "Password1!", "Player", null, 2, new DateOnly(2000, 1, 1), null, null),
+            new RegisterCommand(
+                "player2",
+                "Password1!",
+                "player2@example.com",
+                "Player",
+                null,
+                2,
+                new DateOnly(2000, 1, 1),
+                null,
+                null),
             CancellationToken.None);
 
         var login = new LoginCommandHandler(

@@ -71,7 +71,7 @@ public class UserOnboardingTests
 
     private static User CreateActiveUser()
     {
-        var user = User.RegisterWithPassword("test-hash", CreatedAt);
+        var user = User.RegisterWithPassword("test-hash", "test@example.com", CreatedAt);
         return user;
     }
 

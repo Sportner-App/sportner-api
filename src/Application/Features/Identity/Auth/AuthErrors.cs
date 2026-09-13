@@ -35,4 +35,28 @@ internal static class AuthErrors
     internal static Error ExternalLoginAlreadyRegistered => Error.Conflict(
         "Auth.ExternalLoginAlreadyRegistered",
         ErrorMessagesResource.Auth_ExternalLoginAlreadyRegistered);
+
+    internal static Error EmailTaken => Error.Conflict(
+        "Auth.EmailTaken",
+        ErrorMessagesResource.Auth_EmailTaken);
+
+    internal static Error EmailRequired => Error.Validation(
+        "Auth.EmailRequired",
+        ErrorMessagesResource.Auth_EmailRequired);
+
+    internal static Error EmailAlreadyVerified => Error.Conflict(
+        "Auth.EmailAlreadyVerified",
+        ErrorMessagesResource.Auth_EmailAlreadyVerified);
+
+    internal static Error EmailVerificationCodeInvalid => Error.Unauthorized(
+        "Auth.EmailVerificationCodeInvalid",
+        ErrorMessagesResource.Auth_EmailVerificationCodeInvalid);
+
+    internal static Error EmailVerificationCodeExpired => Error.Unauthorized(
+        "Auth.EmailVerificationCodeExpired",
+        ErrorMessagesResource.Auth_EmailVerificationCodeExpired);
+
+    internal static Error EmailVerificationCooldown => Error.Conflict(
+        "Auth.EmailVerificationCooldown",
+        ErrorMessagesResource.Auth_EmailVerificationCooldown);
 }

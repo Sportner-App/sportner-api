@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Email;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
@@ -17,6 +18,7 @@ internal sealed class RegisterCommandHandler
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
     private readonly ITokenHasher _tokenHasher;
+    private readonly IEmailSender _emailSender;
     private readonly TimeProvider _timeProvider;
 
     public RegisterCommandHandler(
@@ -24,12 +26,14 @@ internal sealed class RegisterCommandHandler
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
         ITokenHasher tokenHasher,
+        IEmailSender emailSender,
         TimeProvider timeProvider)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _tokenHasher = tokenHasher;
+        _emailSender = emailSender;
         _timeProvider = timeProvider;
     }
 
@@ -38,6 +42,7 @@ internal sealed class RegisterCommandHandler
         CancellationToken cancellationToken)
     {
         var username = ProfileQueries.NormalizeUsername(request.Username);
+        var email = request.Email.Trim().ToLowerInvariant();
 
         var usernameTaken = await _dbContext.UserProfiles
             .AsNoTracking()
@@ -48,10 +53,19 @@ internal sealed class RegisterCommandHandler
             return Result<AuthenticationResponse>.Failure(AuthErrors.UsernameTaken);
         }
 
+        var emailTaken = await _dbContext.Users
+            .AsNoTracking()
+            .AnyAsync(candidate => candidate.Email == email, cancellationToken);
+
+        if (emailTaken)
+        {
+            return Result<AuthenticationResponse>.Failure(AuthErrors.EmailTaken);
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         var passwordHash = _passwordHasher.Hash(request.Password);
 
-        var user = User.RegisterWithPassword(passwordHash, utcNow);
+        var user = User.RegisterWithPassword(passwordHash, email, utcNow);
         var profile = UserProfile.Create(
             user.Id,
             username,
@@ -61,6 +75,12 @@ internal sealed class RegisterCommandHandler
         profile.UpdatePersonalDetails(request.Gender!.Value, request.BirthDate, utcNow);
 
         user.AttachUserProfile(profile);
+
+        var verificationCode = EmailVerificationCodes.Generate();
+        user.IssueEmailVerificationCode(
+            _tokenHasher.Hash(verificationCode),
+            utcNow.Add(EmailVerificationCodes.CodeLifetime),
+            utcNow);
 
         _dbContext.Users.Add(user);
         // Client-generated Guids on 1:1 dependents can be tracked as Modified; force insert.
@@ -88,6 +108,10 @@ internal sealed class RegisterCommandHandler
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        // Best-effort: a delivery failure here shouldn't fail registration — the user can
+        // still request a resend once signed in.
+        await _emailSender.SendVerificationCodeAsync(email, verificationCode, cancellationToken);
+
         return Result<AuthenticationResponse>.Success(
             new AuthenticationResponse(
                 user.Id,
@@ -96,7 +120,8 @@ internal sealed class RegisterCommandHandler
                 refreshToken.Token,
                 refreshToken.ExpiresAt,
                 IsNewUser: true,
-                IsOnboardingCompleted: user.HasCompletedOnboarding()));
+                IsOnboardingCompleted: user.HasCompletedOnboarding(),
+                IsEmailVerified: false));
     }
 
     private void AddDefaultNotificationSettings(Guid userId, DateTimeOffset utcNow)

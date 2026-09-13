@@ -37,6 +37,13 @@ internal static class ModelBuilderExtensions
             .IsUnique()
             .HasFilter("\"PhoneNumber\" IS NOT NULL");
 
+        // Email is stored pre-normalized (trim + lowercase) so a plain unique index is
+        // effectively case-insensitive, matching how Username uniqueness works.
+        modelBuilder.Entity<User>()
+            .HasIndex(entity => entity.Email)
+            .IsUnique()
+            .HasFilter("\"Email\" IS NOT NULL");
+
         modelBuilder.Entity<UserProfile>()
             .HasIndex(entity => entity.UserId)
             .IsUnique();
@@ -370,6 +377,14 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<User>()
             .Property(entity => entity.PasswordHash)
             .HasMaxLength(500);
+
+        modelBuilder.Entity<User>()
+            .Property(entity => entity.Email)
+            .HasMaxLength(254);
+
+        modelBuilder.Entity<User>()
+            .Property(entity => entity.EmailVerificationCodeHash)
+            .HasMaxLength(64);
 
         modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.Username)

@@ -61,6 +61,19 @@ internal sealed class CompleteExternalRegistrationCommandHandler
             return Result<AuthenticationResponse>.Failure(AuthErrors.UsernameTaken);
         }
 
+        // Defense in depth: SignInWithGoogle/Apple already reject this before issuing the
+        // registration token, but re-check here in case another account claimed the email in
+        // the window between that check and this call.
+        if (!string.IsNullOrWhiteSpace(ticket.Email))
+        {
+            var normalizedEmail = ticket.Email.Trim().ToLowerInvariant();
+            if (await _dbContext.Users.AsNoTracking()
+                .AnyAsync(candidate => candidate.Email == normalizedEmail, cancellationToken))
+            {
+                return Result<AuthenticationResponse>.Failure(AuthErrors.EmailTaken);
+            }
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         var user = User.RegisterWithExternalProvider(
             ticket.Provider,
@@ -110,6 +123,7 @@ internal sealed class CompleteExternalRegistrationCommandHandler
             refreshToken.Token,
             refreshToken.ExpiresAt,
             IsNewUser: true,
-            IsOnboardingCompleted: false));
+            IsOnboardingCompleted: false,
+            IsEmailVerified: user.EmailVerifiedAt is not null));
     }
 }

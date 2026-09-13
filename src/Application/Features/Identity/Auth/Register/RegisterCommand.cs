@@ -5,6 +5,7 @@ namespace Sportner.Application.Features.Identity.Auth.Register;
 public sealed record RegisterCommand(
     string Username,
     string Password,
+    string Email,
     string FirstName,
     string? LastName,
     short? Gender,

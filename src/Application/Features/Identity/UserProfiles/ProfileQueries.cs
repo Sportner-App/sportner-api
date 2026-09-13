@@ -116,7 +116,9 @@ internal static class ProfileQueries
     internal static MyProfileResponse ToMyProfileResponse(
         UserProfile profile,
         IReadOnlyList<ProfileSportResponse> sports,
-        ProfileStatisticsResponse? statistics) =>
+        ProfileStatisticsResponse? statistics,
+        string? email = null,
+        bool isEmailVerified = false) =>
         new(
             profile.UserId,
             profile.Username,
@@ -133,7 +135,25 @@ internal static class ProfileQueries
             profile.UsernameChangedAt,
             profile.UsernameChangedAt.AddDays(UsernameChangeCooldownDays),
             sports,
-            statistics);
+            statistics,
+            email,
+            isEmailVerified);
+
+    /// <summary>Small helper so every self-service profile handler surfaces the same
+    /// email/verification snapshot in its <see cref="MyProfileResponse"/> without duplicating
+    /// the query.</summary>
+    internal static async Task<(string? Email, bool IsEmailVerified)> GetEmailStatusAsync(
+        IApplicationDbContext dbContext,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var row = await dbContext.Users.AsNoTracking()
+            .Where(user => user.Id == userId)
+            .Select(user => new { user.Email, user.EmailVerifiedAt })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return (row?.Email, row?.EmailVerifiedAt is not null);
+    }
 
     internal static PublicProfileResponse ToPublicProfileResponse(
         UserProfile profile,

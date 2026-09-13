@@ -16,4 +16,6 @@ public sealed record MyProfileResponse(
     DateTimeOffset UsernameChangedAt,
     DateTimeOffset? UsernameChangeAvailableAt,
     IReadOnlyList<ProfileSportResponse> Sports,
-    ProfileStatisticsResponse? Statistics);
+    ProfileStatisticsResponse? Statistics,
+    string? Email = null,
+    bool IsEmailVerified = false);

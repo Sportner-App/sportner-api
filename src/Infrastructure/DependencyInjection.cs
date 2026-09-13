@@ -1,13 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Sportner.Application.Abstractions.Authentication;
+using Sportner.Application.Abstractions.Email;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Infrastructure.Authentication;
+using Sportner.Infrastructure.Email;
 using Sportner.Infrastructure.Notifications;
 using Sportner.Infrastructure.Persistence;
 using Sportner.Infrastructure.Persistence.Interceptors;
@@ -50,6 +53,8 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
         });
 
+        services.AddEmailServices(configuration);
+
         services.AddHealthChecks();
 
         return services;
@@ -86,6 +91,32 @@ public static class DependencyInjection
             configuration.GetSection(SupabaseStorageOptions.SectionName));
 
         services.AddHttpClient<IFileStorage, SupabaseFileStorage>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddEmailServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<ResendOptions>(configuration.GetSection(ResendOptions.SectionName));
+
+        services.AddHttpClient<ResendEmailSender>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        });
+        services.AddScoped<LoggingEmailSender>();
+
+        // No Resend API key configured yet (e.g. local/dev, or before the account is set up) →
+        // fall back to logging the code instead of failing registration/verification outright.
+        services.AddScoped<IEmailSender>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<ResendOptions>>().Value;
+            return string.IsNullOrWhiteSpace(options.ApiKey)
+                ? provider.GetRequiredService<LoggingEmailSender>()
+                : provider.GetRequiredService<ResendEmailSender>();
+        });
 
         return services;
     }

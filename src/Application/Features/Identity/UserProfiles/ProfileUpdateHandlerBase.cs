@@ -56,8 +56,12 @@ internal abstract class ProfileUpdateHandlerBase
 
         var sports = await ProfileQueries.GetSportsAsync(DbContext, userId, cancellationToken);
         var statistics = await ProfileQueries.GetStatisticsAsync(DbContext, userId, cancellationToken);
+        var (email, isEmailVerified) = await ProfileQueries.GetEmailStatusAsync(
+            DbContext,
+            userId,
+            cancellationToken);
 
         return Result<MyProfileResponse>.Success(
-            ProfileQueries.ToMyProfileResponse(profile, sports, statistics));
+            ProfileQueries.ToMyProfileResponse(profile, sports, statistics, email, isEmailVerified));
     }
 }

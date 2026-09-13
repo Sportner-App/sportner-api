@@ -94,6 +94,11 @@ internal sealed class CreateProfileCommandHandler
         var statistics = await ProfileQueries.GetStatisticsAsync(_dbContext, user.Id, cancellationToken);
 
         return Result<MyProfileResponse>.Success(
-            ProfileQueries.ToMyProfileResponse(newProfile, [], statistics));
+            ProfileQueries.ToMyProfileResponse(
+                newProfile,
+                [],
+                statistics,
+                user.Email,
+                user.EmailVerifiedAt is not null));
     }
 }

@@ -7,4 +7,5 @@ public sealed record AuthenticationResponse(
     string RefreshToken,
     DateTimeOffset RefreshTokenExpiresAt,
     bool IsNewUser,
-    bool IsOnboardingCompleted);
+    bool IsOnboardingCompleted,
+    bool IsEmailVerified = false);

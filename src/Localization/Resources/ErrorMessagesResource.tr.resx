@@ -153,6 +153,24 @@
   <data name="Auth_ExternalLoginAlreadyRegistered" xml:space="preserve">
     <value>Bu sosyal hesap zaten kayıtlı. Giriş yapmayı tekrar dene.</value>
   </data>
+  <data name="Auth_EmailTaken" xml:space="preserve">
+    <value>Bu email adresiyle zaten bir hesap var. Lütfen daha önce kullandığın yöntemle giriş yap.</value>
+  </data>
+  <data name="Auth_EmailRequired" xml:space="preserve">
+    <value>Bu hesap için bir email adresi gerekli.</value>
+  </data>
+  <data name="Auth_EmailAlreadyVerified" xml:space="preserve">
+    <value>Bu email zaten doğrulanmış.</value>
+  </data>
+  <data name="Auth_EmailVerificationCodeInvalid" xml:space="preserve">
+    <value>Doğrulama kodu yanlış.</value>
+  </data>
+  <data name="Auth_EmailVerificationCodeExpired" xml:space="preserve">
+    <value>Doğrulama kodunun süresi doldu. Yeni bir kod iste.</value>
+  </data>
+  <data name="Auth_EmailVerificationCooldown" xml:space="preserve">
+    <value>Yeni bir kod istemeden önce lütfen bekle.</value>
+  </data>
   <data name="Friendship_NotAuthenticated" xml:space="preserve">
     <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
   </data>

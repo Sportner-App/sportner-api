@@ -337,6 +337,42 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Auth_EmailTaken {
+            get {
+                return ResourceManager.GetString("Auth_EmailTaken", resourceCulture);
+            }
+        }
+
+        public static string Auth_EmailRequired {
+            get {
+                return ResourceManager.GetString("Auth_EmailRequired", resourceCulture);
+            }
+        }
+
+        public static string Auth_EmailAlreadyVerified {
+            get {
+                return ResourceManager.GetString("Auth_EmailAlreadyVerified", resourceCulture);
+            }
+        }
+
+        public static string Auth_EmailVerificationCodeInvalid {
+            get {
+                return ResourceManager.GetString("Auth_EmailVerificationCodeInvalid", resourceCulture);
+            }
+        }
+
+        public static string Auth_EmailVerificationCodeExpired {
+            get {
+                return ResourceManager.GetString("Auth_EmailVerificationCodeExpired", resourceCulture);
+            }
+        }
+
+        public static string Auth_EmailVerificationCooldown {
+            get {
+                return ResourceManager.GetString("Auth_EmailVerificationCooldown", resourceCulture);
+            }
+        }
+
         public static string Friendship_NotAuthenticated {
             get {
                 return ResourceManager.GetString("Friendship_NotAuthenticated", resourceCulture);

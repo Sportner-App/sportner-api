@@ -23,6 +23,19 @@ public class User : AggregateRoot
     /// <summary>ASP.NET Identity compatible password hash. Null = cannot sign in with password.</summary>
     public string? PasswordHash { get; private set; }
 
+    /// <summary>Normalized (trimmed, lowercased) email. Unique across all accounts.</summary>
+    public string? Email { get; private set; }
+
+    public DateTimeOffset? EmailVerifiedAt { get; private set; }
+
+    /// <summary>Hash of the currently outstanding verification code; null once verified or never issued.</summary>
+    public string? EmailVerificationCodeHash { get; private set; }
+
+    public DateTimeOffset? EmailVerificationCodeExpiresAt { get; private set; }
+
+    /// <summary>When the last verification code was sent — drives the resend cooldown.</summary>
+    public DateTimeOffset? EmailVerificationSentAt { get; private set; }
+
     public UserStatus Status { get; private set; }
 
     public DateTimeOffset? LastSeenAt { get; private set; }
@@ -60,8 +73,9 @@ public class User : AggregateRoot
         return user;
     }
 
-    /// <summary>V1 password auth: active account with password hash; phone optional.</summary>
-    public static User RegisterWithPassword(string passwordHash, DateTimeOffset utcNow)
+    /// <summary>V1 password auth: active account with password hash; phone optional. Email is
+    /// required and starts unverified — a verification code is issued separately.</summary>
+    public static User RegisterWithPassword(string passwordHash, string email, DateTimeOffset utcNow)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
         {
@@ -77,11 +91,16 @@ public class User : AggregateRoot
         };
 
         user.Statistics = UserStatistics.Create(user.Id, utcNow);
+        user.SetEmail(email, isVerified: false, utcNow);
 
         return user;
     }
 
-    /// <summary>Social sign-in: the provider's identity assertion stands in for phone/password verification.</summary>
+    /// <summary>
+    /// Social sign-in: the provider's identity assertion stands in for phone/password verification.
+    /// When the provider supplies an email it's trusted as already verified — Google/Apple only
+    /// hand back an identity token for an account they've already confirmed ownership of.
+    /// </summary>
     public static User RegisterWithExternalProvider(
         ExternalLoginProvider provider,
         string providerUserId,
@@ -98,6 +117,11 @@ public class User : AggregateRoot
         user.Statistics = UserStatistics.Create(user.Id, utcNow);
         user._externalLogins.Add(
             UserExternalLogin.Create(user.Id, provider, providerUserId, email, utcNow));
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            user.SetEmail(email, isVerified: true, utcNow);
+        }
 
         return user;
     }
@@ -202,6 +226,64 @@ public class User : AggregateRoot
         }
 
         PhoneVerifiedAt = utcNow;
+        Touch(utcNow);
+    }
+
+    /// <summary>
+    /// Sets the account email. Used once at registration — there is no self-service change
+    /// flow yet, matching how birth date is locked after first set (both are identity-adjacent
+    /// fields where uncontrolled edits would undermine the checks built on top of them).
+    /// </summary>
+    private void SetEmail(string email, bool isVerified, DateTimeOffset utcNow)
+    {
+        Email = NormalizeEmail(email);
+        EmailVerifiedAt = isVerified ? utcNow : null;
+        EmailVerificationCodeHash = null;
+        EmailVerificationCodeExpiresAt = null;
+        EmailVerificationSentAt = null;
+    }
+
+    /// <summary>
+    /// Records a freshly-sent verification code (already hashed by the caller — the domain
+    /// never sees the raw code). <paramref name="utcNow"/> also stamps the resend cooldown.
+    /// </summary>
+    public void IssueEmailVerificationCode(string codeHash, DateTimeOffset expiresAt, DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            throw new DomainException("Cannot issue a verification code without an email.");
+        }
+
+        if (EmailVerifiedAt is not null)
+        {
+            throw new DomainException("Email is already verified.");
+        }
+
+        EmailVerificationCodeHash = codeHash;
+        EmailVerificationCodeExpiresAt = expiresAt;
+        EmailVerificationSentAt = utcNow;
+        Touch(utcNow);
+    }
+
+    /// <summary>True once verified, or while a resend would arrive before the cooldown elapses.</summary>
+    public bool CanResendEmailVerificationCode(DateTimeOffset utcNow, TimeSpan cooldown) =>
+        EmailVerifiedAt is null
+        && (EmailVerificationSentAt is null || utcNow - EmailVerificationSentAt >= cooldown);
+
+    /// <summary>
+    /// Marks the email verified. The caller is responsible for checking the submitted code
+    /// against <see cref="EmailVerificationCodeHash"/> and its expiry before calling this —
+    /// hashing/comparison lives in the application layer where <c>ITokenHasher</c> is injected.
+    /// </summary>
+    public void ConfirmEmailVerified(DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        EmailVerifiedAt = utcNow;
+        EmailVerificationCodeHash = null;
+        EmailVerificationCodeExpiresAt = null;
         Touch(utcNow);
     }
 
@@ -635,6 +717,23 @@ public class User : AggregateRoot
         if (normalized.Length > 20)
         {
             throw new DomainException("Phone number cannot exceed 20 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string NormalizeEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new DomainException("Email is required.");
+        }
+
+        var normalized = email.Trim().ToLowerInvariant();
+
+        if (normalized.Length > 254)
+        {
+            throw new DomainException("Email cannot exceed 254 characters.");
         }
 
         return normalized;

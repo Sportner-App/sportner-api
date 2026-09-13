@@ -88,6 +88,7 @@ internal sealed class LoginCommandHandler
                 refreshToken.Token,
                 refreshToken.ExpiresAt,
                 IsNewUser: false,
-                IsOnboardingCompleted: user.HasCompletedOnboarding()));
+                IsOnboardingCompleted: user.HasCompletedOnboarding(),
+                IsEmailVerified: user.EmailVerifiedAt is not null));
     }
 }

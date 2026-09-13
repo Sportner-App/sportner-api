@@ -153,6 +153,24 @@
   <data name="Auth_ExternalLoginAlreadyRegistered" xml:space="preserve">
     <value>This social account is already registered. Try signing in instead.</value>
   </data>
+  <data name="Auth_EmailTaken" xml:space="preserve">
+    <value>This email is already registered. Sign in with your original method instead.</value>
+  </data>
+  <data name="Auth_EmailRequired" xml:space="preserve">
+    <value>An email address is required for this account.</value>
+  </data>
+  <data name="Auth_EmailAlreadyVerified" xml:space="preserve">
+    <value>This email is already verified.</value>
+  </data>
+  <data name="Auth_EmailVerificationCodeInvalid" xml:space="preserve">
+    <value>The verification code is incorrect.</value>
+  </data>
+  <data name="Auth_EmailVerificationCodeExpired" xml:space="preserve">
+    <value>The verification code has expired. Request a new one.</value>
+  </data>
+  <data name="Auth_EmailVerificationCooldown" xml:space="preserve">
+    <value>Please wait before requesting another code.</value>
+  </data>
   <data name="Friendship_NotAuthenticated" xml:space="preserve">
     <value>The request is not associated with an authenticated user.</value>
   </data>

@@ -56,6 +56,21 @@ internal sealed class SignInWithAppleCommandHandler
 
         if (externalLogin is null)
         {
+            // Apple only reports an email on the very first authorization for this app, but
+            // when it does and it already belongs to a different account, reject up front
+            // instead of sending the user through registration — same policy as Google.
+            if (!string.IsNullOrWhiteSpace(identity.Email))
+            {
+                var normalizedEmail = identity.Email.Trim().ToLowerInvariant();
+                var emailTaken = await _dbContext.Users.AsNoTracking()
+                    .AnyAsync(candidate => candidate.Email == normalizedEmail, cancellationToken);
+
+                if (emailTaken)
+                {
+                    return Result<ExternalSignInResponse>.Failure(AuthErrors.EmailTaken);
+                }
+            }
+
             var ticketData = new ExternalRegistrationTicket(
                 ExternalLoginProvider.Apple,
                 identity.ProviderUserId,
@@ -110,6 +125,7 @@ internal sealed class SignInWithAppleCommandHandler
                 refreshToken.Token,
                 refreshToken.ExpiresAt,
                 IsNewUser: false,
-                IsOnboardingCompleted: user.HasCompletedOnboarding())));
+                IsOnboardingCompleted: user.HasCompletedOnboarding(),
+                IsEmailVerified: user.EmailVerifiedAt is not null)));
     }
 }
