@@ -20,6 +20,9 @@ public sealed class SportCategory : AggregateRoot
 
     public string Name { get; private set; } = null!;
 
+    /// <summary>English display name. Null falls back to <see cref="Name"/> (see CatalogLocalization).</summary>
+    public string? NameEn { get; private set; }
+
     public string Slug { get; private set; } = null!;
 
     public int DisplayOrder { get; private set; }
@@ -31,12 +34,14 @@ public sealed class SportCategory : AggregateRoot
         string slug,
         int displayOrder,
         DateTimeOffset utcNow,
-        bool isActive = true)
+        bool isActive = true,
+        string? nameEn = null)
     {
         return new SportCategory
         {
             Id = Guid.NewGuid(),
             Name = NormalizeName(name),
+            NameEn = NormalizeOptionalName(nameEn),
             Slug = NormalizeSlug(slug),
             DisplayOrder = NormalizeDisplayOrder(displayOrder),
             IsActive = isActive,
@@ -54,6 +59,19 @@ public sealed class SportCategory : AggregateRoot
         }
 
         Name = normalizedName;
+        Touch(utcNow);
+    }
+
+    public void RenameEnglish(string? nameEn, DateTimeOffset utcNow)
+    {
+        var normalized = NormalizeOptionalName(nameEn);
+
+        if (string.Equals(NameEn, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        NameEn = normalized;
         Touch(utcNow);
     }
 
@@ -102,6 +120,23 @@ public sealed class SportCategory : AggregateRoot
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new DomainException("Sport category name is required.");
+        }
+
+        var normalized = name.Trim();
+
+        if (normalized.Length > 100)
+        {
+            throw new DomainException("Sport category name cannot exceed 100 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptionalName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
         }
 
         var normalized = name.Trim();

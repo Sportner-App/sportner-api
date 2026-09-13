@@ -23,7 +23,7 @@ public sealed record SportResponse(
             sport.CoverImageUrl,
             sport.DisplayOrder,
             sport.CategoryId,
-            category?.Name,
+            category is null ? null : CatalogLocalization.Resolve(category.Name, category.NameEn),
             category?.Slug);
 }
 
@@ -35,5 +35,10 @@ public sealed record SportCategoryResponse(
     int SportCount)
 {
     public static SportCategoryResponse From(SportCategory category, int sportCount) =>
-        new(category.Id, category.Name, category.Slug, category.DisplayOrder, sportCount);
+        new(
+            category.Id,
+            CatalogLocalization.Resolve(category.Name, category.NameEn),
+            category.Slug,
+            category.DisplayOrder,
+            sportCount);
 }

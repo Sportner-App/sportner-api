@@ -14,7 +14,8 @@ internal static class SeedData
     internal sealed record SportCategorySeed(
         string Name,
         string Slug,
-        int DisplayOrder);
+        int DisplayOrder,
+        string? NameEn = null);
 
     /// <param name="CategorySlug">
     /// Matches a <see cref="SportCategorySeed.Slug"/>; the seeder resolves it to the category id.
@@ -89,15 +90,15 @@ internal static class SeedData
     internal static readonly IReadOnlyList<SportCategorySeed> SportCategories =
         new SportCategorySeed[]
     {
-        new("Takım Sporları", "takim-sporlari", 1),
-        new("Raket Sporları", "raket-sporlari", 2),
-        new("Fitness & Kondisyon", "fitness-kondisyon", 3),
-        new("Dövüş Sporları", "dovus-sporlari", 4),
-        new("Outdoor & Dayanıklılık", "outdoor-dayaniklilik", 5),
-        new("Su Sporları", "su-sporlari", 6),
-        new("Kış Sporları", "kis-sporlari", 7),
-        new("Hedef Sporları", "hedef-sporlari", 8),
-        new("Diğer", "diger", 9)
+        new("Takım Sporları", "takim-sporlari", 1, NameEn: "Team Sports"),
+        new("Raket Sporları", "raket-sporlari", 2, NameEn: "Racket Sports"),
+        new("Fitness & Kondisyon", "fitness-kondisyon", 3, NameEn: "Fitness & Conditioning"),
+        new("Dövüş Sporları", "dovus-sporlari", 4, NameEn: "Combat Sports"),
+        new("Outdoor & Dayanıklılık", "outdoor-dayaniklilik", 5, NameEn: "Outdoor & Endurance"),
+        new("Su Sporları", "su-sporlari", 6, NameEn: "Water Sports"),
+        new("Kış Sporları", "kis-sporlari", 7, NameEn: "Winter Sports"),
+        new("Hedef Sporları", "hedef-sporlari", 8, NameEn: "Target Sports"),
+        new("Diğer", "diger", 9, NameEn: "Other")
     };
 
     internal static readonly IReadOnlyList<SportSeed> Sports = new SportSeed[]

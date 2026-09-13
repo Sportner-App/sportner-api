@@ -95,6 +95,7 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
             if (bySlug.TryGetValue(seed.Slug, out var current))
             {
                 current.Rename(seed.Name, utcNow);
+                current.RenameEnglish(seed.NameEn, utcNow);
                 current.ChangeDisplayOrder(seed.DisplayOrder, utcNow);
                 current.Activate(utcNow);
                 idBySlug[seed.Slug] = current.Id;
@@ -105,7 +106,8 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
                 seed.Name,
                 seed.Slug,
                 seed.DisplayOrder,
-                utcNow);
+                utcNow,
+                nameEn: seed.NameEn);
 
             _dbContext.SportCategories.Add(created);
             idBySlug[seed.Slug] = created.Id;

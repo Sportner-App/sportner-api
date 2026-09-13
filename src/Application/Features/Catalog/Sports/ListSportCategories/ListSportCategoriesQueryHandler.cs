@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Catalog.Sports.ListSportCategories;
@@ -19,13 +20,15 @@ internal sealed class ListSportCategoriesQueryHandler
         ListSportCategoriesQuery request,
         CancellationToken cancellationToken)
     {
+        var preferEnglish = CatalogLocalization.PreferEnglish;
+
         var items = await _dbContext.SportCategories.AsNoTracking()
             .Where(category => category.IsActive)
             .OrderBy(category => category.DisplayOrder)
             .ThenBy(category => category.Name)
             .Select(category => new SportCategoryResponse(
                 category.Id,
-                category.Name,
+                preferEnglish && !string.IsNullOrEmpty(category.NameEn) ? category.NameEn! : category.Name,
                 category.Slug,
                 category.DisplayOrder,
                 _dbContext.Sports.Count(sport =>

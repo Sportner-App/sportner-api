@@ -75,6 +75,7 @@ This table acts as a shared reference for user skills and events.
 - Sports are managed only by administrators.
 - Cover photos are stored in Supabase Storage bucket `sport-covers`. PostgreSQL stores only the path.
 - `name_en` is optional; when null, the API falls back to `name` even for English requests. Read paths resolve `name`/`name_en` to the caller's negotiated UI culture (`Accept-Language`) via `CatalogLocalization` — the app never needs its own translation table for the sports catalog.
+- The same pattern applies to the `sport_categories` table's `name_en` column — category labels (e.g. "Takım Sporları"/"Team Sports") are localized the same way, exposed via `SportResponse.CategoryName` and `GET /api/sports/categories`.
 
 ---
 

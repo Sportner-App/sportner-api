@@ -62,7 +62,10 @@ internal sealed class ListActiveSportsQueryHandler
                 sport.CategoryId,
                 _dbContext.SportCategories
                     .Where(category => category.Id == sport.CategoryId)
-                    .Select(category => category.Name)
+                    .Select(category =>
+                        preferEnglish && !string.IsNullOrEmpty(category.NameEn)
+                            ? category.NameEn!
+                            : category.Name)
                     .FirstOrDefault(),
                 _dbContext.SportCategories
                     .Where(category => category.Id == sport.CategoryId)
