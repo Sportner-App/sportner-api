@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Quests.ListQuests;
@@ -36,7 +37,9 @@ internal sealed class ListQuestsQueryHandler
                     quest.Id,
                     quest.Code,
                     quest.Title,
+                    quest.TitleEn,
                     quest.Description,
+                    quest.DescriptionEn,
                     quest.MetricCode,
                     quest.TargetValue,
                     quest.RewardBadgeId,
@@ -83,8 +86,8 @@ internal sealed class ListQuestsQueryHandler
             return new QuestItemResponse(
                 quest.Id,
                 quest.Code,
-                quest.Title,
-                quest.Description,
+                CatalogLocalization.Resolve(quest.Title, quest.TitleEn),
+                CatalogLocalization.Resolve(quest.Description, quest.DescriptionEn),
                 quest.MetricCode,
                 quest.TargetValue,
                 quest.RewardBadgeId,

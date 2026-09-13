@@ -19,7 +19,13 @@ public class Badge : AggregateRoot
 
     public string Name { get; private set; } = null!;
 
+    /// <summary>English display name. Null falls back to <see cref="Name"/> (see CatalogLocalization).</summary>
+    public string? NameEn { get; private set; }
+
     public string Description { get; private set; } = null!;
+
+    /// <summary>English description. Null falls back to <see cref="Description"/> (see CatalogLocalization).</summary>
+    public string? DescriptionEn { get; private set; }
 
     public string IconPath { get; private set; } = null!;
 
@@ -42,7 +48,9 @@ public class Badge : AggregateRoot
         BadgeRarity rarity,
         int experiencePoints,
         short displayOrder,
-        DateTimeOffset utcNow)
+        DateTimeOffset utcNow,
+        string? nameEn = null,
+        string? descriptionEn = null)
     {
         EnsureDefinedCategory(category);
         EnsureDefinedRarity(rarity);
@@ -52,7 +60,9 @@ public class Badge : AggregateRoot
             Id = Guid.NewGuid(),
             Code = NormalizeCode(code),
             Name = NormalizeName(name),
+            NameEn = NormalizeOptionalName(nameEn),
             Description = NormalizeDescription(description),
+            DescriptionEn = NormalizeOptionalDescription(descriptionEn),
             IconPath = NormalizeIconPath(iconPath),
             Category = category,
             Rarity = rarity,
@@ -76,6 +86,19 @@ public class Badge : AggregateRoot
         Touch(utcNow);
     }
 
+    public void RenameEnglish(string? nameEn, DateTimeOffset utcNow)
+    {
+        var normalized = NormalizeOptionalName(nameEn);
+
+        if (string.Equals(NameEn, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        NameEn = normalized;
+        Touch(utcNow);
+    }
+
     public void UpdateDescription(string description, DateTimeOffset utcNow)
     {
         var normalized = NormalizeDescription(description);
@@ -86,6 +109,19 @@ public class Badge : AggregateRoot
         }
 
         Description = normalized;
+        Touch(utcNow);
+    }
+
+    public void UpdateDescriptionEnglish(string? descriptionEn, DateTimeOffset utcNow)
+    {
+        var normalized = NormalizeOptionalDescription(descriptionEn);
+
+        if (string.Equals(DescriptionEn, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        DescriptionEn = normalized;
         Touch(utcNow);
     }
 
@@ -220,6 +256,40 @@ public class Badge : AggregateRoot
         if (normalized.Length > 100)
         {
             throw new DomainException("Badge name cannot exceed 100 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptionalName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
+
+        var normalized = name.Trim();
+
+        if (normalized.Length > 100)
+        {
+            throw new DomainException("Badge name cannot exceed 100 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptionalDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return null;
+        }
+
+        var normalized = description.Trim();
+
+        if (normalized.Length > 1000)
+        {
+            throw new DomainException("Badge description cannot exceed 1000 characters.");
         }
 
         return normalized;

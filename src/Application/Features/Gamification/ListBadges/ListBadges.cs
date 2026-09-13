@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Common.Enums;
@@ -78,8 +79,8 @@ internal sealed class ListBadgesQueryHandler
             .Select(badge => new BadgeResponse(
                 badge.Id,
                 badge.Code,
-                badge.Name,
-                badge.Description,
+                CatalogLocalization.Resolve(badge.Name, badge.NameEn),
+                CatalogLocalization.Resolve(badge.Description, badge.DescriptionEn),
                 badge.IconPath,
                 (short)badge.Category,
                 (short)badge.Rarity,

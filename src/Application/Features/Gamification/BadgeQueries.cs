@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
@@ -13,7 +14,7 @@ internal static class BadgeQueries
         Guid userId,
         CancellationToken cancellationToken)
     {
-        return await (
+        var rows = await (
                 from userBadge in dbContext.UserBadges.AsNoTracking()
                 join badge in dbContext.Badges.AsNoTracking()
                     on userBadge.BadgeId equals badge.Id
@@ -21,20 +22,39 @@ internal static class BadgeQueries
                 orderby userBadge.IsShowcased descending,
                     userBadge.ShowcaseOrder ascending,
                     userBadge.EarnedAt descending
-                select new UserBadgeResponse(
+                select new
+                {
                     userBadge.Id,
-                    badge.Id,
+                    BadgeId = badge.Id,
                     badge.Code,
                     badge.Name,
+                    badge.NameEn,
                     badge.Description,
+                    badge.DescriptionEn,
                     badge.IconPath,
-                    (short)badge.Category,
-                    (short)badge.Rarity,
+                    badge.Category,
+                    badge.Rarity,
                     badge.ExperiencePoints,
                     userBadge.EarnedAt,
                     userBadge.IsShowcased,
-                    userBadge.ShowcaseOrder))
+                    userBadge.ShowcaseOrder
+                })
             .ToListAsync(cancellationToken);
+
+        return rows.Select(row => new UserBadgeResponse(
+                row.Id,
+                row.BadgeId,
+                row.Code,
+                CatalogLocalization.Resolve(row.Name, row.NameEn),
+                CatalogLocalization.Resolve(row.Description, row.DescriptionEn),
+                row.IconPath,
+                (short)row.Category,
+                (short)row.Rarity,
+                row.ExperiencePoints,
+                row.EarnedAt,
+                row.IsShowcased,
+                row.ShowcaseOrder))
+            .ToList();
     }
 
     internal static async Task<IReadOnlyList<BadgeProgressItemResponse>> GetProgressAsync(
@@ -73,8 +93,8 @@ internal static class BadgeQueries
             items.Add(new BadgeProgressItemResponse(
                 badge.Id,
                 badge.Code,
-                badge.Name,
-                badge.Description,
+                CatalogLocalization.Resolve(badge.Name, badge.NameEn),
+                CatalogLocalization.Resolve(badge.Description, badge.DescriptionEn),
                 badge.IconPath,
                 (short)badge.Category,
                 (short)badge.Rarity,

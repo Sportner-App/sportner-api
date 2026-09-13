@@ -188,7 +188,9 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
             if (byCode.TryGetValue(seed.Code, out var current))
             {
                 current.Rename(seed.Name, utcNow);
+                current.RenameEnglish(seed.NameEn, utcNow);
                 current.UpdateDescription(seed.Description, utcNow);
+                current.UpdateDescriptionEnglish(seed.DescriptionEn, utcNow);
                 continue;
             }
 
@@ -201,7 +203,9 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
                 seed.Rarity,
                 seed.ExperiencePoints,
                 seed.DisplayOrder,
-                utcNow));
+                utcNow,
+                nameEn: seed.NameEn,
+                descriptionEn: seed.DescriptionEn));
             added++;
         }
 
@@ -235,7 +239,9 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
             if (byCode.TryGetValue(seed.Code, out var current))
             {
                 current.Rename(seed.Title, utcNow);
+                current.RenameEnglish(seed.TitleEn, utcNow);
                 current.UpdateDescription(seed.Description, utcNow);
+                current.UpdateDescriptionEnglish(seed.DescriptionEn, utcNow);
                 current.ChangeSortOrder(seed.SortOrder, utcNow);
                 continue;
             }
@@ -248,7 +254,9 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
                 seed.TargetValue,
                 rewardBadge.Id,
                 seed.SortOrder,
-                utcNow));
+                utcNow,
+                titleEn: seed.TitleEn,
+                descriptionEn: seed.DescriptionEn));
             added++;
         }
 

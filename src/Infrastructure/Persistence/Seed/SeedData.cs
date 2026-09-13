@@ -39,7 +39,9 @@ internal static class SeedData
         BadgeCategory Category,
         BadgeRarity Rarity,
         int ExperiencePoints,
-        short DisplayOrder);
+        short DisplayOrder,
+        string? NameEn = null,
+        string? DescriptionEn = null);
 
     internal sealed record ReportReasonSeed(
         string Code,
@@ -54,7 +56,9 @@ internal static class SeedData
         string MetricCode,
         int TargetValue,
         string RewardBadgeCode,
-        short SortOrder);
+        short SortOrder,
+        string? TitleEn = null,
+        string? DescriptionEn = null);
 
     internal static readonly IReadOnlyList<CitySeed> Cities = new CitySeed[]
     {
@@ -141,29 +145,41 @@ internal static class SeedData
     internal static readonly IReadOnlyList<BadgeSeed> Badges = new BadgeSeed[]
     {
         new(BadgeCodes.FirstEvent, "İlk Etkinlik", "İlk etkinliğine katıldın.",
-            "badges/first-event.png", BadgeCategory.Events, BadgeRarity.Common, 50, 1),
+            "badges/first-event.png", BadgeCategory.Events, BadgeRarity.Common, 50, 1,
+            NameEn: "First Event", DescriptionEn: "You attended your first event."),
         new(BadgeCodes.FirstPost, "İlk Gönderi", "İlk gönderini paylaştın.",
-            "badges/first-post.png", BadgeCategory.Social, BadgeRarity.Common, 25, 2),
+            "badges/first-post.png", BadgeCategory.Social, BadgeRarity.Common, 25, 2,
+            NameEn: "First Post", DescriptionEn: "You shared your first post."),
         new(BadgeCodes.FirstFriend, "İlk Arkadaş", "İlk arkadaşını edindin.",
-            "badges/first-friend.png", BadgeCategory.Social, BadgeRarity.Common, 25, 3),
+            "badges/first-friend.png", BadgeCategory.Social, BadgeRarity.Common, 25, 3,
+            NameEn: "First Friend", DescriptionEn: "You made your first friend."),
         new(BadgeCodes.FirstReview, "İlk Değerlendirme", "İlk değerlendirmeni yazdın.",
-            "badges/first-review.png", BadgeCategory.Community, BadgeRarity.Common, 25, 4),
+            "badges/first-review.png", BadgeCategory.Community, BadgeRarity.Common, 25, 4,
+            NameEn: "First Review", DescriptionEn: "You wrote your first review."),
         new(BadgeCodes.CommunityHelper, "Topluluk Destekçisi", "Topluluğa katkıların için takdir edildin.",
-            "badges/community-helper.png", BadgeCategory.Community, BadgeRarity.Rare, 100, 5),
+            "badges/community-helper.png", BadgeCategory.Community, BadgeRarity.Rare, 100, 5,
+            NameEn: "Community Helper", DescriptionEn: "Recognized for your contributions to the community."),
         new(BadgeCodes.SportsExplorer, "Spor Kâşifi", "Birçok farklı sporu denedin.",
-            "badges/sports-explorer.png", BadgeCategory.Sports, BadgeRarity.Rare, 100, 6),
+            "badges/sports-explorer.png", BadgeCategory.Sports, BadgeRarity.Rare, 100, 6,
+            NameEn: "Sports Explorer", DescriptionEn: "You've tried many different sports."),
         new(BadgeCodes.EventMaster, "Etkinlik Ustası", "Çok sayıda etkinliğe katıldın.",
-            "badges/event-master.png", BadgeCategory.Events, BadgeRarity.Epic, 250, 7),
+            "badges/event-master.png", BadgeCategory.Events, BadgeRarity.Epic, 250, 7,
+            NameEn: "Event Master", DescriptionEn: "You attended a large number of events."),
         new(BadgeCodes.MarathonRunner, "Maratoncu", "Uzun süreli bir etkinlik serisini sürdürdün.",
-            "badges/marathon-runner.png", BadgeCategory.Streak, BadgeRarity.Legendary, 500, 8),
+            "badges/marathon-runner.png", BadgeCategory.Streak, BadgeRarity.Legendary, 500, 8,
+            NameEn: "Marathon Runner", DescriptionEn: "You kept up a long streak of events."),
         new(BadgeCodes.SocialButterfly, "Sosyal Kelebek", "Geniş bir arkadaş çevresi kurdun.",
-            "badges/social-butterfly.png", BadgeCategory.Social, BadgeRarity.Rare, 150, 9),
+            "badges/social-butterfly.png", BadgeCategory.Social, BadgeRarity.Rare, 150, 9,
+            NameEn: "Social Butterfly", DescriptionEn: "You built a wide circle of friends."),
         new(BadgeCodes.HostHero, "Ev Sahibi Kahraman", "Birçok etkinliği başarıyla tamamladın.",
-            "badges/host-hero.png", BadgeCategory.Events, BadgeRarity.Epic, 200, 10),
+            "badges/host-hero.png", BadgeCategory.Events, BadgeRarity.Epic, 200, 10,
+            NameEn: "Host Hero", DescriptionEn: "You successfully completed many events."),
         new(BadgeCodes.ReviewGuru, "Değerlendirme Ustası", "Çok sayıda değerlendirme yazdın.",
-            "badges/review-guru.png", BadgeCategory.Community, BadgeRarity.Rare, 150, 11),
+            "badges/review-guru.png", BadgeCategory.Community, BadgeRarity.Rare, 150, 11,
+            NameEn: "Review Guru", DescriptionEn: "You've written a large number of reviews."),
         new(BadgeCodes.EarlyBird, "Erken Kalkan", "Sabah erken başlayan etkinliklere katıldın.",
-            "badges/early-bird.png", BadgeCategory.Events, BadgeRarity.Rare, 150, 12)
+            "badges/early-bird.png", BadgeCategory.Events, BadgeRarity.Rare, 150, 12,
+            NameEn: "Early Bird", DescriptionEn: "You attended events that started early in the morning.")
     };
 
     internal static readonly IReadOnlyList<ReportReasonSeed> ReportReasons = new ReportReasonSeed[]
@@ -183,14 +199,19 @@ internal static class SeedData
     internal static readonly IReadOnlyList<QuestSeed> Quests = new QuestSeed[]
     {
         new(QuestCodes.Attend3, "3 etkinliğe katıl", "Üç etkinlikte katılımını onaylat.",
-            QuestMetrics.EventsAttended, 3, BadgeCodes.FirstEvent, 1),
+            QuestMetrics.EventsAttended, 3, BadgeCodes.FirstEvent, 1,
+            TitleEn: "Attend 3 events", DescriptionEn: "Get your attendance confirmed at three events."),
         new(QuestCodes.Post5, "5 gönderi paylaş", "Beş gönderi oluştur.",
-            QuestMetrics.PostsCreated, 5, BadgeCodes.FirstPost, 2),
+            QuestMetrics.PostsCreated, 5, BadgeCodes.FirstPost, 2,
+            TitleEn: "Share 5 posts", DescriptionEn: "Create five posts."),
         new(QuestCodes.MakeFriends5, "5 arkadaş edin", "Beş arkadaşlık kur.",
-            QuestMetrics.FriendsAccepted, 5, BadgeCodes.FirstFriend, 3),
+            QuestMetrics.FriendsAccepted, 5, BadgeCodes.FirstFriend, 3,
+            TitleEn: "Make 5 friends", DescriptionEn: "Form five friendships."),
         new(QuestCodes.Host1, "Bir etkinlik tamamla", "Organize ettiğin bir etkinliği tamamla.",
-            QuestMetrics.EventsOrganizedCompleted, 1, BadgeCodes.HostHero, 4),
+            QuestMetrics.EventsOrganizedCompleted, 1, BadgeCodes.HostHero, 4,
+            TitleEn: "Complete an event", DescriptionEn: "Complete an event you organized."),
         new(QuestCodes.Review3, "3 değerlendirme yaz", "Üç değerlendirme bırak.",
-            QuestMetrics.ReviewsCreated, 3, BadgeCodes.FirstReview, 5)
+            QuestMetrics.ReviewsCreated, 3, BadgeCodes.FirstReview, 5,
+            TitleEn: "Write 3 reviews", DescriptionEn: "Leave three reviews.")
     };
 }

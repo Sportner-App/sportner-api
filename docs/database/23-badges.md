@@ -35,8 +35,10 @@ This table contains only badge metadata. User ownership is managed separately by
 | ------------------ | ------------ | -------- | ------------------------------------- |
 | id                 | UUID         | No       | Primary Key                           |
 | code               | VARCHAR(100) | No       | Unique badge identifier               |
-| name               | VARCHAR(100) | No       | Badge name                            |
-| description        | VARCHAR(1000) | No     | Badge description                     |
+| name               | VARCHAR(100) | No       | Badge name (Turkish, default)         |
+| name_en            | VARCHAR(100) | Yes      | English display name                  |
+| description        | VARCHAR(1000) | No     | Badge description (Turkish, default) |
+| description_en     | VARCHAR(1000) | Yes    | English description                   |
 | icon_path          | VARCHAR(500)  | No     | Badge icon stored in Supabase Storage |
 | category           | SMALLINT     | No       | Badge category                        |
 | rarity             | SMALLINT     | No       | Badge rarity                          |
@@ -101,6 +103,7 @@ This table contains only badge metadata. User ownership is managed separately by
 - Badge icons are stored in Supabase Storage.
 - XP is awarded only once when a badge is earned.
 - Badge metadata can be updated without affecting earned badges.
+- `name_en`/`description_en` are optional; read paths resolve to the caller's negotiated UI culture (`Accept-Language`) via `CatalogLocalization`, falling back to the Turkish text when missing.
 
 ---
 
@@ -150,7 +153,6 @@ Possible future additions:
 - Hidden badges
 - Secret achievements
 - Badge levels
-- Localized badge names
 - Badge expiration
 - Event-exclusive badges
 - AI-generated achievements

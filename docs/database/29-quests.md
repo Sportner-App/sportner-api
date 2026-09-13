@@ -24,8 +24,10 @@ award idempotency stay clean.
 | ------ | ---- | -------- | ----------- |
 | id | UUID | No | Primary Key |
 | code | VARCHAR(100) | No | Immutable unique code |
-| title | VARCHAR(150) | No | Display title |
-| description | VARCHAR(1000) | No | Display description |
+| title | VARCHAR(150) | No | Display title (Turkish, default) |
+| title_en | VARCHAR(150) | Yes | English display title |
+| description | VARCHAR(1000) | No | Display description (Turkish, default) |
+| description_en | VARCHAR(1000) | Yes | English display description |
 | metric_code | VARCHAR(100) | No | Application metric key (`QuestMetrics`) |
 | target_value | INT | No | Required progress |
 | reward_badge_id | UUID | No | FK Badges — awarded on complete |
@@ -65,3 +67,4 @@ Day-1: no `starts_at` / `ends_at` (evergreen). V2.1 optional.
 - TargetValue > 0.
 - MetricCode must match Application `QuestMetrics` dictionary.
 - Inactive quests are hidden from list APIs; in-flight UserQuests are left as-is.
+- `title_en`/`description_en` are optional; read paths resolve to the caller's negotiated UI culture (`Accept-Language`) via `CatalogLocalization`, falling back to the Turkish text when missing.

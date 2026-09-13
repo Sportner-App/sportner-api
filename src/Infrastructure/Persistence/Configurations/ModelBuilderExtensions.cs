@@ -547,7 +547,13 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.Name)
             .HasMaxLength(100);
         modelBuilder.Entity<Badge>()
+            .Property(entity => entity.NameEn)
+            .HasMaxLength(100);
+        modelBuilder.Entity<Badge>()
             .Property(entity => entity.Description)
+            .HasMaxLength(1000);
+        modelBuilder.Entity<Badge>()
+            .Property(entity => entity.DescriptionEn)
             .HasMaxLength(1000);
         modelBuilder.Entity<Badge>()
             .Property(entity => entity.IconPath)
@@ -560,7 +566,13 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.Title)
             .HasMaxLength(150);
         modelBuilder.Entity<Quest>()
+            .Property(entity => entity.TitleEn)
+            .HasMaxLength(150);
+        modelBuilder.Entity<Quest>()
             .Property(entity => entity.Description)
+            .HasMaxLength(1000);
+        modelBuilder.Entity<Quest>()
+            .Property(entity => entity.DescriptionEn)
             .HasMaxLength(1000);
         modelBuilder.Entity<Quest>()
             .Property(entity => entity.MetricCode)

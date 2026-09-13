@@ -18,7 +18,13 @@ public class Quest : AggregateRoot
 
     public string Title { get; private set; } = null!;
 
+    /// <summary>English title. Null falls back to <see cref="Title"/> (see CatalogLocalization).</summary>
+    public string? TitleEn { get; private set; }
+
     public string Description { get; private set; } = null!;
+
+    /// <summary>English description. Null falls back to <see cref="Description"/> (see CatalogLocalization).</summary>
+    public string? DescriptionEn { get; private set; }
 
     public string MetricCode { get; private set; } = null!;
 
@@ -38,7 +44,9 @@ public class Quest : AggregateRoot
         int targetValue,
         Guid rewardBadgeId,
         short sortOrder,
-        DateTimeOffset utcNow)
+        DateTimeOffset utcNow,
+        string? titleEn = null,
+        string? descriptionEn = null)
     {
         if (rewardBadgeId == Guid.Empty)
         {
@@ -55,7 +63,9 @@ public class Quest : AggregateRoot
             Id = Guid.NewGuid(),
             Code = NormalizeCode(code),
             Title = NormalizeTitle(title),
+            TitleEn = NormalizeOptionalTitle(titleEn),
             Description = NormalizeDescription(description),
+            DescriptionEn = NormalizeOptionalDescription(descriptionEn),
             MetricCode = NormalizeMetricCode(metricCode),
             TargetValue = targetValue,
             RewardBadgeId = rewardBadgeId,
@@ -77,6 +87,18 @@ public class Quest : AggregateRoot
         Touch(utcNow);
     }
 
+    public void RenameEnglish(string? titleEn, DateTimeOffset utcNow)
+    {
+        var normalized = NormalizeOptionalTitle(titleEn);
+        if (string.Equals(TitleEn, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        TitleEn = normalized;
+        Touch(utcNow);
+    }
+
     public void UpdateDescription(string description, DateTimeOffset utcNow)
     {
         var normalized = NormalizeDescription(description);
@@ -86,6 +108,18 @@ public class Quest : AggregateRoot
         }
 
         Description = normalized;
+        Touch(utcNow);
+    }
+
+    public void UpdateDescriptionEnglish(string? descriptionEn, DateTimeOffset utcNow)
+    {
+        var normalized = NormalizeOptionalDescription(descriptionEn);
+        if (string.Equals(DescriptionEn, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        DescriptionEn = normalized;
         Touch(utcNow);
     }
 
@@ -162,6 +196,38 @@ public class Quest : AggregateRoot
         if (string.IsNullOrWhiteSpace(description))
         {
             throw new DomainException("Quest description is required.");
+        }
+
+        var normalized = description.Trim();
+        if (normalized.Length > 1000)
+        {
+            throw new DomainException("Quest description cannot exceed 1000 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptionalTitle(string? title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return null;
+        }
+
+        var normalized = title.Trim();
+        if (normalized.Length > 150)
+        {
+            throw new DomainException("Quest title cannot exceed 150 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptionalDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return null;
         }
 
         var normalized = description.Trim();
