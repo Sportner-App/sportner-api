@@ -12,6 +12,10 @@ public sealed class RenameSportCommandValidator : AbstractValidator<RenameSportC
             .NotEmpty()
             .MaximumLength(100);
 
+        RuleFor(command => command.NameEn)
+            .MaximumLength(100)
+            .When(command => !string.IsNullOrWhiteSpace(command.NameEn));
+
         RuleFor(command => command.Slug)
             .MaximumLength(100)
             .Matches("^[a-z0-9]+(?:-[a-z0-9]+)*$")

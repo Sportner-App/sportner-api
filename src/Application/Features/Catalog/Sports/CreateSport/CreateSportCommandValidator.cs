@@ -10,6 +10,10 @@ public sealed class CreateSportCommandValidator : AbstractValidator<CreateSportC
             .NotEmpty()
             .MaximumLength(100);
 
+        RuleFor(command => command.NameEn)
+            .MaximumLength(100)
+            .When(command => !string.IsNullOrWhiteSpace(command.NameEn));
+
         RuleFor(command => command.DisplayOrder)
             .GreaterThanOrEqualTo(0);
 

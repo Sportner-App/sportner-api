@@ -6,4 +6,5 @@ public sealed record RenameSportCommand(
     Guid SportId,
     string Name,
     string? Slug = null,
-    string? IconUrl = null) : ICommand<SportResponse>;
+    string? IconUrl = null,
+    string? NameEn = null) : ICommand<SportResponse>;

@@ -53,4 +53,47 @@ public sealed class SportTests
 
         sport.CoverImageUrl.Should().BeNull();
     }
+
+    [Fact]
+    public void Create_TrimsEnglishName_WhenProvided()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        var sport = Sport.Create("Futbol", displayOrder: 1, now, slug: "futbol", nameEn: "  Football  ");
+
+        sport.NameEn.Should().Be("Football");
+    }
+
+    [Fact]
+    public void Create_LeavesEnglishNameNull_WhenNotProvided()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        var sport = Sport.Create("Futbol", displayOrder: 1, now, slug: "futbol");
+
+        sport.NameEn.Should().BeNull();
+    }
+
+    [Fact]
+    public void RenameEnglish_UpdatesName_AndTouchesUpdatedAt()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var sport = Sport.Create("Futbol", displayOrder: 1, now, slug: "futbol");
+
+        sport.RenameEnglish("Football", now.AddMinutes(1));
+
+        sport.NameEn.Should().Be("Football");
+        sport.UpdatedAt.Should().Be(now.AddMinutes(1));
+    }
+
+    [Fact]
+    public void RenameEnglish_ClearsName_WhenNullPassed()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var sport = Sport.Create("Futbol", displayOrder: 1, now, slug: "futbol", nameEn: "Football");
+
+        sport.RenameEnglish(null, now.AddMinutes(1));
+
+        sport.NameEn.Should().BeNull();
+    }
 }

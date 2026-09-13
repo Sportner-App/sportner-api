@@ -17,6 +17,9 @@ public class Sport : AggregateRoot
 
     public string Name { get; private set; } = null!;
 
+    /// <summary>English display name. Null falls back to <see cref="Name"/> (see CatalogLocalization).</summary>
+    public string? NameEn { get; private set; }
+
     public string Slug { get; private set; } = null!;
 
     /// <summary>Catalog grouping (<see cref="SportCategory"/>). Null until seeding assigns one.</summary>
@@ -37,7 +40,8 @@ public class Sport : AggregateRoot
         string? slug = null,
         string? iconUrl = null,
         bool isActive = true,
-        Guid? categoryId = null)
+        Guid? categoryId = null,
+        string? nameEn = null)
     {
         var normalizedName = NormalizeName(name);
         var normalizedSlug = string.IsNullOrWhiteSpace(slug)
@@ -48,6 +52,7 @@ public class Sport : AggregateRoot
         {
             Id = Guid.NewGuid(),
             Name = normalizedName,
+            NameEn = NormalizeOptionalName(nameEn),
             Slug = normalizedSlug,
             CategoryId = NormalizeCategoryId(categoryId),
             IconUrl = NormalizeOptionalStoragePath(iconUrl),
@@ -106,6 +111,19 @@ public class Sport : AggregateRoot
         Touch(utcNow);
     }
 
+    public void RenameEnglish(string? nameEn, DateTimeOffset utcNow)
+    {
+        var normalized = NormalizeOptionalName(nameEn);
+
+        if (string.Equals(NameEn, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        NameEn = normalized;
+        Touch(utcNow);
+    }
+
     public void ChangeSlug(string slug, DateTimeOffset utcNow)
     {
         var normalizedSlug = NormalizeSlug(slug);
@@ -159,6 +177,23 @@ public class Sport : AggregateRoot
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new DomainException("Sport name is required.");
+        }
+
+        var normalized = name.Trim();
+
+        if (normalized.Length > 100)
+        {
+            throw new DomainException("Sport name cannot exceed 100 characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptionalName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
         }
 
         var normalized = name.Trim();

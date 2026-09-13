@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Catalog.Sports.GetSportBySlug;
@@ -20,12 +21,13 @@ internal sealed class GetSportBySlugQueryHandler : IQueryHandler<GetSportBySlugQ
     {
         // Slugs are stored lowercase; normalize the lookup so the URL is case-insensitive.
         var slug = request.Slug.Trim().ToLowerInvariant();
+        var preferEnglish = CatalogLocalization.PreferEnglish;
 
         var sport = await _dbContext.Sports.AsNoTracking()
             .Where(candidate => candidate.IsActive && candidate.Slug == slug)
             .Select(candidate => new SportResponse(
                 candidate.Id,
-                candidate.Name,
+                preferEnglish && !string.IsNullOrEmpty(candidate.NameEn) ? candidate.NameEn! : candidate.Name,
                 candidate.Slug,
                 candidate.IconUrl,
                 candidate.CoverImageUrl,

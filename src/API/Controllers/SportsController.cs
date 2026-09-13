@@ -60,7 +60,8 @@ public sealed class SportsController : ApiControllerBase
                 request.Name,
                 request.DisplayOrder,
                 request.Slug,
-                request.IconUrl),
+                request.IconUrl,
+                request.NameEn),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -74,7 +75,7 @@ public sealed class SportsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new RenameSportCommand(sportId, request.Name, request.Slug, request.IconUrl),
+            new RenameSportCommand(sportId, request.Name, request.Slug, request.IconUrl, request.NameEn),
             cancellationToken);
 
         return result.ToActionResult();
@@ -130,12 +131,14 @@ public sealed class SportsController : ApiControllerBase
         string Name,
         int DisplayOrder,
         string? Slug = null,
-        string? IconUrl = null);
+        string? IconUrl = null,
+        string? NameEn = null);
 
     public sealed record RenameSportRequest(
         string Name,
         string? Slug = null,
-        string? IconUrl = null);
+        string? IconUrl = null,
+        string? NameEn = null);
 
     public sealed record ChangeDisplayOrderRequest(int DisplayOrder);
 }

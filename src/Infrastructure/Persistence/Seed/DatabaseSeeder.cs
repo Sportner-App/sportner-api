@@ -144,6 +144,7 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
             if (bySlug.TryGetValue(seed.Slug, out var current))
             {
                 current.Rename(seed.Name, utcNow);
+                current.RenameEnglish(seed.NameEn, utcNow);
                 current.ChangeDisplayOrder(seed.DisplayOrder, utcNow);
                 current.AssignCategory(categoryId, utcNow);
                 continue;
@@ -153,6 +154,7 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
             if (seed.LegacySlug is not null && bySlug.TryGetValue(seed.LegacySlug, out var legacy))
             {
                 legacy.Rename(seed.Name, utcNow);
+                legacy.RenameEnglish(seed.NameEn, utcNow);
                 legacy.ChangeSlug(seed.Slug, utcNow);
                 legacy.ChangeDisplayOrder(seed.DisplayOrder, utcNow);
                 legacy.AssignCategory(categoryId, utcNow);
@@ -164,7 +166,8 @@ public sealed class DatabaseSeeder : IDatabaseSeeder
                 seed.DisplayOrder,
                 utcNow,
                 seed.Slug,
-                categoryId: categoryId));
+                categoryId: categoryId,
+                nameEn: seed.NameEn));
             added++;
         }
 

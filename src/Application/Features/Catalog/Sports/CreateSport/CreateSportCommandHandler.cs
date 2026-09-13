@@ -30,7 +30,8 @@ internal sealed class CreateSportCommandHandler
             request.DisplayOrder,
             utcNow,
             request.Slug,
-            request.IconUrl);
+            request.IconUrl,
+            nameEn: request.NameEn);
 
         var nameTaken = await _dbContext.Sports
             .AnyAsync(candidate => candidate.Name == sport.Name, cancellationToken);

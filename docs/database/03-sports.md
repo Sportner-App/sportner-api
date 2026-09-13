@@ -33,7 +33,8 @@ This table acts as a shared reference for user skills and events.
 | Column             | Type         | Nullable | Description                       |
 | ------------------ | ------------ | -------- | --------------------------------- |
 | id                 | UUID         | No       | Primary Key                       |
-| name               | VARCHAR(100) | No       | Sport name                        |
+| name               | VARCHAR(100) | No       | Sport name (Turkish, default)     |
+| name_en            | VARCHAR(100) | Yes      | English display name              |
 | slug               | VARCHAR(100) | No       | URL-friendly identifier           |
 | icon_url           | TEXT         | Yes      | Sport icon path                   |
 | cover_image_url    | TEXT         | Yes      | Cover photo path (`sport-covers`) |
@@ -73,6 +74,7 @@ This table acts as a shared reference for user skills and events.
 - Events can only be created using active sports.
 - Sports are managed only by administrators.
 - Cover photos are stored in Supabase Storage bucket `sport-covers`. PostgreSQL stores only the path.
+- `name_en` is optional; when null, the API falls back to `name` even for English requests. Read paths resolve `name`/`name_en` to the caller's negotiated UI culture (`Accept-Language`) via `CatalogLocalization` — the app never needs its own translation table for the sports catalog.
 
 ---
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
 
@@ -21,6 +22,7 @@ internal sealed class ListActiveSportsQueryHandler
         CancellationToken cancellationToken)
     {
         var pagination = new PaginationRequest(request.Page, request.PageSize);
+        var preferEnglish = CatalogLocalization.PreferEnglish;
         var search = string.IsNullOrWhiteSpace(request.Search)
             ? null
             : request.Search.Trim().ToLowerInvariant();
@@ -32,6 +34,7 @@ internal sealed class ListActiveSportsQueryHandler
         {
             sports = sports.Where(sport =>
                 sport.Name.ToLower().Contains(search)
+                || (sport.NameEn != null && sport.NameEn.ToLower().Contains(search))
                 || sport.Slug.ToLower().Contains(search));
         }
 
@@ -51,7 +54,7 @@ internal sealed class ListActiveSportsQueryHandler
             .Take(pagination.NormalizedPageSize)
             .Select(sport => new SportResponse(
                 sport.Id,
-                sport.Name,
+                preferEnglish && !string.IsNullOrEmpty(sport.NameEn) ? sport.NameEn! : sport.Name,
                 sport.Slug,
                 sport.IconUrl,
                 sport.CoverImageUrl,

@@ -409,6 +409,9 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.Name)
             .HasMaxLength(100);
         modelBuilder.Entity<Sport>()
+            .Property(entity => entity.NameEn)
+            .HasMaxLength(100);
+        modelBuilder.Entity<Sport>()
             .Property(entity => entity.Slug)
             .HasMaxLength(100);
 

@@ -1,3 +1,4 @@
+using Sportner.Application.Common.Localization;
 using Sportner.Domain.Sports;
 
 namespace Sportner.Application.Features.Catalog.Sports;
@@ -16,7 +17,7 @@ public sealed record SportResponse(
     public static SportResponse From(Sport sport, SportCategory? category = null) =>
         new(
             sport.Id,
-            sport.Name,
+            CatalogLocalization.Resolve(sport.Name, sport.NameEn),
             sport.Slug,
             sport.IconUrl,
             sport.CoverImageUrl,

@@ -37,6 +37,13 @@ internal sealed class RenameSportCommandHandler
 
         sport.Rename(request.Name, utcNow);
 
+        if (request.NameEn is not null)
+        {
+            sport.RenameEnglish(
+                string.IsNullOrWhiteSpace(request.NameEn) ? null : request.NameEn,
+                utcNow);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Slug))
         {
             sport.ChangeSlug(request.Slug, utcNow);
