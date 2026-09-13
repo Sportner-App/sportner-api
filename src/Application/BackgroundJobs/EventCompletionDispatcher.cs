@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sportner.Application.Abstractions.BackgroundJobs;
 using Sportner.Application.Abstractions.Gamification;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Features.Events;
 using Sportner.Application.Features.Messaging;
@@ -16,6 +17,7 @@ internal sealed class EventCompletionDispatcher : IEventCompletionDispatcher
     private readonly IApplicationDbContext _dbContext;
     private readonly IBadgeAwarder _badgeAwarder;
     private readonly IQuestProgressTracker _questProgressTracker;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly TimeProvider _timeProvider;
     private readonly BackgroundJobsOptions _options;
     private readonly ILogger<EventCompletionDispatcher> _logger;
@@ -24,6 +26,7 @@ internal sealed class EventCompletionDispatcher : IEventCompletionDispatcher
         IApplicationDbContext dbContext,
         IBadgeAwarder badgeAwarder,
         IQuestProgressTracker questProgressTracker,
+        INotificationPublisher notificationPublisher,
         TimeProvider timeProvider,
         IOptions<BackgroundJobsOptions> options,
         ILogger<EventCompletionDispatcher> logger)
@@ -31,6 +34,7 @@ internal sealed class EventCompletionDispatcher : IEventCompletionDispatcher
         _dbContext = dbContext;
         _badgeAwarder = badgeAwarder;
         _questProgressTracker = questProgressTracker;
+        _notificationPublisher = notificationPublisher;
         _timeProvider = timeProvider;
         _options = options.Value;
         _logger = logger;
@@ -140,6 +144,7 @@ internal sealed class EventCompletionDispatcher : IEventCompletionDispatcher
             @event,
             _badgeAwarder,
             _questProgressTracker,
+            _notificationPublisher,
             utcNow,
             cancellationToken);
 

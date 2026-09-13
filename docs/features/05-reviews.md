@@ -44,6 +44,7 @@ Depends on: [03-events.md](03-events.md) (event Completed + `EventParticipant.Ca
 2. `UserStatistics.IncreaseReviewCount` on create (received count).
 3. Optional `FIRST_REVIEW` badge + `IncreaseBadgesCount` for the reviewer.
 4. `Review.MarkAsReported` — deferred to Moderation.
+5. `NotificationType.EventReviewPrompt` prompts each newly review-eligible user to go rate their teammates — organizer at event completion, each participant at their own attendance confirmation (see [07-notifications.md](07-notifications.md)). The app also surfaces a prominent in-app CTA on the event-detail screen for attended participants once the event is completed.
 
 ---
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sportner.Application.Abstractions.Gamification;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.BackgroundJobs;
 using Sportner.Application.Features.Quests;
 using Sportner.Application.UnitTests.Infrastructure;
@@ -62,6 +63,7 @@ public sealed class EventCompletionDispatcherTests
             db,
             badges.Object,
             quests.Object,
+            Mock.Of<INotificationPublisher>(),
             time,
             Options.Create(new BackgroundJobsOptions()),
             NullLogger<EventCompletionDispatcher>.Instance);

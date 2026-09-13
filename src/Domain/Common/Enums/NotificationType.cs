@@ -23,5 +23,6 @@ public enum NotificationType : short
     OrganizationJoinRejected = 18,
     OrganizationRoleChanged = 19,
     OrganizationMemberRemoved = 20,
-    OrganizationMemberBlocked = 21
+    OrganizationMemberBlocked = 21,
+    EventReviewPrompt = 22
 }

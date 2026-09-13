@@ -79,6 +79,7 @@ Default channel matrix lives in `NotificationSetting.CreateDefault`.
 | ---- | ---------------- |
 | FriendRequest / FriendAccepted | Social |
 | EventRequestApproved / Rejected / Cancelled / Reminder / Invitation | Events (+ jobs for reminder) |
+| EventReviewPrompt | Events — organizer on completion (`EventCompletion`), each participant on their own attendance confirmation (`ConfirmAttendanceCommandHandler`), since ReviewEligibility only grants a participant review access at that point |
 | PostLiked / PostCommented / CommentReplied | Social |
 | BadgeEarned / QuestCompleted | Gamification |
 | NewMessage | Messaging |

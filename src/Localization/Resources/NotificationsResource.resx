@@ -105,4 +105,10 @@
   <data name="EventReminder_Body" xml:space="preserve">
     <value>"{0}" starts in {1}.</value>
   </data>
+  <data name="EventReviewPrompt_Title" xml:space="preserve">
+    <value>Rate your teammates</value>
+  </data>
+  <data name="EventReviewPrompt_Body" xml:space="preserve">
+    <value>"{0}" is over — share your feedback.</value>
+  </data>
 </root>

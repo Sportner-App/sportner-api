@@ -105,4 +105,10 @@
   <data name="EventReminder_Body" xml:space="preserve">
     <value>"{0}" etkinliği {1} içinde başlıyor.</value>
   </data>
+  <data name="EventReviewPrompt_Title" xml:space="preserve">
+    <value>Katılımcıları değerlendir</value>
+  </data>
+  <data name="EventReviewPrompt_Body" xml:space="preserve">
+    <value>"{0}" etkinliği sona erdi — geri bildirimini paylaş.</value>
+  </data>
 </root>

@@ -197,6 +197,7 @@ public class NotificationSetting : AggregateRoot
             NotificationType.OrganizationRoleChanged => (true, true, false),
             NotificationType.OrganizationMemberRemoved => (true, true, false),
             NotificationType.OrganizationMemberBlocked => (true, true, false),
+            NotificationType.EventReviewPrompt => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

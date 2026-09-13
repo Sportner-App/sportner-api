@@ -241,5 +241,17 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("EventReminder_Body", resourceCulture);
             }
         }
+
+        public static string EventReviewPrompt_Title {
+            get {
+                return ResourceManager.GetString("EventReviewPrompt_Title", resourceCulture);
+            }
+        }
+
+        public static string EventReviewPrompt_Body {
+            get {
+                return ResourceManager.GetString("EventReviewPrompt_Body", resourceCulture);
+            }
+        }
     }
 }

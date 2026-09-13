@@ -1,6 +1,7 @@
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Events;
@@ -15,17 +16,20 @@ internal sealed class CompleteEventCommandHandler
 {
     private readonly IBadgeAwarder _badgeAwarder;
     private readonly IQuestProgressTracker _questProgressTracker;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public CompleteEventCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
         IBadgeAwarder badgeAwarder,
-        IQuestProgressTracker questProgressTracker)
+        IQuestProgressTracker questProgressTracker,
+        INotificationPublisher notificationPublisher)
         : base(dbContext, currentUser, timeProvider)
     {
         _badgeAwarder = badgeAwarder;
         _questProgressTracker = questProgressTracker;
+        _notificationPublisher = notificationPublisher;
     }
 
     public Task<Result<EventResponse>> Handle(
@@ -41,6 +45,7 @@ internal sealed class CompleteEventCommandHandler
                     @event,
                     _badgeAwarder,
                     _questProgressTracker,
+                    _notificationPublisher,
                     utcNow,
                     ct);
                 return Result.Success();
