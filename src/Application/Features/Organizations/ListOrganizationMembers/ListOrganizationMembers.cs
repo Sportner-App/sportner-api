@@ -47,10 +47,14 @@ internal sealed class ListOrganizationMembersQueryHandler
 
         var query =
             from member in _dbContext.OrganizationMembers.AsNoTracking()
+            join memberUser in _dbContext.Users.AsNoTracking()
+                on member.UserId equals memberUser.Id
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on member.UserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
             where member.OrganizationId == request.OrganizationId
+                && memberUser.Status != UserStatus.Deleted
+                && memberUser.Status != UserStatus.Banned
             select new { member, profile };
 
         if (!membership.CanManageMembers)

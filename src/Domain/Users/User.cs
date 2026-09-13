@@ -164,6 +164,29 @@ public class User : AggregateRoot
         Touch(utcNow);
     }
 
+    /// <summary>
+    /// Self-service account deletion. Soft delete only (Status field, per project
+    /// convention) — no row or related data is physically removed. Revokes every
+    /// active session so any token issued before deletion stops working immediately,
+    /// since <see cref="EnsureNotDeleted"/> would otherwise block the usual
+    /// <see cref="RevokeAllSessions"/> call once the status flips.
+    /// </summary>
+    public void Delete(DateTimeOffset utcNow)
+    {
+        if (Status is UserStatus.Deleted)
+        {
+            throw new DomainException("User is already deleted.");
+        }
+
+        foreach (var session in _sessions.Where(session => session.IsActive(utcNow)))
+        {
+            session.Revoke(utcNow);
+        }
+
+        Status = UserStatus.Deleted;
+        Touch(utcNow);
+    }
+
     public void VerifyPhoneNumber(DateTimeOffset utcNow)
     {
         EnsureNotDeleted();

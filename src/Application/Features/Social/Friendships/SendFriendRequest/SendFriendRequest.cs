@@ -47,7 +47,11 @@ internal sealed class SendFriendRequestCommandHandler
         }
 
         var addresseeExists = await _dbContext.Users.AsNoTracking()
-            .AnyAsync(user => user.Id == request.AddresseeUserId, cancellationToken);
+            .AnyAsync(
+                user => user.Id == request.AddresseeUserId
+                    && user.Status != UserStatus.Deleted
+                    && user.Status != UserStatus.Banned,
+                cancellationToken);
 
         if (!addresseeExists)
         {

@@ -68,7 +68,11 @@ internal sealed class InviteConversationMemberCommandHandler
         }
 
         var inviteeExists = await _dbContext.Users.AsNoTracking()
-            .AnyAsync(user => user.Id == request.UserId, cancellationToken);
+            .AnyAsync(
+                user => user.Id == request.UserId
+                    && user.Status != UserStatus.Deleted
+                    && user.Status != UserStatus.Banned,
+                cancellationToken);
 
         if (!inviteeExists)
         {

@@ -42,6 +42,9 @@ internal sealed class ListFriendsQueryHandler
             let friendUserId = friendship.RequesterUserId == userId
                 ? friendship.AddresseeUserId
                 : friendship.RequesterUserId
+            join friendUser in _dbContext.Users.AsNoTracking()
+                on friendUserId equals friendUser.Id
+            where friendUser.Status != UserStatus.Deleted && friendUser.Status != UserStatus.Banned
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on friendUserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()

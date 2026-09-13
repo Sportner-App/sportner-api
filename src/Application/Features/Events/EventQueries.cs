@@ -205,4 +205,71 @@ internal static class EventQueries
                     || participant.Status == ParticipantStatus.Attended
                     || participant.Status == ParticipantStatus.NoShow)));
     }
+
+    /// <summary>Max avatars shown in a list card's participant preview stack.</summary>
+    private const int MaxPreviewAvatars = 3;
+
+    /// <summary>
+    /// Fills in each item's <see cref="EventListItemResponse.ParticipantAvatars"/> for the small
+    /// avatar stack on list cards. Done as a second pass (rather than a correlated subquery in
+    /// <see cref="ProjectListItems"/>/callers) because "top N per event" isn't something EF Core
+    /// translates reliably here — one query for all events on the page, grouped in memory, which is
+    /// cheap since a page is only a handful of events.
+    /// </summary>
+    internal static async Task<IReadOnlyList<EventListItemResponse>> AttachParticipantAvatarsAsync(
+        IApplicationDbContext dbContext,
+        IReadOnlyList<EventListItemResponse> items,
+        CancellationToken cancellationToken)
+    {
+        if (items.Count == 0)
+        {
+            return items;
+        }
+
+        var eventIds = items.Select(item => item.Id).ToList();
+
+        var rows = await (
+                from participant in dbContext.EventParticipants.AsNoTracking()
+                join profile in dbContext.UserProfiles.AsNoTracking()
+                    on participant.UserId equals profile.UserId into profiles
+                from profile in profiles.DefaultIfEmpty()
+                where eventIds.Contains(participant.EventId)
+                    && (participant.Status == ParticipantStatus.Approved
+                        || participant.Status == ParticipantStatus.Attended
+                        || participant.Status == ParticipantStatus.NoShow)
+                orderby participant.CreatedAt
+                select new
+                {
+                    participant.EventId,
+                    participant.UserId,
+                    IsGuest = participant.Kind == ParticipantKind.Guest,
+                    Name = participant.Kind == ParticipantKind.Guest
+                        ? participant.GuestFirstName
+                        : profile != null ? profile.FirstName : null,
+                    ProfileImageUrl = profile != null ? profile.ProfileImageUrl : null,
+                })
+            .ToListAsync(cancellationToken);
+
+        var avatarsByEvent = rows
+            .GroupBy(row => row.EventId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<ParticipantAvatarResponse>)group
+                    .Take(MaxPreviewAvatars)
+                    .Select(row => new ParticipantAvatarResponse(
+                        row.UserId,
+                        row.Name,
+                        row.ProfileImageUrl,
+                        row.IsGuest))
+                    .ToList());
+
+        return items
+            .Select(item => item with
+            {
+                ParticipantAvatars = avatarsByEvent.GetValueOrDefault(
+                    item.Id,
+                    Array.Empty<ParticipantAvatarResponse>()),
+            })
+            .ToList();
+    }
 }

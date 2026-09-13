@@ -12,6 +12,7 @@ using Sportner.Application.Features.Identity.Auth.Register;
 using Sportner.Application.Features.Identity.Auth.SignInWithApple;
 using Sportner.Application.Features.Identity.Auth.SignInWithGoogle;
 using Sportner.Application.Features.Identity.Auth.CompleteExternalRegistration;
+using Sportner.Application.Features.Identity.Auth.DeleteAccount;
 
 namespace Sportner.API.Controllers;
 
@@ -137,6 +138,18 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new LogoutAllCommand(), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    /// <summary>
+    /// Self-service account deletion. Soft delete (Status → Deleted) — the row and
+    /// related data are kept, per project convention.
+    /// </summary>
+    [Authorize(Policy = AuthorizationPolicies.Authenticated)]
+    [HttpDelete("me")]
+    public async Task<IActionResult> DeleteAccount(CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new DeleteAccountCommand(), cancellationToken);
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 

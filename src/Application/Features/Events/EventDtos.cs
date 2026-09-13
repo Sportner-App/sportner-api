@@ -37,6 +37,13 @@ public sealed record EventResponse(
     string? OrganizationName = null,
     bool CanCancel = false);
 
+/// <summary>Lightweight preview for the small avatar stack shown on event list cards.</summary>
+public sealed record ParticipantAvatarResponse(
+    Guid? UserId,
+    string? Name,
+    string? ProfileImageUrl,
+    bool IsGuest);
+
 public sealed record EventListItemResponse(
     Guid Id,
     Guid SportId,
@@ -58,7 +65,8 @@ public sealed record EventListItemResponse(
     bool IsPaid,
     decimal? FeeAmount,
     short Status,
-    int OccupiedParticipantCount);
+    int OccupiedParticipantCount,
+    IReadOnlyList<ParticipantAvatarResponse>? ParticipantAvatars = null);
 
 public sealed record ParticipantResponse(
     Guid Id,

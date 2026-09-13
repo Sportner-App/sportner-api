@@ -48,6 +48,7 @@ All except `Register` / `Login` / `Refresh` require `[Authorize]` unless noted.
 | [x] | `RefreshToken` | Command | `POST /api/auth/refresh` | Validate hash, user `CanAuthenticate`, session active → `RotateRefreshToken` → new access token. |
 | [x] | `Logout` | Command | `POST /api/auth/logout` | Revokes the session for the given refresh token (idempotent). |
 | [x] | `LogoutAll` | Command | `POST /api/auth/logout-all` | `RevokeAllSessions` for current user. |
+| [x] | `DeleteAccount` | Command | `DELETE /api/auth/me` | Self-service. `User.Delete` → `Status = Deleted` + revokes all sessions. Soft delete only, per project convention (no row/related data removed). Login/refresh/social sign-in already reject `Deleted` users. |
 
 `Register` / `Login` / `RefreshToken` return `isOnboardingCompleted` (sport still required for full onboarding).
 

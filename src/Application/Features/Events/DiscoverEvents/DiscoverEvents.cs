@@ -265,9 +265,14 @@ internal sealed class DiscoverEventsQueryHandler
                         || participant.Status == ParticipantStatus.NoShow))))
             .ToListAsync(cancellationToken);
 
+        var withAvatars = await EventQueries.AttachParticipantAvatarsAsync(
+            _dbContext,
+            items,
+            cancellationToken);
+
         return Result<PagedResult<EventListItemResponse>>.Success(
             PagedResult<EventListItemResponse>.Create(
-                items,
+                withAvatars,
                 pagination.NormalizedPage,
                 pagination.NormalizedPageSize,
                 total));

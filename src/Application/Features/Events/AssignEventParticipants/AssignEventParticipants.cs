@@ -110,7 +110,11 @@ internal sealed class AssignEventParticipantsCommandHandler
                     }
 
                     var existingUserCount = await DbContext.Users
-                        .CountAsync(user => friendIds.Contains(user.Id), ct);
+                        .CountAsync(
+                            user => friendIds.Contains(user.Id)
+                                && user.Status != UserStatus.Deleted
+                                && user.Status != UserStatus.Banned,
+                            ct);
 
                     if (existingUserCount != friendIds.Count)
                     {

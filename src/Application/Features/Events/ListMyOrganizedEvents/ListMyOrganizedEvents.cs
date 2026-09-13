@@ -45,9 +45,14 @@ internal sealed class ListMyOrganizedEventsQueryHandler
             .Take(pagination.NormalizedPageSize)
             .ToListAsync(cancellationToken);
 
+        var withAvatars = await EventQueries.AttachParticipantAvatarsAsync(
+            _dbContext,
+            items,
+            cancellationToken);
+
         return Result<PagedResult<EventListItemResponse>>.Success(
             PagedResult<EventListItemResponse>.Create(
-                items,
+                withAvatars,
                 pagination.NormalizedPage,
                 pagination.NormalizedPageSize,
                 total));
