@@ -330,6 +330,9 @@
   <data name="Profile_UsernameChangeTooSoon" xml:space="preserve">
     <value>Kullanıcı adını 30 günde yalnızca bir kez değiştirebilirsin.</value>
   </data>
+  <data name="Profile_BirthDateLocked" xml:space="preserve">
+    <value>Doğum tarihi yalnızca bir kez girilebilir. Düzeltmek için destek ile iletişime geç.</value>
+  </data>
   <data name="Profile_NotPublic" xml:space="preserve">
     <value>Bu profil gizli.</value>
   </data>

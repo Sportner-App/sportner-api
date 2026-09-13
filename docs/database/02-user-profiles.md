@@ -82,6 +82,9 @@ Authentication data must never be stored here.
 - Every profile belongs to exactly one user.
 - Username must be unique.
 - Username cannot be changed more than once every 30 days (backend rule).
+- Birth date can only be set once (backend rule). Event age eligibility is checked
+  live against it, so self-service edits after the first set are rejected —
+  corrections go through support.
 - Gender remains a nullable SMALLINT code until product-approved enum values are defined.
 - Intro video is optional.
 - Profile image is optional.

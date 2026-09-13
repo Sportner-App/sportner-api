@@ -8,6 +8,7 @@ using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 using Sportner.Domain.Sports;
+using Sportner.Domain.Users;
 using DomainEvent = Sportner.Domain.Events.Event;
 
 namespace Sportner.Application.UnitTests.Features.Events;
@@ -39,7 +40,11 @@ public sealed class ApproveParticipantCommandHandlerTests
         @event.Publish(time.GetUtcNow());
         @event.Apply(applicant.Id, time.GetUtcNow());
 
+        var applicantProfile = UserProfile.Create(applicant.Id, "applicant-user", "Applicant", time.GetUtcNow());
+        applicantProfile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), time.GetUtcNow());
+
         db.Users.AddRange(organizer, applicant);
+        db.UserProfiles.Add(applicantProfile);
         db.Sports.Add(sport);
         db.Events.Add(@event);
         db.Conversations.Add(
@@ -112,7 +117,15 @@ public sealed class ApproveParticipantCommandHandlerTests
         @event.Apply(secondApplicant.Id, time.GetUtcNow());
         @event.ApproveParticipant(firstApplicant.Id, time.GetUtcNow());
 
+        var secondApplicantProfile = UserProfile.Create(
+            secondApplicant.Id,
+            "second-applicant",
+            "Second",
+            time.GetUtcNow());
+        secondApplicantProfile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), time.GetUtcNow());
+
         db.Users.AddRange(organizer, firstApplicant, secondApplicant);
+        db.UserProfiles.Add(secondApplicantProfile);
         db.Sports.Add(sport);
         db.Events.Add(@event);
         await db.SaveChangesAsync();

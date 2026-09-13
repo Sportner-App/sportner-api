@@ -28,6 +28,10 @@ internal static class ProfileErrors
         "Profile.UsernameChangeTooSoon",
         ErrorMessagesResource.Profile_UsernameChangeTooSoon);
 
+    internal static Error BirthDateLocked => Error.Conflict(
+        "Profile.BirthDateLocked",
+        ErrorMessagesResource.Profile_BirthDateLocked);
+
     internal static Error NotPublic => Error.Forbidden(
         "Profile.NotPublic",
         ErrorMessagesResource.Profile_NotPublic);

@@ -22,6 +22,11 @@ internal sealed class UpdatePersonalDetailsCommandHandler
         UpdateAsync(
             (profile, utcNow) =>
             {
+                if (profile.BirthDate is not null && request.BirthDate != profile.BirthDate)
+                {
+                    return Result.Failure(ProfileErrors.BirthDateLocked);
+                }
+
                 profile.UpdatePersonalDetails(request.Gender, request.BirthDate, utcNow);
                 return Result.Success();
             },

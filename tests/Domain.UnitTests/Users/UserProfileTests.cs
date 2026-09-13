@@ -52,4 +52,50 @@ public class UserProfileTests
         profile.Username.Should().Be("second_username");
         profile.UsernameChangedAt.Should().Be(changedAt);
     }
+
+    [Fact]
+    public void UpdatePersonalDetails_FirstSet_AcceptsBirthDate()
+    {
+        var profile = UserProfile.Create(
+            Guid.NewGuid(),
+            "first_username",
+            "First",
+            CreatedAt);
+
+        profile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), CreatedAt);
+
+        profile.BirthDate.Should().Be(new DateOnly(1995, 1, 1));
+    }
+
+    [Fact]
+    public void UpdatePersonalDetails_ResendingTheSameBirthDate_DoesNotThrow()
+    {
+        var profile = UserProfile.Create(
+            Guid.NewGuid(),
+            "first_username",
+            "First",
+            CreatedAt);
+        profile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), CreatedAt);
+
+        var action = () => profile.UpdatePersonalDetails(2, new DateOnly(1995, 1, 1), CreatedAt);
+
+        action.Should().NotThrow();
+        profile.Gender.Should().Be(2);
+    }
+
+    [Fact]
+    public void UpdatePersonalDetails_ChangingAnAlreadySetBirthDate_Throws()
+    {
+        var profile = UserProfile.Create(
+            Guid.NewGuid(),
+            "first_username",
+            "First",
+            CreatedAt);
+        profile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), CreatedAt);
+
+        var action = () => profile.UpdatePersonalDetails(1, new DateOnly(2008, 1, 1), CreatedAt);
+
+        action.Should().Throw<DomainException>();
+        profile.BirthDate.Should().Be(new DateOnly(1995, 1, 1));
+    }
 }

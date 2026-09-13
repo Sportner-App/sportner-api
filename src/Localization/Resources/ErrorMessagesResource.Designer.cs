@@ -691,6 +691,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Profile_BirthDateLocked {
+            get {
+                return ResourceManager.GetString("Profile_BirthDateLocked", resourceCulture);
+            }
+        }
+
         public static string Profile_NotPublic {
             get {
                 return ResourceManager.GetString("Profile_NotPublic", resourceCulture);

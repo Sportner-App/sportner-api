@@ -91,7 +91,8 @@ internal static class SeedData
         new("Outdoor & Dayanıklılık", "outdoor-dayaniklilik", 5),
         new("Su Sporları", "su-sporlari", 6),
         new("Kış Sporları", "kis-sporlari", 7),
-        new("Hedef Sporları", "hedef-sporlari", 8)
+        new("Hedef Sporları", "hedef-sporlari", 8),
+        new("Diğer", "diger", 9)
     };
 
     internal static readonly IReadOnlyList<SportSeed> Sports = new SportSeed[]
@@ -129,7 +130,11 @@ internal static class SeedData
         new("Okçuluk", "okculuk", 31, "hedef-sporlari"),
         new("Dalış", "dalis", 32, "su-sporlari"),
         new("Yelken", "yelken", 33, "su-sporlari"),
-        new("Rugby", "rugby", 34, "takim-sporlari")
+        new("Rugby", "rugby", 34, "takim-sporlari"),
+        new("Kürek", "kurek", 35, "su-sporlari"),
+        // Katalogda olmayan bir spor için etkinlik açmak isteyenlere kaçış yolu;
+        // her zaman listenin sonunda görünsün diye yüksek bir sıralama numarası.
+        new("Diğer", "diger", 999, "diger")
     };
 
     internal static readonly IReadOnlyList<BadgeSeed> Badges = new BadgeSeed[]

@@ -330,6 +330,9 @@
   <data name="Profile_UsernameChangeTooSoon" xml:space="preserve">
     <value>You can only change your username once every 30 days.</value>
   </data>
+  <data name="Profile_BirthDateLocked" xml:space="preserve">
+    <value>Birth date can only be set once. Contact support to correct it.</value>
+  </data>
   <data name="Profile_NotPublic" xml:space="preserve">
     <value>This profile is private.</value>
   </data>

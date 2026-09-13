@@ -83,7 +83,7 @@ OTP/SMS removed from V1. Never log password, JWT, or refresh token plaintext.
 | [x] | `UpdateBio` | Command | `PUT /api/user-profiles/me/bio` | ≤500. |
 | [x] | `UpdateAvatar` | Command | `PUT /api/user-profiles/me/avatar` | Multipart upload to the `avatars` bucket via `IFileStorage`; stores the path. Empty body clears it. |
 | [x] | `UpdateLocation` | Command | `PUT /api/user-profiles/me/location` | City on profile. |
-| [x] | `UpdatePersonalDetails` | Command | `PUT /api/user-profiles/me/personal-details` | Gender code + birth date; 13–120 age range enforced by the validator. |
+| [x] | `UpdatePersonalDetails` | Command | `PUT /api/user-profiles/me/personal-details` | Gender code + birth date; 13–120 age range enforced by the validator. Birth date can only be set once — event age eligibility (`Event.IsParticipantAgeEligible`) is checked live, so allowing edits would let a user shift their age to qualify for an event and revert it after. Resending the same value is a no-op; changing it → 409 `Profile.BirthDateLocked`. Corrections go through support. `ApproveParticipant` also re-checks eligibility at approval time. |
 | [x] | `UpdateVisibility` | Command | `PUT /api/user-profiles/me/visibility` | `IsProfilePublic`. |
 
 `UserStatistics` is **read-only** to clients. Created with `User.Create`; mutated by other modules.

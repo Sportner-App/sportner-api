@@ -38,6 +38,24 @@ internal sealed class ApproveParticipantCommandHandler
                     return Result.Failure(EventErrors.ParticipantNotFound);
                 }
 
+                // Re-check age at approval time, not just at application time: birth
+                // date can no longer change after it's set, but this still guards
+                // against approving eligibility drift from stale/edge-case data.
+                var participantBirthDate = await DbContext.UserProfiles.AsNoTracking()
+                    .Where(profile => profile.UserId == request.UserId)
+                    .Select(profile => profile.BirthDate)
+                    .FirstOrDefaultAsync(ct);
+
+                if (participantBirthDate is null)
+                {
+                    return Result.Failure(EventErrors.ParticipantBirthDateMissing);
+                }
+
+                if (!@event.IsParticipantAgeEligible(participantBirthDate.Value))
+                {
+                    return Result.Failure(EventErrors.ParticipantAgeNotEligible);
+                }
+
                 if (!@event.HasAvailableCapacity())
                 {
                     return Result.Failure(EventErrors.CapacityFull);

@@ -119,8 +119,20 @@ public class UserProfile : AuditableEntity
         Touch(utcNow);
     }
 
+    /// <summary>
+    /// Gender can be revised freely. Birth date can only be set once — event age
+    /// eligibility is checked live against it, so letting it be edited afterward
+    /// would let a user change their age to qualify for an event and revert it
+    /// later. The handler pre-checks this for a clean error; this is the hard
+    /// invariant in case another caller ever bypasses that check.
+    /// </summary>
     public void UpdatePersonalDetails(short? gender, DateOnly? birthDate, DateTimeOffset utcNow)
     {
+        if (BirthDate is not null && birthDate != BirthDate)
+        {
+            throw new DomainException("Birth date cannot be changed once set. Contact support for corrections.");
+        }
+
         Gender = gender;
         BirthDate = birthDate;
         Touch(utcNow);
