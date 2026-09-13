@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Identity.UserProfiles;
 using Sportner.Domain.Notifications;
@@ -79,7 +80,8 @@ internal sealed class CompleteExternalRegistrationCommandHandler
             ticket.Provider,
             ticket.ProviderUserId,
             ticket.Email,
-            utcNow);
+            utcNow,
+            CatalogLocalization.CurrentLanguage);
         var profile = UserProfile.Create(
             user.Id,
             username,

@@ -80,9 +80,15 @@ Default channel matrix lives in `NotificationSetting.CreateDefault`.
 | FriendRequest / FriendAccepted | Social |
 | EventRequestApproved / Rejected / Cancelled / Reminder / Invitation | Events (+ jobs for reminder) |
 | PostLiked / PostCommented / CommentReplied | Social |
-| BadgeEarned | Gamification |
+| BadgeEarned / QuestCompleted | Gamification |
 | NewMessage | Messaging |
 | System | Platform |
+
+### Notification language
+
+`BadgeEarned` and `QuestCompleted` (`BadgeAwarder`, `QuestProgressTracker`) render title/body from `NotificationsResource` (`src/Localization/Resources`) in the **recipient's** stored `User.PreferredLanguage` — not the ambient request culture, since these can fire from a background job with no HTTP request, or from an actor other than the recipient. `PreferredLanguage` is set at registration and kept in sync via `PUT /api/auth/me/language` (see [01-identity.md](01-identity.md)).
+
+The other notification types above still build Turkish-only text inline at each call site (`NotificationActor.TitleAsync` + hardcoded phrases) — not yet migrated to this pattern.
 
 ---
 

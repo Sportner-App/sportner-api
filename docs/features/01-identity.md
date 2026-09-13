@@ -51,8 +51,11 @@ All except `Register` / `Login` / `Refresh` require `[Authorize]` unless noted.
 | [x] | `DeleteAccount` | Command | `DELETE /api/auth/me` | Self-service. `User.Delete` → `Status = Deleted` + revokes all sessions. Soft delete only, per project convention (no row/related data removed). Login/refresh/social sign-in already reject `Deleted` users. |
 | [x] | `VerifyEmail` | Command | `POST /api/auth/email/verify` | Authenticated. Compares the submitted code against `EmailVerificationCodeHash` (via `ITokenHasher`, never the raw code) and its expiry → `User.ConfirmEmailVerified`. |
 | [x] | `ResendEmailVerification` | Command | `POST /api/auth/email/resend` | Authenticated. Re-issues a code, gated by a 60s cooldown (`Auth.EmailVerificationCooldown`) and a no-op if already verified (`Auth.EmailAlreadyVerified`). |
+| [x] | `UpdatePreferredLanguage` | Command | `PUT /api/auth/me/language` | Authenticated. `User.SetPreferredLanguage`. Called from the app whenever the in-app language changes, so server-generated content addressed to this user (badge/quest notifications) stays in sync with what they actually chose — independent of any single request's `Accept-Language`. |
 
 `Register` / `Login` / `RefreshToken` / `CompleteExternalRegistration` / social sign-in return `isOnboardingCompleted` and `isEmailVerified` (sport still required for full onboarding; email verification is currently soft/non-blocking — see `docs/database/01-users.md`).
+
+`Register` / `CompleteExternalRegistration` set the new user's `PreferredLanguage` from the request's negotiated `Accept-Language` (`CatalogLocalization.CurrentLanguage`), defaulting to Turkish.
 
 Google/Apple sign-in also reject with `Auth.EmailTaken` at the "no existing link" check when the provider's email already belongs to a different account (password or the other provider) — sends the user back to their original sign-in method instead of into a registration flow that would fail at the end.
 

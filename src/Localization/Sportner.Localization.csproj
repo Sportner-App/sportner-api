@@ -18,6 +18,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ErrorMessagesResource.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\NotificationsResource.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NotificationsResource.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +45,16 @@
     <EmbeddedResource Update="Resources\ErrorMessagesResource.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessagesResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\NotificationsResource.en.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\NotificationsResource.tr.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\NotificationsResource.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>NotificationsResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

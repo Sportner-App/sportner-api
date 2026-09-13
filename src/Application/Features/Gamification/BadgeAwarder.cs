@@ -4,9 +4,11 @@ using Microsoft.Extensions.Logging;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Gamification;
 
@@ -67,11 +69,20 @@ internal sealed class BadgeAwarder : IBadgeAwarder
 
         statistics?.IncreaseBadgesCount(utcNow);
 
+        var recipientLanguage = await _dbContext.Users.AsNoTracking()
+            .Where(candidate => candidate.Id == userId)
+            .Select(candidate => candidate.PreferredLanguage)
+            .FirstOrDefaultAsync(cancellationToken);
+        var culture = recipientLanguage.ToCultureInfo();
+
         await _notificationPublisher.PublishAsync(
             userId,
             NotificationType.BadgeEarned,
-            "Rozet kazandın",
-            $"'{badge.Name}' rozetini kazandın.",
+            NotificationsResource.ResourceManager.GetString(nameof(NotificationsResource.Badge_EarnedTitle), culture)!,
+            string.Format(
+                CultureInfo.InvariantCulture,
+                NotificationsResource.ResourceManager.GetString(nameof(NotificationsResource.Badge_EarnedBody), culture)!,
+                CatalogLocalization.Resolve(recipientLanguage, badge.Name, badge.NameEn)),
             NotificationEntityType.Badge,
             badge.Id,
             actorUserId: null,

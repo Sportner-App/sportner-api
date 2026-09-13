@@ -648,6 +648,8 @@ internal static class ModelBuilderExtensions
     {
         modelBuilder.Entity<User>().Property(entity => entity.Status)
             .HasColumnType("smallint");
+        modelBuilder.Entity<User>().Property(entity => entity.PreferredLanguage)
+            .HasColumnType("smallint");
         modelBuilder.Entity<UserProfile>().Property(entity => entity.Gender)
             .HasColumnType("smallint");
         modelBuilder.Entity<UserSport>().Property(entity => entity.SkillLevel)

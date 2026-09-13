@@ -1,8 +1,11 @@
+using System.Globalization;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Quests;
+using Sportner.Localization.Resources;
 using Microsoft.EntityFrameworkCore;
 
 namespace Sportner.Application.Features.Quests;
@@ -74,6 +77,12 @@ internal sealed class QuestProgressTracker : IQuestProgressTracker
             .Where(badge => rewardBadgeIds.Contains(badge.Id) && badge.IsActive)
             .ToDictionaryAsync(badge => badge.Id, cancellationToken);
 
+        var recipientLanguage = await _dbContext.Users.AsNoTracking()
+            .Where(candidate => candidate.Id == userId)
+            .Select(candidate => candidate.PreferredLanguage)
+            .FirstOrDefaultAsync(cancellationToken);
+        var culture = recipientLanguage.ToCultureInfo();
+
         foreach (var quest in quests)
         {
             if (!byQuestId.TryGetValue(quest.Id, out var userQuest))
@@ -99,8 +108,11 @@ internal sealed class QuestProgressTracker : IQuestProgressTracker
             await _notificationPublisher.PublishAsync(
                 userId,
                 NotificationType.QuestCompleted,
-                "Görev tamamlandı",
-                $"'{quest.Title}' görevini tamamladın.",
+                NotificationsResource.ResourceManager.GetString(nameof(NotificationsResource.Quest_CompletedTitle), culture)!,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    NotificationsResource.ResourceManager.GetString(nameof(NotificationsResource.Quest_CompletedBody), culture)!,
+                    CatalogLocalization.Resolve(recipientLanguage, quest.Title, quest.TitleEn)),
                 NotificationEntityType.Quest,
                 quest.Id,
                 actorUserId: null,

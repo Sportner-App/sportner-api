@@ -38,6 +38,9 @@ public class User : AggregateRoot
 
     public UserStatus Status { get; private set; }
 
+    /// <summary>Language notifications and other server-generated text are written in for this user.</summary>
+    public Language PreferredLanguage { get; private set; }
+
     public DateTimeOffset? LastSeenAt { get; private set; }
 
     public DateTimeOffset? OnboardingCompletedAt { get; private set; }
@@ -75,7 +78,11 @@ public class User : AggregateRoot
 
     /// <summary>V1 password auth: active account with password hash; phone optional. Email is
     /// required and starts unverified — a verification code is issued separately.</summary>
-    public static User RegisterWithPassword(string passwordHash, string email, DateTimeOffset utcNow)
+    public static User RegisterWithPassword(
+        string passwordHash,
+        string email,
+        DateTimeOffset utcNow,
+        Language preferredLanguage = Language.Turkish)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
         {
@@ -87,6 +94,7 @@ public class User : AggregateRoot
             Id = Guid.NewGuid(),
             PasswordHash = passwordHash,
             Status = UserStatus.Active,
+            PreferredLanguage = preferredLanguage,
             CreatedAt = utcNow
         };
 
@@ -105,12 +113,14 @@ public class User : AggregateRoot
         ExternalLoginProvider provider,
         string providerUserId,
         string? email,
-        DateTimeOffset utcNow)
+        DateTimeOffset utcNow,
+        Language preferredLanguage = Language.Turkish)
     {
         var user = new User
         {
             Id = Guid.NewGuid(),
             Status = UserStatus.Active,
+            PreferredLanguage = preferredLanguage,
             CreatedAt = utcNow
         };
 
@@ -124,6 +134,19 @@ public class User : AggregateRoot
         }
 
         return user;
+    }
+
+    public void SetPreferredLanguage(Language language, DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (PreferredLanguage == language)
+        {
+            return;
+        }
+
+        PreferredLanguage = language;
+        Touch(utcNow);
     }
 
     public void SetPasswordHash(string passwordHash, DateTimeOffset utcNow)

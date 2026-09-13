@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Email;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Identity.UserProfiles;
 using Sportner.Domain.Common.Enums;
@@ -65,7 +66,11 @@ internal sealed class RegisterCommandHandler
         var utcNow = _timeProvider.GetUtcNow();
         var passwordHash = _passwordHasher.Hash(request.Password);
 
-        var user = User.RegisterWithPassword(passwordHash, email, utcNow);
+        var user = User.RegisterWithPassword(
+            passwordHash,
+            email,
+            utcNow,
+            CatalogLocalization.CurrentLanguage);
         var profile = UserProfile.Create(
             user.Id,
             username,

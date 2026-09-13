@@ -14,7 +14,9 @@ using Sportner.Application.Features.Identity.Auth.SignInWithGoogle;
 using Sportner.Application.Features.Identity.Auth.CompleteExternalRegistration;
 using Sportner.Application.Features.Identity.Auth.DeleteAccount;
 using Sportner.Application.Features.Identity.Auth.ResendEmailVerification;
+using Sportner.Application.Features.Identity.Auth.UpdatePreferredLanguage;
 using Sportner.Application.Features.Identity.Auth.VerifyEmail;
+using Sportner.Domain.Common.Enums;
 
 namespace Sportner.API.Controllers;
 
@@ -176,6 +178,23 @@ public sealed class AuthController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
+    /// <summary>
+    /// Persists the app's language choice so server-generated content addressed to this user —
+    /// currently badge/quest notifications — renders in it, independent of any single request's
+    /// Accept-Language header.
+    /// </summary>
+    [Authorize(Policy = AuthorizationPolicies.Authenticated)]
+    [HttpPut("me/language")]
+    public async Task<IActionResult> UpdatePreferredLanguage(
+        [FromBody] UpdatePreferredLanguageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UpdatePreferredLanguageCommand(request.Language),
+            cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
     public sealed record RegisterRequest(
         string Username,
         string Password,
@@ -188,6 +207,8 @@ public sealed class AuthController : ApiControllerBase
     public sealed record LoginRequest(string Username, string Password);
 
     public sealed record VerifyEmailRequest(string Code);
+
+    public sealed record UpdatePreferredLanguageRequest(Language Language);
 
     public sealed record GoogleSignInRequest(string IdToken);
 
