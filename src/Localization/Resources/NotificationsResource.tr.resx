@@ -24,4 +24,85 @@
   <data name="Quest_CompletedBody" xml:space="preserve">
     <value>'{0}' görevini tamamladın.</value>
   </data>
+  <data name="OrganizationJoinRequested_Text" xml:space="preserve">
+    <value>{0} organizasyona katılmak istiyor</value>
+  </data>
+  <data name="OrganizationJoinApproved_Text" xml:space="preserve">
+    <value>{0} organizasyon katılımını onayladı</value>
+  </data>
+  <data name="OrganizationMemberRemoved_Text" xml:space="preserve">
+    <value>{0} seni organizasyondan çıkardı</value>
+  </data>
+  <data name="OrganizationJoinRejected_Text" xml:space="preserve">
+    <value>{0} organizasyon katılımını reddetti</value>
+  </data>
+  <data name="OrganizationRoleChangedToAdmin_Text" xml:space="preserve">
+    <value>{0} seni organizasyon yöneticisi yaptı</value>
+  </data>
+  <data name="OrganizationRoleChangedFromAdmin_Text" xml:space="preserve">
+    <value>{0} organizasyon yöneticiliğini kaldırdı</value>
+  </data>
+  <data name="OrganizationMemberBlocked_Text" xml:space="preserve">
+    <value>{0} seni organizasyondan engelledi</value>
+  </data>
+  <data name="PostCommented_Title" xml:space="preserve">
+    <value>{0} fotoğrafına yorum yaptı</value>
+  </data>
+  <data name="CommentReplied_Title" xml:space="preserve">
+    <value>{0} yorumuna yanıt verdi</value>
+  </data>
+  <data name="PostLiked_Text" xml:space="preserve">
+    <value>{0} fotoğrafını beğendi</value>
+  </data>
+  <data name="FriendAccepted_Text" xml:space="preserve">
+    <value>{0} arkadaşlık isteğini kabul etti</value>
+  </data>
+  <data name="FriendRequest_Text" xml:space="preserve">
+    <value>{0} arkadaşlık isteği gönderdi</value>
+  </data>
+  <data name="EventQuestionReplied_Title" xml:space="preserve">
+    <value>{0} soruna yanıt verdi</value>
+  </data>
+  <data name="EventQuestionAsked_Title" xml:space="preserve">
+    <value>{0} etkinliğine soru sordu</value>
+  </data>
+  <data name="EventRequestApproved_Title" xml:space="preserve">
+    <value>{0} başvurunu onayladı</value>
+  </data>
+  <data name="EventRequestApproved_Body" xml:space="preserve">
+    <value>"{0}" etkinliğine katılımın onaylandı.</value>
+  </data>
+  <data name="EventInvitation_Title" xml:space="preserve">
+    <value>{0} seni etkinliğe davet etti</value>
+  </data>
+  <data name="EventInvitation_Body" xml:space="preserve">
+    <value>"{0}" etkinliğine davet edildin.</value>
+  </data>
+  <data name="EventPromotedFromWaitlist_Title" xml:space="preserve">
+    <value>{0} seni etkinliğe aldı</value>
+  </data>
+  <data name="EventRequestRejected_Title" xml:space="preserve">
+    <value>{0} başvurunu reddetti</value>
+  </data>
+  <data name="EventRequestRejected_Body" xml:space="preserve">
+    <value>"{0}" etkinliğine başvurun reddedildi.</value>
+  </data>
+  <data name="EventCancelled_Title" xml:space="preserve">
+    <value>{0} etkinliği iptal etti</value>
+  </data>
+  <data name="EventCancelled_Body" xml:space="preserve">
+    <value>"{0}" etkinliği iptal edildi.</value>
+  </data>
+  <data name="NewMessage_Title" xml:space="preserve">
+    <value>{0} mesaj gönderdi</value>
+  </data>
+  <data name="NewMediaMessage_Fallback" xml:space="preserve">
+    <value>Yeni medya mesajı</value>
+  </data>
+  <data name="EventReminder_Title" xml:space="preserve">
+    <value>Etkinlik hatırlatması</value>
+  </data>
+  <data name="EventReminder_Body" xml:space="preserve">
+    <value>"{0}" etkinliği {1} içinde başlıyor.</value>
+  </data>
 </root>

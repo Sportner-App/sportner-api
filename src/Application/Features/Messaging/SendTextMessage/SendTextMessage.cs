@@ -9,6 +9,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Messaging.SendTextMessage;
 
@@ -143,21 +144,30 @@ internal sealed class SendTextMessageCommandHandler
     {
         var utcNow = _timeProvider.GetUtcNow();
         var preview = content.Length <= 120 ? content : content[..117] + "...";
-        var title = await NotificationActor.TitleAsync(
-            _dbContext,
-            senderUserId,
-            "mesaj gönderdi",
-            cancellationToken);
+        var recipients = conversation.Members
+            .Where(member =>
+                member.IsActive()
+                && member.UserId != senderUserId
+                && !member.IsMuted(utcNow))
+            .Select(member => member.UserId)
+            .ToList();
 
-        foreach (var member in conversation.Members.Where(member =>
-                     member.IsActive()
-                     && member.UserId != senderUserId
-                     && !member.IsMuted(utcNow)))
+        var senderUsername = await NotificationActor.ResolveUsernameAsync(
+            _dbContext, senderUserId, cancellationToken);
+        var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
+            _dbContext, recipients, cancellationToken);
+
+        foreach (var recipientId in recipients)
         {
+            var language = languagesByRecipient.GetValueOrDefault(recipientId);
+
             await _notificationPublisher.PublishAsync(
-                member.UserId,
+                recipientId,
                 NotificationType.NewMessage,
-                title,
+                NotificationActor.Format(
+                    language,
+                    nameof(NotificationsResource.NewMessage_Title),
+                    NotificationActor.FormatPrefix(senderUsername, language)),
                 preview,
                 NotificationEntityType.Conversation,
                 conversation.Id,

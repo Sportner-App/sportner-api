@@ -4,8 +4,10 @@ using Microsoft.Extensions.Options;
 using Sportner.Application.Abstractions.BackgroundJobs;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.BackgroundJobs;
 
@@ -87,6 +89,9 @@ internal sealed class EventReminderDispatcher : IEventReminderDispatcher
                     .Select(participant => participant.UserId!.Value)
                     .ToListAsync(cancellationToken);
 
+                var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
+                    _dbContext, participantUserIds, cancellationToken);
+
                 foreach (var userId in participantUserIds)
                 {
                     var alreadySent = await _dbContext.EventReminderDispatches
@@ -103,17 +108,18 @@ internal sealed class EventReminderDispatcher : IEventReminderDispatcher
                         continue;
                     }
 
-                    var label = windowMinutes >= 1440
-                        ? $"{windowMinutes / 1440} gün"
-                        : windowMinutes >= 60
-                            ? $"{windowMinutes / 60} saat"
-                            : $"{windowMinutes} dk";
+                    var language = languagesByRecipient.GetValueOrDefault(userId);
+                    var label = FormatWindowLabel(windowMinutes, language);
 
                     await _notificationPublisher.PublishAsync(
                         userId,
                         NotificationType.EventReminder,
-                        "Etkinlik hatırlatması",
-                        $"\"{@event.Title}\" etkinliği {label} içinde başlıyor.",
+                        NotificationActor.Format(language, nameof(NotificationsResource.EventReminder_Title)),
+                        NotificationActor.Format(
+                            language,
+                            nameof(NotificationsResource.EventReminder_Body),
+                            @event.Title,
+                            label),
                         NotificationEntityType.Event,
                         @event.Id,
                         actorUserId: null,
@@ -134,5 +140,26 @@ internal sealed class EventReminderDispatcher : IEventReminderDispatcher
 
         _logger.LogInformation("Event reminder dispatcher sent {SentCount} reminders.", sent);
         return sent;
+    }
+
+    private static string FormatWindowLabel(int windowMinutes, Language language)
+    {
+        if (windowMinutes >= 1440)
+        {
+            var days = windowMinutes / 1440;
+            return language == Language.English
+                ? $"{days} day{(days == 1 ? "" : "s")}"
+                : $"{days} gün";
+        }
+
+        if (windowMinutes >= 60)
+        {
+            var hours = windowMinutes / 60;
+            return language == Language.English
+                ? $"{hours} hour{(hours == 1 ? "" : "s")}"
+                : $"{hours} saat";
+        }
+
+        return language == Language.English ? $"{windowMinutes} min" : $"{windowMinutes} dk";
     }
 }

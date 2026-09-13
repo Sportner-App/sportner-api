@@ -79,5 +79,167 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("Quest_CompletedBody", resourceCulture);
             }
         }
+
+        public static string OrganizationJoinRequested_Text {
+            get {
+                return ResourceManager.GetString("OrganizationJoinRequested_Text", resourceCulture);
+            }
+        }
+
+        public static string OrganizationJoinApproved_Text {
+            get {
+                return ResourceManager.GetString("OrganizationJoinApproved_Text", resourceCulture);
+            }
+        }
+
+        public static string OrganizationMemberRemoved_Text {
+            get {
+                return ResourceManager.GetString("OrganizationMemberRemoved_Text", resourceCulture);
+            }
+        }
+
+        public static string OrganizationJoinRejected_Text {
+            get {
+                return ResourceManager.GetString("OrganizationJoinRejected_Text", resourceCulture);
+            }
+        }
+
+        public static string OrganizationRoleChangedToAdmin_Text {
+            get {
+                return ResourceManager.GetString("OrganizationRoleChangedToAdmin_Text", resourceCulture);
+            }
+        }
+
+        public static string OrganizationRoleChangedFromAdmin_Text {
+            get {
+                return ResourceManager.GetString("OrganizationRoleChangedFromAdmin_Text", resourceCulture);
+            }
+        }
+
+        public static string OrganizationMemberBlocked_Text {
+            get {
+                return ResourceManager.GetString("OrganizationMemberBlocked_Text", resourceCulture);
+            }
+        }
+
+        public static string PostCommented_Title {
+            get {
+                return ResourceManager.GetString("PostCommented_Title", resourceCulture);
+            }
+        }
+
+        public static string CommentReplied_Title {
+            get {
+                return ResourceManager.GetString("CommentReplied_Title", resourceCulture);
+            }
+        }
+
+        public static string PostLiked_Text {
+            get {
+                return ResourceManager.GetString("PostLiked_Text", resourceCulture);
+            }
+        }
+
+        public static string FriendAccepted_Text {
+            get {
+                return ResourceManager.GetString("FriendAccepted_Text", resourceCulture);
+            }
+        }
+
+        public static string FriendRequest_Text {
+            get {
+                return ResourceManager.GetString("FriendRequest_Text", resourceCulture);
+            }
+        }
+
+        public static string EventQuestionReplied_Title {
+            get {
+                return ResourceManager.GetString("EventQuestionReplied_Title", resourceCulture);
+            }
+        }
+
+        public static string EventQuestionAsked_Title {
+            get {
+                return ResourceManager.GetString("EventQuestionAsked_Title", resourceCulture);
+            }
+        }
+
+        public static string EventRequestApproved_Title {
+            get {
+                return ResourceManager.GetString("EventRequestApproved_Title", resourceCulture);
+            }
+        }
+
+        public static string EventRequestApproved_Body {
+            get {
+                return ResourceManager.GetString("EventRequestApproved_Body", resourceCulture);
+            }
+        }
+
+        public static string EventInvitation_Title {
+            get {
+                return ResourceManager.GetString("EventInvitation_Title", resourceCulture);
+            }
+        }
+
+        public static string EventInvitation_Body {
+            get {
+                return ResourceManager.GetString("EventInvitation_Body", resourceCulture);
+            }
+        }
+
+        public static string EventPromotedFromWaitlist_Title {
+            get {
+                return ResourceManager.GetString("EventPromotedFromWaitlist_Title", resourceCulture);
+            }
+        }
+
+        public static string EventRequestRejected_Title {
+            get {
+                return ResourceManager.GetString("EventRequestRejected_Title", resourceCulture);
+            }
+        }
+
+        public static string EventRequestRejected_Body {
+            get {
+                return ResourceManager.GetString("EventRequestRejected_Body", resourceCulture);
+            }
+        }
+
+        public static string EventCancelled_Title {
+            get {
+                return ResourceManager.GetString("EventCancelled_Title", resourceCulture);
+            }
+        }
+
+        public static string EventCancelled_Body {
+            get {
+                return ResourceManager.GetString("EventCancelled_Body", resourceCulture);
+            }
+        }
+
+        public static string NewMessage_Title {
+            get {
+                return ResourceManager.GetString("NewMessage_Title", resourceCulture);
+            }
+        }
+
+        public static string NewMediaMessage_Fallback {
+            get {
+                return ResourceManager.GetString("NewMediaMessage_Fallback", resourceCulture);
+            }
+        }
+
+        public static string EventReminder_Title {
+            get {
+                return ResourceManager.GetString("EventReminder_Title", resourceCulture);
+            }
+        }
+
+        public static string EventReminder_Body {
+            get {
+                return ResourceManager.GetString("EventReminder_Body", resourceCulture);
+            }
+        }
     }
 }

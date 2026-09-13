@@ -6,6 +6,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Organizations.RemoveOrganizationMember;
 
@@ -71,11 +72,12 @@ internal sealed class RemoveOrganizationMemberCommandHandler
             return Result.Failure(OrganizationErrors.MemberNotFound);
         }
 
-        var title = await NotificationActor.TitleAsync(
-            _dbContext,
-            actorId,
-            "seni organizasyondan çıkardı",
-            cancellationToken);
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, request.UserId, cancellationToken);
+        var title = NotificationActor.Format(
+            recipientLanguage,
+            nameof(NotificationsResource.OrganizationMemberRemoved_Text),
+            await NotificationActor.PrefixAsync(_dbContext, actorId, recipientLanguage, cancellationToken));
 
         await _notificationPublisher.PublishAsync(
             request.UserId,

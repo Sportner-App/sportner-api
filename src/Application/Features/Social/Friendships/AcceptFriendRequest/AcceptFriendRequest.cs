@@ -9,6 +9,7 @@ using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Friendships.AcceptFriendRequest;
 
@@ -92,11 +93,12 @@ internal sealed class AcceptFriendRequestCommandHandler
                     cancellationToken);
             }
 
-            var acceptedCopy = await NotificationActor.TitleAsync(
-                _dbContext,
-                userId,
-                "arkadaşlık isteğini kabul etti",
-                cancellationToken);
+            var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+                _dbContext, friendship.RequesterUserId, cancellationToken);
+            var acceptedCopy = NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.FriendAccepted_Text),
+                await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken));
 
             await _notificationPublisher.PublishAsync(
                 friendship.RequesterUserId,

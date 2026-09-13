@@ -7,6 +7,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Organizations.ApproveOrganizationMember;
 
@@ -73,11 +74,12 @@ internal sealed class ApproveOrganizationMemberCommandHandler
             return Result<OrganizationMemberResponse>.Failure(OrganizationErrors.MemberNotFound);
         }
 
-        var title = await NotificationActor.TitleAsync(
-            _dbContext,
-            actorId,
-            "organizasyon katılımını onayladı",
-            cancellationToken);
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, request.UserId, cancellationToken);
+        var title = NotificationActor.Format(
+            recipientLanguage,
+            nameof(NotificationsResource.OrganizationJoinApproved_Text),
+            await NotificationActor.PrefixAsync(_dbContext, actorId, recipientLanguage, cancellationToken));
 
         await _notificationPublisher.PublishAsync(
             request.UserId,

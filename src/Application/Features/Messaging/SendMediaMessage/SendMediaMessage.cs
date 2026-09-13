@@ -9,6 +9,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Messaging.SendMediaMessage;
 
@@ -158,25 +159,33 @@ internal sealed class SendMediaMessageCommandHandler
 
         _dbContext.Messages.Add(message);
 
-        var preview = request.Caption is { Length: > 0 }
-            ? request.Caption
-            : "Yeni medya mesajı";
-
         var notifyAt = utcNow;
-        var title = await NotificationActor.TitleAsync(
-            _dbContext,
-            userId,
-            "mesaj gönderdi",
-            cancellationToken);
-        foreach (var member in conversation.Members.Where(member =>
-                     member.IsActive()
-                     && member.UserId != userId
-                     && !member.IsMuted(notifyAt)))
+        var recipients = conversation.Members
+            .Where(member =>
+                member.IsActive()
+                && member.UserId != userId
+                && !member.IsMuted(notifyAt))
+            .Select(member => member.UserId)
+            .ToList();
+
+        var senderUsername = await NotificationActor.ResolveUsernameAsync(_dbContext, userId, cancellationToken);
+        var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
+            _dbContext, recipients, cancellationToken);
+
+        foreach (var recipientId in recipients)
         {
+            var language = languagesByRecipient.GetValueOrDefault(recipientId);
+            var preview = request.Caption is { Length: > 0 }
+                ? request.Caption
+                : NotificationActor.Format(language, nameof(NotificationsResource.NewMediaMessage_Fallback));
+
             await _notificationPublisher.PublishAsync(
-                member.UserId,
+                recipientId,
                 NotificationType.NewMessage,
-                title,
+                NotificationActor.Format(
+                    language,
+                    nameof(NotificationsResource.NewMessage_Title),
+                    NotificationActor.FormatPrefix(senderUsername, language)),
                 preview,
                 NotificationEntityType.Conversation,
                 conversation.Id,

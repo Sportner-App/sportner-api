@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.CancelEvent;
 
@@ -54,21 +55,29 @@ internal sealed class CancelEventCommandHandler
                             && participant.Status is ParticipantStatus.Pending
                                 or ParticipantStatus.Approved)
                         .Select(participant => participant.UserId!.Value)
-                        .Distinct();
+                        .Distinct()
+                        .ToList();
 
-                    var cancelTitle = await NotificationActor.TitleAsync(
-                        DbContext,
-                        @event.OrganizerUserId,
-                        "etkinliği iptal etti",
-                        ct);
+                    var organizerUsername = await NotificationActor.ResolveUsernameAsync(
+                        DbContext, @event.OrganizerUserId, ct);
+                    var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
+                        DbContext, recipients, ct);
 
                     foreach (var recipientId in recipients)
                     {
+                        var language = languagesByRecipient.GetValueOrDefault(recipientId);
+
                         await _notificationPublisher.PublishAsync(
                             recipientId,
                             NotificationType.EventCancelled,
-                            cancelTitle,
-                            $"\"{@event.Title}\" etkinliği iptal edildi.",
+                            NotificationActor.Format(
+                                language,
+                                nameof(NotificationsResource.EventCancelled_Title),
+                                NotificationActor.FormatPrefix(organizerUsername, language)),
+                            NotificationActor.Format(
+                                language,
+                                nameof(NotificationsResource.EventCancelled_Body),
+                                @event.Title),
                             NotificationEntityType.Event,
                             @event.Id,
                             @event.OrganizerUserId,

@@ -8,6 +8,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Organizations.UpdateOrganizationMemberRole;
 
@@ -87,11 +88,16 @@ internal sealed class UpdateOrganizationMemberRoleCommandHandler
             return Result<OrganizationMemberResponse>.Failure(OrganizationErrors.MemberNotFound);
         }
 
-        var action = membership.Role is OrganizationRole.Admin
-            ? "seni organizasyon yöneticisi yaptı"
-            : "organizasyon yöneticiliğini kaldırdı";
+        var resourceKey = membership.Role is OrganizationRole.Admin
+            ? nameof(NotificationsResource.OrganizationRoleChangedToAdmin_Text)
+            : nameof(NotificationsResource.OrganizationRoleChangedFromAdmin_Text);
 
-        var title = await NotificationActor.TitleAsync(_dbContext, actorId, action, cancellationToken);
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, request.UserId, cancellationToken);
+        var title = NotificationActor.Format(
+            recipientLanguage,
+            resourceKey,
+            await NotificationActor.PrefixAsync(_dbContext, actorId, recipientLanguage, cancellationToken));
 
         await _notificationPublisher.PublishAsync(
             request.UserId,

@@ -9,6 +9,7 @@ using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 using Sportner.Domain.Organizations;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Organizations.JoinOrganization;
 
@@ -119,11 +120,7 @@ internal sealed class JoinOrganizationCommandHandler
             }
         }
 
-        var requestCopy = await NotificationActor.TitleAsync(
-            _dbContext,
-            userId,
-            "organizasyona katılmak istiyor",
-            cancellationToken);
+        var actorUsername = await NotificationActor.ResolveUsernameAsync(_dbContext, userId, cancellationToken);
 
         var managerIds = await _dbContext.OrganizationMembers.AsNoTracking()
             .Where(member =>
@@ -134,13 +131,22 @@ internal sealed class JoinOrganizationCommandHandler
             .Select(member => member.UserId)
             .ToListAsync(cancellationToken);
 
+        var languagesByManager = await NotificationActor.ResolveRecipientLanguagesAsync(
+            _dbContext, managerIds, cancellationToken);
+
         foreach (var managerId in managerIds)
         {
+            var language = languagesByManager.GetValueOrDefault(managerId);
+            var text = NotificationActor.Format(
+                language,
+                nameof(NotificationsResource.OrganizationJoinRequested_Text),
+                NotificationActor.FormatPrefix(actorUsername, language));
+
             await _notificationPublisher.PublishAsync(
                 managerId,
                 NotificationType.OrganizationJoinRequested,
-                requestCopy,
-                requestCopy,
+                text,
+                text,
                 NotificationEntityType.Organization,
                 organization.Id,
                 userId,

@@ -24,4 +24,85 @@
   <data name="Quest_CompletedBody" xml:space="preserve">
     <value>You completed the '{0}' quest.</value>
   </data>
+  <data name="OrganizationJoinRequested_Text" xml:space="preserve">
+    <value>{0} wants to join the organization</value>
+  </data>
+  <data name="OrganizationJoinApproved_Text" xml:space="preserve">
+    <value>{0} approved your organization join request</value>
+  </data>
+  <data name="OrganizationMemberRemoved_Text" xml:space="preserve">
+    <value>{0} removed you from the organization</value>
+  </data>
+  <data name="OrganizationJoinRejected_Text" xml:space="preserve">
+    <value>{0} rejected your organization join request</value>
+  </data>
+  <data name="OrganizationRoleChangedToAdmin_Text" xml:space="preserve">
+    <value>{0} made you an organization admin</value>
+  </data>
+  <data name="OrganizationRoleChangedFromAdmin_Text" xml:space="preserve">
+    <value>{0} removed your organization admin role</value>
+  </data>
+  <data name="OrganizationMemberBlocked_Text" xml:space="preserve">
+    <value>{0} blocked you from the organization</value>
+  </data>
+  <data name="PostCommented_Title" xml:space="preserve">
+    <value>{0} commented on your photo</value>
+  </data>
+  <data name="CommentReplied_Title" xml:space="preserve">
+    <value>{0} replied to your comment</value>
+  </data>
+  <data name="PostLiked_Text" xml:space="preserve">
+    <value>{0} liked your photo</value>
+  </data>
+  <data name="FriendAccepted_Text" xml:space="preserve">
+    <value>{0} accepted your friend request</value>
+  </data>
+  <data name="FriendRequest_Text" xml:space="preserve">
+    <value>{0} sent you a friend request</value>
+  </data>
+  <data name="EventQuestionReplied_Title" xml:space="preserve">
+    <value>{0} replied to your question</value>
+  </data>
+  <data name="EventQuestionAsked_Title" xml:space="preserve">
+    <value>{0} asked a question about your event</value>
+  </data>
+  <data name="EventRequestApproved_Title" xml:space="preserve">
+    <value>{0} approved your request</value>
+  </data>
+  <data name="EventRequestApproved_Body" xml:space="preserve">
+    <value>Your participation in "{0}" was approved.</value>
+  </data>
+  <data name="EventInvitation_Title" xml:space="preserve">
+    <value>{0} invited you to an event</value>
+  </data>
+  <data name="EventInvitation_Body" xml:space="preserve">
+    <value>You've been invited to "{0}".</value>
+  </data>
+  <data name="EventPromotedFromWaitlist_Title" xml:space="preserve">
+    <value>{0} added you to the event</value>
+  </data>
+  <data name="EventRequestRejected_Title" xml:space="preserve">
+    <value>{0} rejected your request</value>
+  </data>
+  <data name="EventRequestRejected_Body" xml:space="preserve">
+    <value>Your request to join "{0}" was rejected.</value>
+  </data>
+  <data name="EventCancelled_Title" xml:space="preserve">
+    <value>{0} cancelled the event</value>
+  </data>
+  <data name="EventCancelled_Body" xml:space="preserve">
+    <value>"{0}" was cancelled.</value>
+  </data>
+  <data name="NewMessage_Title" xml:space="preserve">
+    <value>{0} sent a message</value>
+  </data>
+  <data name="NewMediaMessage_Fallback" xml:space="preserve">
+    <value>New media message</value>
+  </data>
+  <data name="EventReminder_Title" xml:space="preserve">
+    <value>Event reminder</value>
+  </data>
+  <data name="EventReminder_Body" xml:space="preserve">
+    <value>"{0}" starts in {1}.</value>
+  </data>
 </root>

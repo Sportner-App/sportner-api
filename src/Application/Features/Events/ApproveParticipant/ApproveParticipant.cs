@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.ApproveParticipant;
 
@@ -75,15 +76,21 @@ internal sealed class ApproveParticipantCommandHandler
 
                 statistics?.IncreaseEventsJoined(utcNow);
 
+                var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+                    DbContext, request.UserId, ct);
+
                 await _notificationPublisher.PublishAsync(
                     request.UserId,
                     NotificationType.EventRequestApproved,
-                    await NotificationActor.TitleAsync(
-                        DbContext,
-                        @event.OrganizerUserId,
-                        "başvurunu onayladı",
-                        ct),
-                    $"\"{@event.Title}\" etkinliğine katılımın onaylandı.",
+                    NotificationActor.Format(
+                        recipientLanguage,
+                        nameof(NotificationsResource.EventRequestApproved_Title),
+                        await NotificationActor.PrefixAsync(
+                            DbContext, @event.OrganizerUserId, recipientLanguage, ct)),
+                    NotificationActor.Format(
+                        recipientLanguage,
+                        nameof(NotificationsResource.EventRequestApproved_Body),
+                        @event.Title),
                     NotificationEntityType.Event,
                     @event.Id,
                     @event.OrganizerUserId,

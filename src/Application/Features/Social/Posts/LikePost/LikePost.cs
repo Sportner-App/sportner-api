@@ -7,6 +7,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Posts.LikePost;
 
@@ -72,11 +73,12 @@ internal sealed class LikePostCommandHandler : ICommandHandler<LikePostCommand>
         _dbContext.PostLikes.Add(PostLike.Create(post.Id, userId, utcNow));
         post.IncrementLikeCount(utcNow);
 
-        var likeCopy = await NotificationActor.TitleAsync(
-            _dbContext,
-            userId,
-            "fotoğrafını beğendi",
-            cancellationToken);
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, post.UserId, cancellationToken);
+        var likeCopy = NotificationActor.Format(
+            recipientLanguage,
+            nameof(NotificationsResource.PostLiked_Text),
+            await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken));
 
         await _notificationPublisher.PublishAsync(
             post.UserId,

@@ -9,6 +9,7 @@ using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 using Sportner.Domain.Events;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.EventQuestions.AskEventQuestion;
 
@@ -123,14 +124,16 @@ internal sealed class AskEventQuestionCommandHandler
 
         _dbContext.EventQuestions.Add(question);
 
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, @event.OrganizerUserId, cancellationToken);
+
         await _notificationPublisher.PublishAsync(
             @event.OrganizerUserId,
             NotificationType.EventQuestionAsked,
-            await NotificationActor.TitleAsync(
-                _dbContext,
-                userId,
-                "etkinliğine soru sordu",
-                cancellationToken),
+            NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.EventQuestionAsked_Title),
+                await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
             EventQuestionAccess.Preview(question.Content),
             NotificationEntityType.Event,
             @event.Id,

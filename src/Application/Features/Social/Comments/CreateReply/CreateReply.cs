@@ -10,6 +10,7 @@ using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Social.Comments.CreateComment;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Comments.CreateReply;
 
@@ -143,14 +144,16 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
         root.IncrementReplyCount(utcNow);
         post.IncrementCommentCount(utcNow);
 
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, target.UserId, cancellationToken);
+
         await _notificationPublisher.PublishAsync(
             target.UserId,
             NotificationType.CommentReplied,
-            await NotificationActor.TitleAsync(
-                _dbContext,
-                userId,
-                "yorumuna yanıt verdi",
-                cancellationToken),
+            NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.CommentReplied_Title),
+                await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
             NotificationEntityType.Comment,
             reply.Id,

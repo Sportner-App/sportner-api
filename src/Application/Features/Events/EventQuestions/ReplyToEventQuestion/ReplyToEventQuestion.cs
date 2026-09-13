@@ -10,6 +10,7 @@ using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 using Sportner.Domain.Events;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.EventQuestions.ReplyToEventQuestion;
 
@@ -162,15 +163,19 @@ internal sealed class ReplyToEventQuestionCommandHandler
         var recipients = new HashSet<Guid> { root.AuthorUserId, @event.OrganizerUserId, target.AuthorUserId };
         recipients.Remove(userId);
 
-        var title = await NotificationActor.TitleAsync(
-            _dbContext,
-            userId,
-            "soruna yanıt verdi",
-            cancellationToken);
+        var actorUsername = await NotificationActor.ResolveUsernameAsync(_dbContext, userId, cancellationToken);
         var preview = EventQuestionAccess.Preview(reply.Content);
+        var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
+            _dbContext, recipients, cancellationToken);
 
         foreach (var recipientId in recipients)
         {
+            var language = languagesByRecipient.GetValueOrDefault(recipientId);
+            var title = NotificationActor.Format(
+                language,
+                nameof(NotificationsResource.EventQuestionReplied_Title),
+                NotificationActor.FormatPrefix(actorUsername, language));
+
             await _notificationPublisher.PublishAsync(
                 recipientId,
                 NotificationType.EventQuestionReplied,

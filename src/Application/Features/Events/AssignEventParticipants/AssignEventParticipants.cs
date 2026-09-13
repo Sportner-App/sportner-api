@@ -10,6 +10,7 @@ using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 using Sportner.Domain.Events;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.AssignEventParticipants;
 
@@ -85,11 +86,8 @@ internal sealed class AssignEventParticipantsCommandHandler
                     return Result.Failure(EventErrors.FriendAlreadyAssociated);
                 }
 
-                var inviteTitle = await NotificationActor.TitleAsync(
-                    DbContext,
-                    @event.OrganizerUserId,
-                    "seni etkinliğe davet etti",
-                    ct);
+                var organizerUsername = await NotificationActor.ResolveUsernameAsync(
+                    DbContext, @event.OrganizerUserId, ct);
 
                 if (friendIds.Count > 0)
                 {
@@ -168,6 +166,13 @@ internal sealed class AssignEventParticipantsCommandHandler
                     return Result.Failure(EventErrors.CapacityFull);
                 }
 
+                var assignedUserIds = assigned
+                    .Where(participant => participant.UserId is not null)
+                    .Select(participant => participant.UserId!.Value)
+                    .ToList();
+                var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
+                    DbContext, assignedUserIds, ct);
+
                 foreach (var participant in assigned)
                 {
                     if (!existingIds.Contains(participant.Id))
@@ -195,11 +200,19 @@ internal sealed class AssignEventParticipantsCommandHandler
                         statistics?.IncreaseEventsJoined(utcNow);
                     }
 
+                    var language = languagesByRecipient.GetValueOrDefault(userId);
+
                     await _notificationPublisher.PublishAsync(
                         userId,
                         NotificationType.EventInvitation,
-                        inviteTitle,
-                        $"\"{@event.Title}\" etkinliğine davet edildin.",
+                        NotificationActor.Format(
+                            language,
+                            nameof(NotificationsResource.EventInvitation_Title),
+                            NotificationActor.FormatPrefix(organizerUsername, language)),
+                        NotificationActor.Format(
+                            language,
+                            nameof(NotificationsResource.EventInvitation_Body),
+                            @event.Title),
                         NotificationEntityType.Event,
                         @event.Id,
                         @event.OrganizerUserId,

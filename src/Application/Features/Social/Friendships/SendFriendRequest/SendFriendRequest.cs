@@ -7,6 +7,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Friendships.SendFriendRequest;
 
@@ -88,11 +89,12 @@ internal sealed class SendFriendRequestCommandHandler
         var friendship = Friendship.CreateRequest(requesterId, request.AddresseeUserId, utcNow);
         _dbContext.Friendships.Add(friendship);
 
-        var requestCopy = await NotificationActor.TitleAsync(
-            _dbContext,
-            requesterId,
-            "arkadaşlık isteği gönderdi",
-            cancellationToken);
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, request.AddresseeUserId, cancellationToken);
+        var requestCopy = NotificationActor.Format(
+            recipientLanguage,
+            nameof(NotificationsResource.FriendRequest_Text),
+            await NotificationActor.PrefixAsync(_dbContext, requesterId, recipientLanguage, cancellationToken));
 
         await _notificationPublisher.PublishAsync(
             request.AddresseeUserId,

@@ -9,6 +9,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Comments.CreateComment;
 
@@ -86,14 +87,16 @@ internal sealed class CreateCommentCommandHandler
         _dbContext.PostComments.Add(comment);
         post.IncrementCommentCount(utcNow);
 
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, post.UserId, cancellationToken);
+
         await _notificationPublisher.PublishAsync(
             post.UserId,
             NotificationType.PostCommented,
-            await NotificationActor.TitleAsync(
-                _dbContext,
-                userId,
-                "fotoğrafına yorum yaptı",
-                cancellationToken),
+            NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.PostCommented_Title),
+                await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
             NotificationEntityType.Comment,
             comment.Id,
