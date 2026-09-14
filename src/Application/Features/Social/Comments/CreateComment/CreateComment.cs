@@ -98,8 +98,8 @@ internal sealed class CreateCommentCommandHandler
                 nameof(NotificationsResource.PostCommented_Title),
                 await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
-            NotificationEntityType.Comment,
-            comment.Id,
+            NotificationEntityType.Post,
+            post.Id,
             userId,
             cancellationToken);
 

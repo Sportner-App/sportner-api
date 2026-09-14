@@ -97,6 +97,10 @@ internal sealed class AttendanceAutoConfirmDispatcher : IAttendanceAutoConfirmDi
             .Select(participant => participant.UserId!.Value)
             .ToList();
 
+        var statisticsByUserId = await _dbContext.UserStatistics
+            .Where(statistics => pendingUserIds.Contains(statistics.UserId))
+            .ToDictionaryAsync(statistics => statistics.UserId, cancellationToken);
+
         foreach (var userId in pendingUserIds)
         {
             await AttendanceConfirmation.ConfirmAsync(
@@ -107,7 +111,8 @@ internal sealed class AttendanceAutoConfirmDispatcher : IAttendanceAutoConfirmDi
                 _questProgressTracker,
                 _notificationPublisher,
                 utcNow,
-                cancellationToken);
+                cancellationToken,
+                statisticsByUserId);
         }
 
         if (pendingUserIds.Count > 0)

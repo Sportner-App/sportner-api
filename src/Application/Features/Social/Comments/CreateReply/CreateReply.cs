@@ -155,8 +155,8 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
                 nameof(NotificationsResource.CommentReplied_Title),
                 await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
             request.Content.Length <= 120 ? request.Content : request.Content[..117] + "...",
-            NotificationEntityType.Comment,
-            reply.Id,
+            NotificationEntityType.Post,
+            post.Id,
             userId,
             cancellationToken);
 

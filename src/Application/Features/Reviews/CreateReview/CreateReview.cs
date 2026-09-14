@@ -3,14 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Quests;
 using Sportner.Application.Features.Reviews;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Reviews;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Reviews.CreateReview;
 
@@ -38,19 +41,22 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
     private readonly TimeProvider _timeProvider;
     private readonly IBadgeAwarder _badgeAwarder;
     private readonly IQuestProgressTracker _questProgressTracker;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public CreateReviewCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         TimeProvider timeProvider,
         IBadgeAwarder badgeAwarder,
-        IQuestProgressTracker questProgressTracker)
+        IQuestProgressTracker questProgressTracker,
+        INotificationPublisher notificationPublisher)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
         _badgeAwarder = badgeAwarder;
         _questProgressTracker = questProgressTracker;
+        _notificationPublisher = notificationPublisher;
     }
 
     public async Task<Result<ReviewResponse>> Handle(
@@ -155,6 +161,25 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
             reviewerUserId,
             QuestMetrics.ReviewsCreated,
             1,
+            cancellationToken);
+
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, request.ReviewedUserId, cancellationToken);
+        var reviewerUsername = await NotificationActor.ResolveUsernameAsync(
+            _dbContext, reviewerUserId, cancellationToken);
+
+        await _notificationPublisher.PublishAsync(
+            request.ReviewedUserId,
+            NotificationType.ReviewReceived,
+            NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.ReviewReceived_Title),
+                NotificationActor.FormatPrefix(reviewerUsername, recipientLanguage)),
+            NotificationActor.Format(
+                recipientLanguage, nameof(NotificationsResource.ReviewReceived_Body), @event.Title),
+            NotificationEntityType.User,
+            reviewerUserId,
+            actorUserId: reviewerUserId,
             cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -24,5 +24,6 @@ public enum NotificationType : short
     OrganizationRoleChanged = 19,
     OrganizationMemberRemoved = 20,
     OrganizationMemberBlocked = 21,
-    EventReviewPrompt = 22
+    EventReviewPrompt = 22,
+    ReviewReceived = 23
 }

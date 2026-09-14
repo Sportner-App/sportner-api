@@ -34,6 +34,21 @@ internal static class NotificationActor
         return language == Language.English ? username : $"{username} kullanıcısı";
     }
 
+    /// <summary>
+    /// Plain sender name for notifications shown as "{name} / {message}" (e.g. new message
+    /// push) rather than a "{name} did X" sentence - unlike <see cref="FormatPrefix"/>, this
+    /// never appends a filler word.
+    /// </summary>
+    internal static string DisplayName(string? username, Language language)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return language == Language.English ? "Someone" : "Biri";
+        }
+
+        return username;
+    }
+
     /// <summary>Convenience for the common single-recipient case: resolves the actor's username and formats it in one call.</summary>
     internal static async Task<string> PrefixAsync(
         IApplicationDbContext dbContext,

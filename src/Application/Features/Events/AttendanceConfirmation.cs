@@ -6,6 +6,7 @@ using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Constants;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
+using Sportner.Domain.Users;
 
 namespace Sportner.Application.Features.Events;
 
@@ -25,7 +26,8 @@ internal static class AttendanceConfirmation
         IQuestProgressTracker questProgressTracker,
         INotificationPublisher notificationPublisher,
         DateTimeOffset utcNow,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<Guid, UserStatistics>? preloadedStatistics = null)
     {
         var participant = @event.Participants.FirstOrDefault(candidate => candidate.UserId == userId);
         var shouldCreditAttendance = participant?.Status is ParticipantStatus.Approved;
@@ -37,11 +39,13 @@ internal static class AttendanceConfirmation
             return;
         }
 
-        var statistics = await dbContext.UserStatistics
-            .FirstOrDefaultAsync(candidate => candidate.UserId == userId, cancellationToken);
+        var statistics = preloadedStatistics is not null
+            ? preloadedStatistics.GetValueOrDefault(userId)
+            : await dbContext.UserStatistics
+                .FirstOrDefaultAsync(candidate => candidate.UserId == userId, cancellationToken);
 
         statistics?.IncreaseCompletedEvents(utcNow);
-        await RefreshAttendanceRateAsync(dbContext, userId, utcNow, cancellationToken);
+        await RefreshAttendanceRateAsync(dbContext, statistics, userId, utcNow, cancellationToken);
 
         await badgeAwarder.TryAwardAsync(userId, BadgeCodes.FirstEvent, cancellationToken);
         await badgeAwarder.EvaluateAfterAttendanceAsync(userId, cancellationToken);
@@ -63,49 +67,46 @@ internal static class AttendanceConfirmation
         Event @event,
         Guid userId,
         DateTimeOffset utcNow,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<Guid, UserStatistics>? preloadedStatistics = null)
     {
         @event.MarkNoShow(userId, utcNow);
 
-        var statistics = await dbContext.UserStatistics
-            .FirstOrDefaultAsync(candidate => candidate.UserId == userId, cancellationToken);
+        var statistics = preloadedStatistics is not null
+            ? preloadedStatistics.GetValueOrDefault(userId)
+            : await dbContext.UserStatistics
+                .FirstOrDefaultAsync(candidate => candidate.UserId == userId, cancellationToken);
 
-        if (statistics is not null)
-        {
-            await RefreshAttendanceRateAsync(dbContext, userId, utcNow, cancellationToken);
-        }
+        await RefreshAttendanceRateAsync(dbContext, statistics, userId, utcNow, cancellationToken);
     }
 
+    /// <summary>Recomputes the attendance rate from an already-loaded statistics row (no re-fetch).</summary>
     private static async Task RefreshAttendanceRateAsync(
         IApplicationDbContext dbContext,
+        UserStatistics? statistics,
         Guid userId,
         DateTimeOffset utcNow,
         CancellationToken cancellationToken)
     {
-        var statistics = await dbContext.UserStatistics
-            .FirstOrDefaultAsync(candidate => candidate.UserId == userId, cancellationToken);
-
         if (statistics is null || statistics.EventsJoined == 0)
         {
             return;
         }
 
         // Includes the just-marked transition, which is tracked in the aggregate but may not
-        // yet be visible to a fresh AsNoTracking query against the same DbContext.
-        var attended = await dbContext.EventParticipants
-            .CountAsync(
-                participant =>
-                    participant.UserId == userId
-                    && participant.Status == ParticipantStatus.Attended,
-                cancellationToken);
+        // yet be visible to a fresh AsNoTracking query against the same DbContext. One grouped
+        // query instead of two separate counts.
+        var counts = await dbContext.EventParticipants.AsNoTracking()
+            .Where(participant =>
+                participant.UserId == userId
+                && (participant.Status == ParticipantStatus.Attended
+                    || participant.Status == ParticipantStatus.NoShow))
+            .GroupBy(participant => participant.Status)
+            .Select(group => new { Status = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken);
 
-        var noShow = await dbContext.EventParticipants
-            .CountAsync(
-                participant =>
-                    participant.UserId == userId
-                    && participant.Status == ParticipantStatus.NoShow,
-                cancellationToken);
-
+        var attended = counts.FirstOrDefault(c => c.Status == ParticipantStatus.Attended)?.Count ?? 0;
+        var noShow = counts.FirstOrDefault(c => c.Status == ParticipantStatus.NoShow)?.Count ?? 0;
         var decided = attended + noShow;
 
         if (decided == 0)

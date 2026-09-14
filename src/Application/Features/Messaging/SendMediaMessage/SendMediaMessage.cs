@@ -182,10 +182,7 @@ internal sealed class SendMediaMessageCommandHandler
             await _notificationPublisher.PublishAsync(
                 recipientId,
                 NotificationType.NewMessage,
-                NotificationActor.Format(
-                    language,
-                    nameof(NotificationsResource.NewMessage_Title),
-                    NotificationActor.FormatPrefix(senderUsername, language)),
+                NotificationActor.DisplayName(senderUsername, language),
                 preview,
                 NotificationEntityType.Conversation,
                 conversation.Id,

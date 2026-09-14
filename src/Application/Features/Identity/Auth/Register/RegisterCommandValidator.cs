@@ -27,8 +27,8 @@ internal sealed class RegisterCommandValidator : AbstractValidator<RegisterComma
             .MaximumLength(50);
 
         RuleFor(command => command.LastName)
-            .MaximumLength(50)
-            .When(command => !string.IsNullOrWhiteSpace(command.LastName));
+            .NotEmpty()
+            .MaximumLength(50);
 
         RuleFor(command => command.Gender)
             .NotNull()

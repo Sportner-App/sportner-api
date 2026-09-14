@@ -9,7 +9,6 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
-using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Messaging.SendTextMessage;
 
@@ -164,10 +163,7 @@ internal sealed class SendTextMessageCommandHandler
             await _notificationPublisher.PublishAsync(
                 recipientId,
                 NotificationType.NewMessage,
-                NotificationActor.Format(
-                    language,
-                    nameof(NotificationsResource.NewMessage_Title),
-                    NotificationActor.FormatPrefix(senderUsername, language)),
+                NotificationActor.DisplayName(senderUsername, language),
                 preview,
                 NotificationEntityType.Conversation,
                 conversation.Id,

@@ -218,12 +218,6 @@ namespace Sportner.Localization.Resources {
             }
         }
 
-        public static string NewMessage_Title {
-            get {
-                return ResourceManager.GetString("NewMessage_Title", resourceCulture);
-            }
-        }
-
         public static string NewMediaMessage_Fallback {
             get {
                 return ResourceManager.GetString("NewMediaMessage_Fallback", resourceCulture);
@@ -251,6 +245,18 @@ namespace Sportner.Localization.Resources {
         public static string EventReviewPrompt_Body {
             get {
                 return ResourceManager.GetString("EventReviewPrompt_Body", resourceCulture);
+            }
+        }
+
+        public static string ReviewReceived_Title {
+            get {
+                return ResourceManager.GetString("ReviewReceived_Title", resourceCulture);
+            }
+        }
+
+        public static string ReviewReceived_Body {
+            get {
+                return ResourceManager.GetString("ReviewReceived_Body", resourceCulture);
             }
         }
     }

@@ -60,8 +60,8 @@ public sealed class CommentReplyHandlerTests
                 NotificationType.CommentReplied,
                 "replier kullanıcısı yorumuna yanıt verdi",
                 "Katiliyorum",
-                NotificationEntityType.Comment,
-                persisted.Id,
+                NotificationEntityType.Post,
+                post.Id,
                 replier.Id,
                 It.IsAny<CancellationToken>()),
             Times.Once);
@@ -122,8 +122,8 @@ public sealed class CommentReplyHandlerTests
                 NotificationType.CommentReplied,
                 "second kullanıcısı yorumuna yanıt verdi",
                 "Sana da katiliyorum",
-                NotificationEntityType.Comment,
-                persisted.Id,
+                NotificationEntityType.Post,
+                post.Id,
                 secondReplier.Id,
                 It.IsAny<CancellationToken>()),
             Times.Once);

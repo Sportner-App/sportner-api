@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
@@ -6,6 +7,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Quests;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Users;
 
 namespace Sportner.Application.Features.Events.ConfirmAllAttendance;
 
@@ -61,11 +63,18 @@ internal sealed class ConfirmAllAttendanceCommandHandler
                     .Select(participant => participant.UserId!.Value)
                     .ToList();
 
+                // One query for everyone's stats row instead of one per participant - this
+                // handler processes every Approved participant in a single request.
+                var statisticsByUserId = await DbContext.UserStatistics
+                    .Where(statistics => pendingUserIds.Contains(statistics.UserId))
+                    .ToDictionaryAsync(statistics => statistics.UserId, ct);
+
                 foreach (var userId in pendingUserIds)
                 {
                     if (absentIds.Contains(userId))
                     {
-                        await AttendanceConfirmation.MarkAbsentAsync(DbContext, @event, userId, utcNow, ct);
+                        await AttendanceConfirmation.MarkAbsentAsync(
+                            DbContext, @event, userId, utcNow, ct, statisticsByUserId);
                     }
                     else
                     {
@@ -77,7 +86,8 @@ internal sealed class ConfirmAllAttendanceCommandHandler
                             _questProgressTracker,
                             _notificationPublisher,
                             utcNow,
-                            ct);
+                            ct,
+                            statisticsByUserId);
                     }
                 }
 

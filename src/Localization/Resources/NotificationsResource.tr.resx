@@ -93,9 +93,6 @@
   <data name="EventCancelled_Body" xml:space="preserve">
     <value>"{0}" etkinliği iptal edildi.</value>
   </data>
-  <data name="NewMessage_Title" xml:space="preserve">
-    <value>{0} mesaj gönderdi</value>
-  </data>
   <data name="NewMediaMessage_Fallback" xml:space="preserve">
     <value>Yeni medya mesajı</value>
   </data>
@@ -110,5 +107,11 @@
   </data>
   <data name="EventReviewPrompt_Body" xml:space="preserve">
     <value>"{0}" etkinliği sona erdi — geri bildirimini paylaş.</value>
+  </data>
+  <data name="ReviewReceived_Title" xml:space="preserve">
+    <value>{0} seni değerlendirdi</value>
+  </data>
+  <data name="ReviewReceived_Body" xml:space="preserve">
+    <value>"{0}" için yeni bir değerlendirme aldın.</value>
   </data>
 </root>
