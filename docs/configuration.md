@@ -14,7 +14,7 @@ Every deployable host uses the same file layout:
 ```text
 appsettings.json                 # shared defaults (no secrets)
 appsettings.Development.json     # ConnectionStrings / Supabase / Jwt / Authorization + host extras
-appsettings.Production.json      # same secret sections as Development (Render/Docker Production)
+appsettings.Production.json      # same secret sections as Development (Render/Railway/Docker Production)
 ```
 
 | Host | Extra section |
