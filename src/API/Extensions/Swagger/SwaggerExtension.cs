@@ -18,6 +18,14 @@ public static class SwaggerExtension
 
             options.DescribeAllParametersInCamelCase();
 
+            // Several controllers declare nested request DTOs with the same short name
+            // (e.g. BlockUserBody in both BlocksController and FriendshipsController) -
+            // Swashbuckle's default schemaId is just the type name, so those collide and
+            // crash schema generation. Prefix with the declaring type to keep IDs unique.
+            options.CustomSchemaIds(type => type.DeclaringType is not null
+                ? $"{type.DeclaringType.Name}{type.Name}"
+                : type.Name);
+
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
