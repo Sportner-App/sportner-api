@@ -94,12 +94,23 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
             return;
         }
 
+        // A device re-registers with a fresh DeviceIdentifier whenever its local storage is
+        // reset (reinstall, storage clear), leaving stale rows that still carry the same, still
+        // valid push token as the current one. Sending to every row would double (or more) the
+        // push for that single physical device, so keep only the most recently touched row per
+        // distinct token.
         var devices = await _dbContext.UserDevices
             .Where(device =>
                 device.UserId == item.RecipientUserId
                 && device.PushToken != null
                 && device.PushToken != "")
+            .OrderByDescending(device => device.UpdatedAt ?? device.CreatedAt)
             .ToListAsync(cancellationToken);
+
+        devices = devices
+            .GroupBy(device => device.PushToken)
+            .Select(group => group.First())
+            .ToList();
 
         if (devices.Count == 0)
         {

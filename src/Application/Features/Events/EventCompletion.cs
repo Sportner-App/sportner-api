@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
@@ -39,7 +40,13 @@ internal static class EventCompletion
             dbContext, @event, @event.OrganizerUserId, notificationPublisher, cancellationToken);
     }
 
-    /// <summary>Prompts <paramref name="recipientId"/> to go rate their teammates for this event.</summary>
+    /// <summary>
+    /// Prompts <paramref name="recipientId"/> to go rate their teammates for this event.
+    /// Multiple call sites can reach the same (event, recipient) pair - e.g. the organizer is
+    /// auto-enrolled as a participant, so both event-completion (organizer) and their own
+    /// attendance confirmation (via ConfirmAllAttendance's sweep) would otherwise fire this
+    /// twice - so this is a no-op if that prompt was already sent.
+    /// </summary>
     internal static async Task SendReviewPromptAsync(
         IApplicationDbContext dbContext,
         Event @event,
@@ -47,6 +54,19 @@ internal static class EventCompletion
         INotificationPublisher notificationPublisher,
         CancellationToken cancellationToken)
     {
+        var alreadySent = await dbContext.Notifications.AsNoTracking().AnyAsync(
+            notification =>
+                notification.RecipientUserId == recipientId
+                && notification.NotificationType == NotificationType.EventReviewPrompt
+                && notification.EntityType == NotificationEntityType.Event
+                && notification.EntityId == @event.Id,
+            cancellationToken);
+
+        if (alreadySent)
+        {
+            return;
+        }
+
         var language = await NotificationActor.ResolveRecipientLanguageAsync(
             dbContext, recipientId, cancellationToken);
 
