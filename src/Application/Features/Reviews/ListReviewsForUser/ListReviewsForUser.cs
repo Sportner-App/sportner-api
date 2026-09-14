@@ -29,18 +29,20 @@ internal sealed class ListReviewsForUserQueryHandler
     {
         var pagination = new PaginationRequest(request.Page, request.PageSize);
 
-        var query = ReviewQueries.Project(_dbContext)
-            .Where(review => review.ReviewedUserId == request.UserId);
-
-        if (_currentUser.UserId is { } viewerId)
+        var query = ReviewQueries.Project(_dbContext, reviews =>
         {
-            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
-            query = query.Where(review =>
-                !blockedIds.Contains(review.ReviewerUserId)
-                && !blockedIds.Contains(review.ReviewedUserId));
-        }
+            reviews = reviews.Where(review => review.ReviewedUserId == request.UserId);
 
-        query = query.OrderByDescending(review => review.CreatedAt);
+            if (_currentUser.UserId is { } viewerId)
+            {
+                var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
+                reviews = reviews.Where(review =>
+                    !blockedIds.Contains(review.ReviewerUserId)
+                    && !blockedIds.Contains(review.ReviewedUserId));
+            }
+
+            return reviews.OrderByDescending(review => review.CreatedAt);
+        });
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query

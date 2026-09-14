@@ -168,8 +168,10 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var response = await ReviewQueries.Project(_dbContext)
-            .FirstAsync(candidate => candidate.Id == review.Id, cancellationToken);
+        var response = await ReviewQueries.Project(
+                _dbContext,
+                reviews => reviews.Where(candidate => candidate.Id == review.Id))
+            .FirstAsync(cancellationToken);
 
         return Result<ReviewResponse>.Success(response);
     }

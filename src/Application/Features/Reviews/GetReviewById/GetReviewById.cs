@@ -37,8 +37,11 @@ internal sealed class GetReviewByIdQueryHandler : IQueryHandler<GetReviewByIdQue
             return Result<ReviewResponse>.Failure(ReviewErrors.NotFound);
         }
 
-        var response = await ReviewQueries.Project(_dbContext, includeReported: true)
-            .FirstAsync(candidate => candidate.Id == request.ReviewId, cancellationToken);
+        var response = await ReviewQueries.Project(
+                _dbContext,
+                reviews => reviews.Where(candidate => candidate.Id == request.ReviewId),
+                includeReported: true)
+            .FirstAsync(cancellationToken);
 
         return Result<ReviewResponse>.Success(response);
     }

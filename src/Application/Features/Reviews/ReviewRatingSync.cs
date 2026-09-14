@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Domain.Reviews;
 
 namespace Sportner.Application.Features.Reviews;
 
@@ -43,13 +44,27 @@ internal static class ReviewRatingSync
 
 internal static class ReviewQueries
 {
+    /// <summary>
+    /// Projects reviews (+ reviewer/reviewed profile) into <see cref="ReviewResponse"/>.
+    /// Apply all filtering/ordering via <paramref name="configureReviews"/> on the raw
+    /// <see cref="Review"/> queryable, not on the returned IQueryable&lt;ReviewResponse&gt; -
+    /// EF Core cannot translate a predicate composed against properties of the already
+    /// query-constructed record (it fails with "could not be translated") once this
+    /// projection's double LEFT JOIN is involved.
+    /// </summary>
     internal static IQueryable<ReviewResponse> Project(
         IApplicationDbContext dbContext,
+        Func<IQueryable<Review>, IQueryable<Review>>? configureReviews = null,
         bool includeReported = false)
     {
         var reviews = includeReported
             ? dbContext.Reviews.AsNoTracking()
             : dbContext.Reviews.AsNoTracking().Where(review => !review.IsReported);
+
+        if (configureReviews is not null)
+        {
+            reviews = configureReviews(reviews);
+        }
 
         return
             from review in reviews
