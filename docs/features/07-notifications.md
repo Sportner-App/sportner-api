@@ -71,7 +71,7 @@ Default channel matrix lives in `NotificationSetting.CreateDefault`.
 | `NotificationDeliveryOutbox` | Pending/Sent/Failed/Cancelled + retry |
 | `INotificationDeliveryDispatcher` | Batch poll; call `IPushSender` per device token |
 | `LoggingPushSender` | Day-1 sandbox (log + success); swap for FCM/APNs later |
-| `Notifications.Worker` | Cron `NotificationDeliveryCron` (default every minute) |
+| `Notifications.Worker` | Fixed interval `NotificationDeliveryIntervalSeconds` (default 10s) |
 
 ### Types that producers emit
 

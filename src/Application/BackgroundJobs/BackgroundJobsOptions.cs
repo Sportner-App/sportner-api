@@ -34,8 +34,11 @@ public sealed class BackgroundJobsOptions
     /// <summary>Reminder windows in minutes before event start (defaults: 24h + 1h).</summary>
     public int[] EventReminderWindowsMinutes { get; set; } = [1440, 60];
 
-    /// <summary>Every minute.</summary>
-    public string NotificationDeliveryCron { get; set; } = "* * * * *";
+    /// <summary>
+    /// How often the worker polls the push delivery outbox. Fixed interval rather than cron
+    /// so it can run sub-minute without a 6-field cron expression.
+    /// </summary>
+    public int NotificationDeliveryIntervalSeconds { get; set; } = 10;
 
     public int NotificationDeliveryBatchSize { get; set; } = 100;
 

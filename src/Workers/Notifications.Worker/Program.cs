@@ -23,9 +23,9 @@ try
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddWorkerHostDefaults(builder.Configuration);
 
-    builder.Services.AddCronJob(
+    builder.Services.AddIntervalJob(
         "notification-delivery",
-        options => options.NotificationDeliveryCron,
+        options => TimeSpan.FromSeconds(options.NotificationDeliveryIntervalSeconds),
         async (provider, ct) =>
         {
             await provider.GetRequiredService<INotificationDeliveryDispatcher>()

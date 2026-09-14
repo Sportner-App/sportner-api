@@ -53,4 +53,24 @@ public static class WorkerHostExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddIntervalJob(
+        this IServiceCollection services,
+        string jobName,
+        Func<BackgroundJobsOptions, TimeSpan> intervalSelector,
+        Func<IServiceProvider, CancellationToken, Task> execute)
+    {
+        // Each interval job is its own IntervalJobHostedService instance, so the registration
+        // must be additive; TryAddEnumerable cannot tell factory-built instances apart.
+        services.AddSingleton<IHostedService>(provider =>
+            new IntervalJobHostedService(
+                jobName,
+                intervalSelector,
+                execute,
+                provider.GetRequiredService<IServiceScopeFactory>(),
+                provider.GetRequiredService<IOptionsMonitor<BackgroundJobsOptions>>(),
+                provider.GetRequiredService<ILogger<IntervalJobHostedService>>()));
+
+        return services;
+    }
 }
