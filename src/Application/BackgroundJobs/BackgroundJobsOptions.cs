@@ -49,5 +49,5 @@ public sealed class BackgroundJobsOptions
     /// Days after an event's scheduled end before still-Approved participants are
     /// auto-confirmed as Attended, unblocking reviews even if the organizer never returns.
     /// </summary>
-    public int AttendanceAutoConfirmGraceDays { get; set; } = 3;
+    public int AttendanceAutoConfirmGraceDays { get; set; } = 1;
 }
