@@ -3,6 +3,7 @@ using Sportner.Domain.Common.Enums;
 namespace Sportner.Application.Abstractions.Notifications;
 
 public sealed record PushMessage(
+    Guid? NotificationId,
     Guid UserId,
     Guid DeviceId,
     DevicePlatform Platform,

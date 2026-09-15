@@ -11,7 +11,7 @@
 
 | # | Soru | Varsayılan |
 | - | ---- | ---------- |
-| 1 | Push provider | Day-1: `LoggingPushSender` (pipeline canlı). FCM/APNs credentials → sonra `IPushSender` swap |
+| 1 | Push provider | Expo Push API üzerinden `ExpoPushSender`; teslim makbuzları ayrıca izlenmeli |
 | 2 | Email provider | Sonra; day-1 enqueue yok (Email channel reserved) |
 | 3 | Outbox tablosu | **Evet** — `NotificationDeliveryOutbox` |
 | 4 | Worker host | `Notifications.Worker` (ayrı deploy) |
@@ -31,7 +31,7 @@
 
 ### Exit
 
-- [x] `IPushSender` + Logging sandbox
+- [x] `IPushSender` + `ExpoPushSender`
 - [x] Token invalid → `ClearPushToken`
 - [x] `PushEnabled=false` → enqueue yok
 - [x] No device token → `Cancelled`
@@ -47,7 +47,7 @@
 ## Exit criteria (06 tamam)
 
 - [x] Outbox + worker
-- [x] Push kanalı pipeline canlı (Logging)
+- [x] Push kanalı pipeline canlı (Expo Push API)
 - [x] features/07 update
 - [x] status.md
 

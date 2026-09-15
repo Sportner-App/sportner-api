@@ -20,4 +20,5 @@ public sealed record ReviewablePeerResponse(
     Guid UserId,
     string? Username,
     string? FirstName,
-    string? ProfileImageUrl);
+    string? ProfileImageUrl,
+    bool IsOrganizer);

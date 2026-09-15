@@ -31,8 +31,9 @@ public sealed class ExpoPushSender : IPushSender
             "default",
             "high",
             "default",
-            new ExpoPushData(
-                (short)message.NotificationType,
+                new ExpoPushData(
+                    message.NotificationId?.ToString("D"),
+                    (short)message.NotificationType,
                 (short)message.EntityType,
                 message.EntityId?.ToString("D")));
 
@@ -125,8 +126,8 @@ public sealed class ExpoPushSender : IPushSender
         [property: JsonPropertyName("data")] ExpoPushData Data);
 
     private sealed record ExpoPushData(
+        [property: JsonPropertyName("notificationId")] string? NotificationId,
         [property: JsonPropertyName("notificationType")] short NotificationType,
         [property: JsonPropertyName("entityType")] short EntityType,
         [property: JsonPropertyName("entityId")] string? EntityId);
 }
-

@@ -125,6 +125,7 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
         {
             var result = await _pushSender.SendAsync(
                 new PushMessage(
+                    item.NotificationId,
                     item.RecipientUserId,
                     device.Id,
                     device.Platform,

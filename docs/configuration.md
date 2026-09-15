@@ -1,11 +1,7 @@
 # Local Configuration
 
-Pre-deployment / local development reads database, JWT and Supabase values from
-`appsettings.Development.json` / `appsettings.Production.json`.
-
-**Project rule (owner):** Do **not** strip connection strings, JWT secrets, or Supabase
-keys from tracked appsettings unless the owner explicitly asks in that moment.
-Keep local convenience config in place.
+Tracked configuration files never contain database credentials, JWT secrets, or Supabase
+keys. Use local user-secrets for development and environment variables for every deployed host.
 
 ## Host config shape (API + all Workers — keep in sync)
 
@@ -13,8 +9,8 @@ Every deployable host uses the same file layout:
 
 ```text
 appsettings.json                 # shared defaults (no secrets)
-appsettings.Development.json     # ConnectionStrings / Supabase / Jwt / Authorization + host extras
-appsettings.Production.json      # same secret sections as Development (Render/Railway/Docker Production)
+appsettings.Development.json     # non-secret local defaults + host extras
+appsettings.Production.json      # non-secret production defaults
 ```
 
 | Host | Extra section |

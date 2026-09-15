@@ -78,7 +78,8 @@ internal sealed class ListReviewablePeersQueryHandler
                     participant.UserId!.Value,
                     profile != null ? profile.Username : null,
                     profile != null ? profile.FirstName : null,
-                    profile != null ? profile.ProfileImageUrl : null))
+                    profile != null ? profile.ProfileImageUrl : null,
+                    false))
             .ToListAsync(cancellationToken);
 
         if (userId != @event.OrganizerUserId
@@ -95,7 +96,8 @@ internal sealed class ListReviewablePeersQueryHandler
                     @event.OrganizerUserId,
                     organizer?.Username,
                     organizer?.FirstName,
-                    organizer?.ProfileImageUrl));
+                    organizer?.ProfileImageUrl,
+                    true));
         }
 
         return Result<IReadOnlyList<ReviewablePeerResponse>>.Success(peers);
