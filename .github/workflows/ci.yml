@@ -8,6 +8,20 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sportner_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,4 +38,11 @@ jobs:
         run: dotnet build Sportner.slnx --configuration Release --no-restore
 
       - name: Test
+        # API.IntegrationTests boots the real app via WebApplicationFactory<Program>, which
+        # requires a real Postgres connection (some of those tests specifically exist to catch
+        # SQL translation issues the InMemory-backed unit tests can't see) — point it at the
+        # ephemeral `postgres` service container above, not a real environment.
+        env:
+          ConnectionStrings__SupabaseConnection: "Host=localhost;Port=5432;Database=sportner_test;Username=postgres;Password=postgres;SSL Mode=Disable"
+          JwtSettings__Secret: "ci-only-test-secret-do-not-use-in-prod-32chars+"
         run: dotnet test Sportner.slnx --configuration Release --no-build --verbosity normal
