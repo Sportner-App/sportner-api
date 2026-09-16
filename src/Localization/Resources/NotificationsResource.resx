@@ -27,6 +27,9 @@
   <data name="OrganizationJoinRequested_Text" xml:space="preserve">
     <value>{0} wants to join the organization</value>
   </data>
+  <data name="OrganizationMemberJoined_Text" xml:space="preserve">
+    <value>{0} joined the organization</value>
+  </data>
   <data name="OrganizationJoinApproved_Text" xml:space="preserve">
     <value>{0} approved your organization join request</value>
   </data>
@@ -80,6 +83,60 @@
   </data>
   <data name="EventPromotedFromWaitlist_Title" xml:space="preserve">
     <value>{0} added you to the event</value>
+  </data>
+  <data name="EventInvitationAccepted_Title" xml:space="preserve">
+    <value>{0} accepted your invitation</value>
+  </data>
+  <data name="EventInvitationAccepted_Body" xml:space="preserve">
+    <value>Your event "{0}" has a new confirmed participant.</value>
+  </data>
+  <data name="EventInvitationDeclined_Title" xml:space="preserve">
+    <value>{0} declined your invitation</value>
+  </data>
+  <data name="EventInvitationDeclined_Body" xml:space="preserve">
+    <value>Someone declined your invitation to "{0}".</value>
+  </data>
+  <data name="EventParticipationCancelled_Title" xml:space="preserve">
+    <value>{0} left your event</value>
+  </data>
+  <data name="EventParticipationCancelled_Body" xml:space="preserve">
+    <value>A confirmed spot opened up in "{0}".</value>
+  </data>
+  <data name="EventParticipantRemoved_Title" xml:space="preserve">
+    <value>{0} removed you from an event</value>
+  </data>
+  <data name="EventParticipantRemoved_Body" xml:space="preserve">
+    <value>You were removed from "{0}".</value>
+  </data>
+  <data name="EventScheduleUpdated_Title" xml:space="preserve">
+    <value>{0} rescheduled the event</value>
+  </data>
+  <data name="EventScheduleUpdated_Body" xml:space="preserve">
+    <value>"{0}" has a new date and time.</value>
+  </data>
+  <data name="EventLocationUpdated_Title" xml:space="preserve">
+    <value>{0} moved the event</value>
+  </data>
+  <data name="EventLocationUpdated_Body" xml:space="preserve">
+    <value>"{0}" has a new location.</value>
+  </data>
+  <data name="EventFeeUpdated_Title" xml:space="preserve">
+    <value>{0} updated the event fee</value>
+  </data>
+  <data name="EventFeeUpdated_Body" xml:space="preserve">
+    <value>The fee for "{0}" has changed.</value>
+  </data>
+  <data name="EventCapacityUpdated_Title" xml:space="preserve">
+    <value>{0} updated the event capacity</value>
+  </data>
+  <data name="EventCapacityUpdated_Body" xml:space="preserve">
+    <value>The capacity for "{0}" has changed.</value>
+  </data>
+  <data name="ConversationMemberAdded_Title" xml:space="preserve">
+    <value>{0} added you to a group</value>
+  </data>
+  <data name="ConversationMemberAdded_Body" xml:space="preserve">
+    <value>You were added to a group conversation.</value>
   </data>
   <data name="EventRequestRejected_Title" xml:space="preserve">
     <value>{0} rejected your request</value>

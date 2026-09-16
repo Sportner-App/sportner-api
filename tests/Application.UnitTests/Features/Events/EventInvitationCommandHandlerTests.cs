@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Features.Events.AcceptEventInvitation;
 using Sportner.Application.Features.Events.DeclineEventInvitation;
 using Sportner.Application.UnitTests.Infrastructure;
@@ -35,7 +37,7 @@ public sealed class EventInvitationCommandHandlerTests
         db.ChangeTracker.Clear();
 
         var handler = new AcceptEventInvitationCommandHandler(
-            db, new TestCurrentUser(invitee.Id), time);
+            db, new TestCurrentUser(invitee.Id), time, Mock.Of<INotificationPublisher>());
         var result = await handler.Handle(
             new AcceptEventInvitationCommand(@event.Id), CancellationToken.None);
 
@@ -64,7 +66,7 @@ public sealed class EventInvitationCommandHandlerTests
         db.ChangeTracker.Clear();
 
         var handler = new DeclineEventInvitationCommandHandler(
-            db, new TestCurrentUser(invitee.Id), time);
+            db, new TestCurrentUser(invitee.Id), time, Mock.Of<INotificationPublisher>());
         var result = await handler.Handle(
             new DeclineEventInvitationCommand(@event.Id), CancellationToken.None);
 

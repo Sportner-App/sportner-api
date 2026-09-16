@@ -199,6 +199,16 @@ public class NotificationSetting : AggregateRoot
             NotificationType.OrganizationMemberBlocked => (true, true, false),
             NotificationType.EventReviewPrompt => (true, true, false),
             NotificationType.ReviewReceived => (true, true, false),
+            NotificationType.OrganizationMemberJoined => (true, true, false),
+            NotificationType.EventInvitationAccepted => (true, true, false),
+            NotificationType.EventInvitationDeclined => (true, true, false),
+            NotificationType.EventParticipationCancelled => (true, true, false),
+            NotificationType.EventParticipantRemoved => (true, true, false),
+            NotificationType.EventScheduleUpdated => (true, true, false),
+            NotificationType.EventLocationUpdated => (true, true, false),
+            NotificationType.EventFeeUpdated => (true, true, false),
+            NotificationType.EventCapacityUpdated => (true, true, false),
+            NotificationType.ConversationMemberAdded => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

@@ -2,11 +2,14 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Messaging.InviteConversationMember;
 
@@ -29,15 +32,18 @@ internal sealed class InviteConversationMemberCommandHandler
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public InviteConversationMemberCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        INotificationPublisher notificationPublisher)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _notificationPublisher = notificationPublisher;
     }
 
     public async Task<Result<ConversationResponse>> Handle(
@@ -111,6 +117,24 @@ internal sealed class InviteConversationMemberCommandHandler
         {
             return Result<ConversationResponse>.Failure(MessagingErrors.CannotInvite);
         }
+
+        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+            _dbContext, request.UserId, cancellationToken);
+
+        await _notificationPublisher.PublishAsync(
+            request.UserId,
+            NotificationType.ConversationMemberAdded,
+            NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.ConversationMemberAdded_Title),
+                await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
+            NotificationActor.Format(
+                recipientLanguage,
+                nameof(NotificationsResource.ConversationMemberAdded_Body)),
+            NotificationEntityType.Conversation,
+            conversation.Id,
+            userId,
+            cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

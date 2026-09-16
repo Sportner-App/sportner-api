@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Features.Events.CancelParticipation;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
@@ -47,7 +49,8 @@ public sealed class CancelParticipationCommandHandlerTests
         var handler = new CancelParticipationCommandHandler(
             db,
             new TestCurrentUser(participant.Id),
-            time);
+            time,
+            Mock.Of<INotificationPublisher>());
 
         var result = await handler.Handle(
             new CancelParticipationCommand(@event.Id),
@@ -96,7 +99,8 @@ public sealed class CancelParticipationCommandHandlerTests
         var handler = new CancelParticipationCommandHandler(
             db,
             new TestCurrentUser(participant.Id),
-            time);
+            time,
+            Mock.Of<INotificationPublisher>());
 
         var result = await handler.Handle(
             new CancelParticipationCommand(@event.Id),

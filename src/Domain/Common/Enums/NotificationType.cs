@@ -25,5 +25,15 @@ public enum NotificationType : short
     OrganizationMemberRemoved = 20,
     OrganizationMemberBlocked = 21,
     EventReviewPrompt = 22,
-    ReviewReceived = 23
+    ReviewReceived = 23,
+    OrganizationMemberJoined = 24,
+    EventInvitationAccepted = 25,
+    EventInvitationDeclined = 26,
+    EventParticipationCancelled = 27,
+    EventParticipantRemoved = 28,
+    EventScheduleUpdated = 29,
+    EventLocationUpdated = 30,
+    EventFeeUpdated = 31,
+    EventCapacityUpdated = 32,
+    ConversationMemberAdded = 33
 }

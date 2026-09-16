@@ -93,8 +93,8 @@ internal sealed class JoinOrganizationCommandHandler
 
         if (existing is null)
         {
-            var pending = OrganizationMember.CreatePending(organization.Id, userId, utcNow);
-            _dbContext.OrganizationMembers.Add(pending);
+            var approved = OrganizationMember.CreateApproved(organization.Id, userId, utcNow);
+            _dbContext.OrganizationMembers.Add(approved);
         }
         else if (existing.Status is OrganizationMemberStatus.Approved)
         {
@@ -112,7 +112,7 @@ internal sealed class JoinOrganizationCommandHandler
         {
             try
             {
-                existing.Reapply(utcNow);
+                existing.Rejoin(utcNow);
             }
             catch (DomainException)
             {
@@ -139,12 +139,12 @@ internal sealed class JoinOrganizationCommandHandler
             var language = languagesByManager.GetValueOrDefault(managerId);
             var text = NotificationActor.Format(
                 language,
-                nameof(NotificationsResource.OrganizationJoinRequested_Text),
+                nameof(NotificationsResource.OrganizationMemberJoined_Text),
                 NotificationActor.FormatPrefix(actorUsername, language));
 
             await _notificationPublisher.PublishAsync(
                 managerId,
-                NotificationType.OrganizationJoinRequested,
+                NotificationType.OrganizationMemberJoined,
                 text,
                 text,
                 NotificationEntityType.Organization,

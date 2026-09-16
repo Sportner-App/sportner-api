@@ -1,8 +1,11 @@
 using FluentValidation;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.UpdateEventLocation;
 
@@ -26,12 +29,16 @@ public sealed class UpdateEventLocationCommandValidator : AbstractValidator<Upda
 internal sealed class UpdateEventLocationCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<UpdateEventLocationCommand, EventResponse>
 {
+    private readonly INotificationPublisher _notificationPublisher;
+
     public UpdateEventLocationCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        INotificationPublisher notificationPublisher)
         : base(dbContext, currentUser, timeProvider)
     {
+        _notificationPublisher = notificationPublisher;
     }
 
     public Task<Result<EventResponse>> Handle(
@@ -39,7 +46,20 @@ internal sealed class UpdateEventLocationCommandHandler
         CancellationToken cancellationToken) =>
         MutateAsync(
             request.EventId,
-            (@event, utcNow) =>
-                @event.UpdateLocation(request.Latitude, request.Longitude, request.Address, utcNow),
+            async (@event, utcNow, ct) =>
+            {
+                @event.UpdateLocation(request.Latitude, request.Longitude, request.Address, utcNow);
+
+                await EventRosterNotifier.NotifyParticipantsAsync(
+                    DbContext,
+                    _notificationPublisher,
+                    @event,
+                    NotificationType.EventLocationUpdated,
+                    nameof(NotificationsResource.EventLocationUpdated_Title),
+                    nameof(NotificationsResource.EventLocationUpdated_Body),
+                    ct);
+
+                return Result.Success();
+            },
             cancellationToken);
 }

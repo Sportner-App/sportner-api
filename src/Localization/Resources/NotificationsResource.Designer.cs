@@ -86,6 +86,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string OrganizationMemberJoined_Text {
+            get {
+                return ResourceManager.GetString("OrganizationMemberJoined_Text", resourceCulture);
+            }
+        }
+
         public static string OrganizationJoinApproved_Text {
             get {
                 return ResourceManager.GetString("OrganizationJoinApproved_Text", resourceCulture);
@@ -191,6 +197,114 @@ namespace Sportner.Localization.Resources {
         public static string EventPromotedFromWaitlist_Title {
             get {
                 return ResourceManager.GetString("EventPromotedFromWaitlist_Title", resourceCulture);
+            }
+        }
+
+        public static string EventInvitationAccepted_Title {
+            get {
+                return ResourceManager.GetString("EventInvitationAccepted_Title", resourceCulture);
+            }
+        }
+
+        public static string EventInvitationAccepted_Body {
+            get {
+                return ResourceManager.GetString("EventInvitationAccepted_Body", resourceCulture);
+            }
+        }
+
+        public static string EventInvitationDeclined_Title {
+            get {
+                return ResourceManager.GetString("EventInvitationDeclined_Title", resourceCulture);
+            }
+        }
+
+        public static string EventInvitationDeclined_Body {
+            get {
+                return ResourceManager.GetString("EventInvitationDeclined_Body", resourceCulture);
+            }
+        }
+
+        public static string EventParticipationCancelled_Title {
+            get {
+                return ResourceManager.GetString("EventParticipationCancelled_Title", resourceCulture);
+            }
+        }
+
+        public static string EventParticipationCancelled_Body {
+            get {
+                return ResourceManager.GetString("EventParticipationCancelled_Body", resourceCulture);
+            }
+        }
+
+        public static string EventParticipantRemoved_Title {
+            get {
+                return ResourceManager.GetString("EventParticipantRemoved_Title", resourceCulture);
+            }
+        }
+
+        public static string EventParticipantRemoved_Body {
+            get {
+                return ResourceManager.GetString("EventParticipantRemoved_Body", resourceCulture);
+            }
+        }
+
+        public static string EventScheduleUpdated_Title {
+            get {
+                return ResourceManager.GetString("EventScheduleUpdated_Title", resourceCulture);
+            }
+        }
+
+        public static string EventScheduleUpdated_Body {
+            get {
+                return ResourceManager.GetString("EventScheduleUpdated_Body", resourceCulture);
+            }
+        }
+
+        public static string EventLocationUpdated_Title {
+            get {
+                return ResourceManager.GetString("EventLocationUpdated_Title", resourceCulture);
+            }
+        }
+
+        public static string EventLocationUpdated_Body {
+            get {
+                return ResourceManager.GetString("EventLocationUpdated_Body", resourceCulture);
+            }
+        }
+
+        public static string EventFeeUpdated_Title {
+            get {
+                return ResourceManager.GetString("EventFeeUpdated_Title", resourceCulture);
+            }
+        }
+
+        public static string EventFeeUpdated_Body {
+            get {
+                return ResourceManager.GetString("EventFeeUpdated_Body", resourceCulture);
+            }
+        }
+
+        public static string EventCapacityUpdated_Title {
+            get {
+                return ResourceManager.GetString("EventCapacityUpdated_Title", resourceCulture);
+            }
+        }
+
+        public static string EventCapacityUpdated_Body {
+            get {
+                return ResourceManager.GetString("EventCapacityUpdated_Body", resourceCulture);
+            }
+        }
+
+        public static string ConversationMemberAdded_Title {
+            get {
+                return ResourceManager.GetString("ConversationMemberAdded_Title", resourceCulture);
+            }
+        }
+
+        public static string ConversationMemberAdded_Body {
+            get {
+                return ResourceManager.GetString("ConversationMemberAdded_Body", resourceCulture);
             }
         }
 

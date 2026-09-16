@@ -64,6 +64,25 @@ public class OrganizationMember : AuditableEntity
         };
     }
 
+    public static OrganizationMember CreateApproved(
+        Guid organizationId,
+        Guid userId,
+        DateTimeOffset utcNow)
+    {
+        EnsureIds(organizationId, userId);
+
+        return new OrganizationMember
+        {
+            Id = Guid.NewGuid(),
+            OrganizationId = organizationId,
+            UserId = userId,
+            Role = OrganizationRole.Member,
+            Status = OrganizationMemberStatus.Approved,
+            RespondedAt = utcNow,
+            CreatedAt = utcNow
+        };
+    }
+
     public void Approve(DateTimeOffset utcNow)
     {
         if (Status is OrganizationMemberStatus.Approved)
@@ -99,7 +118,7 @@ public class OrganizationMember : AuditableEntity
         Touch(utcNow);
     }
 
-    public void Reapply(DateTimeOffset utcNow)
+    public void Rejoin(DateTimeOffset utcNow)
     {
         if (Status is OrganizationMemberStatus.Approved)
         {
@@ -117,8 +136,8 @@ public class OrganizationMember : AuditableEntity
         }
 
         Role = OrganizationRole.Member;
-        Status = OrganizationMemberStatus.Pending;
-        RespondedAt = null;
+        Status = OrganizationMemberStatus.Approved;
+        RespondedAt = utcNow;
         Touch(utcNow);
     }
 

@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Features.Events.RemoveAssignedParticipant;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
@@ -46,7 +48,7 @@ public sealed class RemoveAssignedParticipantCommandHandlerTests
         db.ChangeTracker.Clear();
 
         var handler = new RemoveAssignedParticipantCommandHandler(
-            db, new TestCurrentUser(organizer.Id), time);
+            db, new TestCurrentUser(organizer.Id), time, Mock.Of<INotificationPublisher>());
         var result = await handler.Handle(
             new RemoveAssignedParticipantCommand(
                 @event.Id, participant!.Id, reason.Id, "Tekrarlayan davranış"),

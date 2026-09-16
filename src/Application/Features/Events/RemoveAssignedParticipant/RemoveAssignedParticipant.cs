@@ -2,10 +2,13 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.RemoveAssignedParticipant;
 
@@ -32,12 +35,16 @@ public sealed class RemoveAssignedParticipantCommandValidator
 internal sealed class RemoveAssignedParticipantCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<RemoveAssignedParticipantCommand, EventResponse>
 {
+    private readonly INotificationPublisher _notificationPublisher;
+
     public RemoveAssignedParticipantCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        INotificationPublisher notificationPublisher)
         : base(dbContext, currentUser, timeProvider)
     {
+        _notificationPublisher = notificationPublisher;
     }
 
     public Task<Result<EventResponse>> Handle(
@@ -103,6 +110,26 @@ internal sealed class RemoveAssignedParticipantCommandHandler
                             statistics.DecreaseEventsJoined(utcNow);
                         }
                     }
+
+                    var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+                        DbContext, registeredUserId, ct);
+
+                    await _notificationPublisher.PublishAsync(
+                        registeredUserId,
+                        NotificationType.EventParticipantRemoved,
+                        NotificationActor.Format(
+                            recipientLanguage,
+                            nameof(NotificationsResource.EventParticipantRemoved_Title),
+                            await NotificationActor.PrefixAsync(
+                                DbContext, @event.OrganizerUserId, recipientLanguage, ct)),
+                        NotificationActor.Format(
+                            recipientLanguage,
+                            nameof(NotificationsResource.EventParticipantRemoved_Body),
+                            @event.Title),
+                        NotificationEntityType.Event,
+                        @event.Id,
+                        @event.OrganizerUserId,
+                        ct);
                 }
 
                 return Result.Success();

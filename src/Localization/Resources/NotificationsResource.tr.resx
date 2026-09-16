@@ -27,6 +27,9 @@
   <data name="OrganizationJoinRequested_Text" xml:space="preserve">
     <value>{0} organizasyona katılmak istiyor</value>
   </data>
+  <data name="OrganizationMemberJoined_Text" xml:space="preserve">
+    <value>{0} organizasyona katıldı</value>
+  </data>
   <data name="OrganizationJoinApproved_Text" xml:space="preserve">
     <value>{0} organizasyon katılımını onayladı</value>
   </data>
@@ -80,6 +83,60 @@
   </data>
   <data name="EventPromotedFromWaitlist_Title" xml:space="preserve">
     <value>{0} seni etkinliğe aldı</value>
+  </data>
+  <data name="EventInvitationAccepted_Title" xml:space="preserve">
+    <value>{0} davetini kabul etti</value>
+  </data>
+  <data name="EventInvitationAccepted_Body" xml:space="preserve">
+    <value>"{0}" etkinliğine yeni bir katılımcı onaylandı.</value>
+  </data>
+  <data name="EventInvitationDeclined_Title" xml:space="preserve">
+    <value>{0} davetini reddetti</value>
+  </data>
+  <data name="EventInvitationDeclined_Body" xml:space="preserve">
+    <value>"{0}" etkinliğine davetin biri tarafından reddedildi.</value>
+  </data>
+  <data name="EventParticipationCancelled_Title" xml:space="preserve">
+    <value>{0} etkinliğinden ayrıldı</value>
+  </data>
+  <data name="EventParticipationCancelled_Body" xml:space="preserve">
+    <value>"{0}" etkinliğinde bir kontenjan boşaldı.</value>
+  </data>
+  <data name="EventParticipantRemoved_Title" xml:space="preserve">
+    <value>{0} seni etkinlikten çıkardı</value>
+  </data>
+  <data name="EventParticipantRemoved_Body" xml:space="preserve">
+    <value>"{0}" etkinliğinden çıkarıldın.</value>
+  </data>
+  <data name="EventScheduleUpdated_Title" xml:space="preserve">
+    <value>{0} etkinliğin tarihini değiştirdi</value>
+  </data>
+  <data name="EventScheduleUpdated_Body" xml:space="preserve">
+    <value>"{0}" etkinliğinin tarihi/saati değişti.</value>
+  </data>
+  <data name="EventLocationUpdated_Title" xml:space="preserve">
+    <value>{0} etkinliğin yerini değiştirdi</value>
+  </data>
+  <data name="EventLocationUpdated_Body" xml:space="preserve">
+    <value>"{0}" etkinliğinin konumu değişti.</value>
+  </data>
+  <data name="EventFeeUpdated_Title" xml:space="preserve">
+    <value>{0} etkinlik ücretini güncelledi</value>
+  </data>
+  <data name="EventFeeUpdated_Body" xml:space="preserve">
+    <value>"{0}" etkinliğinin ücreti değişti.</value>
+  </data>
+  <data name="EventCapacityUpdated_Title" xml:space="preserve">
+    <value>{0} etkinlik kontenjanını güncelledi</value>
+  </data>
+  <data name="EventCapacityUpdated_Body" xml:space="preserve">
+    <value>"{0}" etkinliğinin kontenjanı değişti.</value>
+  </data>
+  <data name="ConversationMemberAdded_Title" xml:space="preserve">
+    <value>{0} seni bir gruba ekledi</value>
+  </data>
+  <data name="ConversationMemberAdded_Body" xml:space="preserve">
+    <value>Bir grup sohbetine eklendin.</value>
   </data>
   <data name="EventRequestRejected_Title" xml:space="preserve">
     <value>{0} başvurunu reddetti</value>

@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.CancelParticipation;
 
@@ -14,15 +17,18 @@ internal sealed class CancelParticipationCommandHandler : ICommandHandler<Cancel
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public CancelParticipationCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        INotificationPublisher notificationPublisher)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _notificationPublisher = notificationPublisher;
     }
 
     public async Task<Result> Handle(
@@ -66,6 +72,29 @@ internal sealed class CancelParticipationCommandHandler : ICommandHandler<Cancel
             if (statistics is not null && statistics.EventsJoined > 0)
             {
                 statistics.DecreaseEventsJoined(utcNow);
+            }
+
+            if (@event.OrganizerUserId != userId)
+            {
+                var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+                    _dbContext, @event.OrganizerUserId, cancellationToken);
+
+                await _notificationPublisher.PublishAsync(
+                    @event.OrganizerUserId,
+                    NotificationType.EventParticipationCancelled,
+                    NotificationActor.Format(
+                        recipientLanguage,
+                        nameof(NotificationsResource.EventParticipationCancelled_Title),
+                        await NotificationActor.PrefixAsync(
+                            _dbContext, userId, recipientLanguage, cancellationToken)),
+                    NotificationActor.Format(
+                        recipientLanguage,
+                        nameof(NotificationsResource.EventParticipationCancelled_Body),
+                        @event.Title),
+                    NotificationEntityType.Event,
+                    @event.Id,
+                    userId,
+                    cancellationToken);
             }
         }
 

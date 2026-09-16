@@ -1,9 +1,12 @@
 using FluentValidation;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.UpdateEventFee;
 
@@ -27,12 +30,16 @@ public sealed class UpdateEventFeeCommandValidator : AbstractValidator<UpdateEve
 internal sealed class UpdateEventFeeCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<UpdateEventFeeCommand, EventResponse>
 {
+    private readonly INotificationPublisher _notificationPublisher;
+
     public UpdateEventFeeCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        INotificationPublisher notificationPublisher)
         : base(dbContext, currentUser, timeProvider)
     {
+        _notificationPublisher = notificationPublisher;
     }
 
     public Task<Result<EventResponse>> Handle(
@@ -40,6 +47,20 @@ internal sealed class UpdateEventFeeCommandHandler
         CancellationToken cancellationToken) =>
         MutateAsync(
             request.EventId,
-            (@event, utcNow) => @event.UpdateFee(request.IsPaid, request.FeeAmount, utcNow),
+            async (@event, utcNow, ct) =>
+            {
+                @event.UpdateFee(request.IsPaid, request.FeeAmount, utcNow);
+
+                await EventRosterNotifier.NotifyParticipantsAsync(
+                    DbContext,
+                    _notificationPublisher,
+                    @event,
+                    NotificationType.EventFeeUpdated,
+                    nameof(NotificationsResource.EventFeeUpdated_Title),
+                    nameof(NotificationsResource.EventFeeUpdated_Body),
+                    ct);
+
+                return Result.Success();
+            },
             cancellationToken);
 }
