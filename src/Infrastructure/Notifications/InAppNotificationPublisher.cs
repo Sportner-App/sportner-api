@@ -121,6 +121,7 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
             _dbContext.NotificationDeliveryOutbox.Add(
                 NotificationDeliveryOutbox.CreatePush(
                     recipientUserId,
+                    actorUserId,
                     notificationId,
                     type,
                     entityType,

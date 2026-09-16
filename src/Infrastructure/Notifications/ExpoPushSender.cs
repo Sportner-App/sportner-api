@@ -35,7 +35,10 @@ public sealed class ExpoPushSender : IPushSender
                     message.NotificationId?.ToString("D"),
                     (short)message.NotificationType,
                 (short)message.EntityType,
-                message.EntityId?.ToString("D")));
+                message.EntityId?.ToString("D")),
+            string.IsNullOrWhiteSpace(message.ActorAvatarUrl)
+                ? null
+                : new ExpoPushRichContent(message.ActorAvatarUrl));
 
         try
         {
@@ -123,11 +126,21 @@ public sealed class ExpoPushSender : IPushSender
         [property: JsonPropertyName("sound")] string Sound,
         [property: JsonPropertyName("priority")] string Priority,
         [property: JsonPropertyName("channelId")] string ChannelId,
-        [property: JsonPropertyName("data")] ExpoPushData Data);
+        [property: JsonPropertyName("data")] ExpoPushData Data,
+        [property: JsonPropertyName("richContent")]
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        ExpoPushRichContent? RichContent = null);
 
     private sealed record ExpoPushData(
         [property: JsonPropertyName("notificationId")] string? NotificationId,
         [property: JsonPropertyName("notificationType")] short NotificationType,
         [property: JsonPropertyName("entityType")] short EntityType,
         [property: JsonPropertyName("entityId")] string? EntityId);
+
+    /// <summary>
+    /// Renders as the OS notification's large icon (Android: shown immediately; iOS: needs a
+    /// Notification Service Extension to actually fetch and attach it, tracked separately).
+    /// </summary>
+    private sealed record ExpoPushRichContent(
+        [property: JsonPropertyName("image")] string Image);
 }

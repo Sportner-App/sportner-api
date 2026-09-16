@@ -30,6 +30,8 @@ public class NotificationDeliveryOutbox : AuditableEntity
 
     public Guid RecipientUserId { get; private set; }
 
+    public Guid? ActorUserId { get; private set; }
+
     public Guid? NotificationId { get; private set; }
 
     public NotificationDeliveryChannel Channel { get; private set; }
@@ -56,6 +58,7 @@ public class NotificationDeliveryOutbox : AuditableEntity
 
     public static NotificationDeliveryOutbox CreatePush(
         Guid recipientUserId,
+        Guid? actorUserId,
         Guid? notificationId,
         NotificationType notificationType,
         NotificationEntityType entityType,
@@ -65,6 +68,7 @@ public class NotificationDeliveryOutbox : AuditableEntity
         DateTimeOffset utcNow) =>
         Create(
             recipientUserId,
+            actorUserId,
             notificationId,
             NotificationDeliveryChannel.Push,
             notificationType,
@@ -76,6 +80,7 @@ public class NotificationDeliveryOutbox : AuditableEntity
 
     public static NotificationDeliveryOutbox Create(
         Guid recipientUserId,
+        Guid? actorUserId,
         Guid? notificationId,
         NotificationDeliveryChannel channel,
         NotificationType notificationType,
@@ -114,6 +119,7 @@ public class NotificationDeliveryOutbox : AuditableEntity
         {
             Id = Guid.NewGuid(),
             RecipientUserId = recipientUserId,
+            ActorUserId = actorUserId,
             NotificationId = notificationId,
             Channel = channel,
             Status = NotificationDeliveryStatus.Pending,

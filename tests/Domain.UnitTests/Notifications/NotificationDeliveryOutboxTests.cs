@@ -13,6 +13,7 @@ public sealed class NotificationDeliveryOutboxTests
         var item = NotificationDeliveryOutbox.CreatePush(
             Guid.NewGuid(),
             null,
+            null,
             NotificationType.NewMessage,
             NotificationEntityType.Conversation,
             Guid.NewGuid(),
@@ -41,6 +42,7 @@ public sealed class NotificationDeliveryOutboxTests
         var item = NotificationDeliveryOutbox.CreatePush(
             Guid.NewGuid(),
             Guid.NewGuid(),
+            Guid.NewGuid(),
             NotificationType.FriendRequest,
             NotificationEntityType.User,
             Guid.NewGuid(),
@@ -62,6 +64,7 @@ public sealed class NotificationDeliveryOutboxTests
         Assert.Throws<DomainException>(() =>
             NotificationDeliveryOutbox.CreatePush(
                 Guid.Empty,
+                null,
                 null,
                 NotificationType.System,
                 NotificationEntityType.User,

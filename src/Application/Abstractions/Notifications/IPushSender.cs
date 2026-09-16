@@ -12,7 +12,8 @@ public sealed record PushMessage(
     string Body,
     NotificationType NotificationType,
     NotificationEntityType EntityType,
-    Guid? EntityId);
+    Guid? EntityId,
+    string? ActorAvatarUrl = null);
 
 public sealed record PushSendResult(bool Succeeded, bool InvalidToken, string? ErrorMessage)
 {

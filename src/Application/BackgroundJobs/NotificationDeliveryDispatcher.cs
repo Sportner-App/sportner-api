@@ -118,6 +118,15 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
             return;
         }
 
+        // Actor-driven notifications (someone commented, liked, invited...) show that person's
+        // photo as the OS notification icon, WhatsApp-style, instead of the generic app logo.
+        string? actorAvatarUrl = item.ActorUserId is { } actorId
+            ? await _dbContext.UserProfiles.AsNoTracking()
+                .Where(profile => profile.UserId == actorId)
+                .Select(profile => profile.ProfileImageUrl)
+                .FirstOrDefaultAsync(cancellationToken)
+            : null;
+
         var anySuccess = false;
         string? lastError = null;
 
@@ -134,7 +143,8 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
                     item.Body,
                     item.NotificationType,
                     item.EntityType,
-                    item.EntityId),
+                    item.EntityId,
+                    actorAvatarUrl),
                 cancellationToken);
 
             if (result.Succeeded)
