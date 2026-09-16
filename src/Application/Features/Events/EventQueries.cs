@@ -206,8 +206,12 @@ internal static class EventQueries
                     || participant.Status == ParticipantStatus.NoShow)));
     }
 
-    /// <summary>Max avatars shown in a list card's participant preview stack.</summary>
-    private const int MaxPreviewAvatars = 3;
+    /// <summary>
+    /// Max avatars returned for a list card's participant preview stack. Only the first 3 are
+    /// drawn as distinct circles; a 4th is included so the "+N" overflow tile can use that
+    /// participant's photo as its background instead of rendering empty.
+    /// </summary>
+    private const int MaxPreviewAvatars = 4;
 
     /// <summary>
     /// Fills in each item's <see cref="EventListItemResponse.ParticipantAvatars"/> for the small
