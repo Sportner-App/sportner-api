@@ -272,4 +272,39 @@ internal static class EventQueries
             })
             .ToList();
     }
+
+    /// <summary>
+    /// Fills in each item's <see cref="EventListItemResponse.MyParticipationStatus"/> so list
+    /// cards can show a "you applied / you're in" badge, same as the event detail page already
+    /// does. One query for the whole page, keyed by event id.
+    /// </summary>
+    internal static async Task<IReadOnlyList<EventListItemResponse>> AttachMyParticipationStatusAsync(
+        IApplicationDbContext dbContext,
+        IReadOnlyList<EventListItemResponse> items,
+        Guid? viewerUserId,
+        CancellationToken cancellationToken)
+    {
+        if (items.Count == 0 || viewerUserId is not { } viewerId)
+        {
+            return items;
+        }
+
+        var eventIds = items.Select(item => item.Id).ToList();
+
+        var statusByEvent = await dbContext.EventParticipants.AsNoTracking()
+            .Where(participant =>
+                eventIds.Contains(participant.EventId) && participant.UserId == viewerId)
+            .Select(participant => new { participant.EventId, participant.Status })
+            .ToDictionaryAsync(
+                row => row.EventId,
+                row => (short?)row.Status,
+                cancellationToken);
+
+        return items
+            .Select(item => item with
+            {
+                MyParticipationStatus = statusByEvent.GetValueOrDefault(item.Id),
+            })
+            .ToList();
+    }
 }

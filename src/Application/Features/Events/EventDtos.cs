@@ -66,7 +66,8 @@ public sealed record EventListItemResponse(
     decimal? FeeAmount,
     short Status,
     int OccupiedParticipantCount,
-    IReadOnlyList<ParticipantAvatarResponse>? ParticipantAvatars = null);
+    IReadOnlyList<ParticipantAvatarResponse>? ParticipantAvatars = null,
+    short? MyParticipationStatus = null);
 
 public sealed record ParticipantResponse(
     Guid Id,
