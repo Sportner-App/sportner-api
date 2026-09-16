@@ -5,6 +5,7 @@ using Sportner.API.Common;
 using Sportner.Application.Features.Messaging.CreateDirectConversation;
 using Sportner.Application.Features.Messaging.CreateGroupConversation;
 using Sportner.Application.Features.Messaging.GetConversationById;
+using Sportner.Application.Features.Messaging.HasUnreadConversations;
 using Sportner.Application.Features.Messaging.InviteConversationMember;
 using Sportner.Application.Features.Messaging.LeaveConversation;
 using Sportner.Application.Features.Messaging.ListMyConversations;
@@ -31,6 +32,13 @@ public sealed class ConversationsController : ApiControllerBase
             new ListMyConversationsQuery(page, pageSize, type),
             cancellationToken);
 
+        return result.ToActionResult();
+    }
+
+    [HttpGet("unread-status")]
+    public async Task<IActionResult> UnreadStatus(CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new HasUnreadConversationsQuery(), cancellationToken);
         return result.ToActionResult();
     }
 

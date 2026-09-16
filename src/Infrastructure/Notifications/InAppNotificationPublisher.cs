@@ -84,6 +84,13 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
             return;
         }
 
+        (title, body) = await FormatActorNotificationAsync(
+            recipientUserId,
+            actorUserId,
+            title,
+            body,
+            cancellationToken);
+
         Guid? notificationId = null;
 
         if (deliverInApp)
@@ -122,5 +129,77 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
                     body,
                     utcNow));
         }
+    }
+
+    /// <summary>
+    /// Actor-driven notifications use the same hierarchy as a direct message:
+    /// the sender is the title, and the action is the body. Existing command
+    /// handlers can keep supplying localized sentences, while the delivery
+    /// boundary prevents "X kullanıcısı ..." from leaking into push/inbox UI.
+    /// </summary>
+    private async Task<(string Title, string Body)> FormatActorNotificationAsync(
+        Guid recipientUserId,
+        Guid? actorUserId,
+        string title,
+        string body,
+        CancellationToken cancellationToken)
+    {
+        if (actorUserId is not { } actor)
+        {
+            return (title, body);
+        }
+
+        var actorUsername = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(profile => profile.UserId == actor)
+            .Select(profile => profile.Username)
+            .FirstOrDefaultAsync(cancellationToken);
+        var recipientLanguage = await _dbContext.Users.AsNoTracking()
+            .Where(user => user.Id == recipientUserId)
+            .Select(user => user.PreferredLanguage)
+            .FirstOrDefaultAsync(cancellationToken);
+        var displayName = string.IsNullOrWhiteSpace(actorUsername)
+            ? recipientLanguage == Language.English ? "Someone" : "Biri"
+            : actorUsername;
+
+        // New-message publishers already provide the intended "name / preview"
+        // shape. Reformat only legacy actor sentences.
+        if (string.Equals(title, displayName, StringComparison.Ordinal))
+        {
+            return (title, body);
+        }
+
+        return (
+            displayName,
+            string.Equals(body, title, StringComparison.Ordinal)
+                ? RemoveActorPrefix(body, actorUsername, recipientLanguage)
+                : body);
+    }
+
+    private static string RemoveActorPrefix(
+        string sentence,
+        string? actorUsername,
+        Language recipientLanguage)
+    {
+        var actorPrefix = string.IsNullOrWhiteSpace(actorUsername)
+            ? recipientLanguage == Language.English ? "A user" : "Bir kullanıcı"
+            : recipientLanguage == Language.English
+                ? actorUsername
+                : $"{actorUsername} kullanıcısı";
+
+        if (!sentence.StartsWith(actorPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return sentence;
+        }
+
+        var action = sentence[actorPrefix.Length..].TrimStart();
+        if (action.Length == 0)
+        {
+            return sentence;
+        }
+
+        var culture = recipientLanguage == Language.English
+            ? System.Globalization.CultureInfo.GetCultureInfo("en-US")
+            : System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+        return char.ToUpper(action[0], culture) + action[1..];
     }
 }
