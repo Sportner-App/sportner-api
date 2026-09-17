@@ -166,6 +166,8 @@ internal static class ProfileQueries
             profile.FirstName,
             profile.LastName,
             profile.Bio,
+            profile.Gender,
+            profile.BirthDate is { } birthDate ? CalculateAge(birthDate) : null,
             profile.City,
             profile.ProfileImageUrl,
             profile.AverageRating,
@@ -173,6 +175,19 @@ internal static class ProfileQueries
             sports,
             statistics,
             friendship);
+
+    /// <summary>Whole years since <paramref name="birthDate"/>, as of today (UTC).</summary>
+    private static int CalculateAge(DateOnly birthDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var age = today.Year - birthDate.Year;
+        if (birthDate > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age;
+    }
 
     internal static async Task<ProfileFriendshipResponse?> GetViewerFriendshipAsync(
         IApplicationDbContext dbContext,

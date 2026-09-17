@@ -1,7 +1,8 @@
 namespace Sportner.Application.Features.Identity.UserProfiles;
 
 /// <summary>
-/// Public projection: never exposes phone number, birth date or session metadata.
+/// Public projection: never exposes phone number, raw birth date or session metadata —
+/// only the derived <see cref="Age"/> in years.
 /// </summary>
 public sealed record PublicProfileResponse(
     Guid UserId,
@@ -9,6 +10,8 @@ public sealed record PublicProfileResponse(
     string FirstName,
     string? LastName,
     string? Bio,
+    short? Gender,
+    int? Age,
     string? City,
     string? ProfileImageUrl,
     decimal AverageRating,
