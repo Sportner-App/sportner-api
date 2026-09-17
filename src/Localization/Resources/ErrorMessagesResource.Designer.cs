@@ -379,6 +379,18 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Auth_PasswordResetCodeInvalid {
+            get {
+                return ResourceManager.GetString("Auth_PasswordResetCodeInvalid", resourceCulture);
+            }
+        }
+
+        public static string Auth_PasswordResetCooldown {
+            get {
+                return ResourceManager.GetString("Auth_PasswordResetCooldown", resourceCulture);
+            }
+        }
+
         public static string Friendship_NotAuthenticated {
             get {
                 return ResourceManager.GetString("Friendship_NotAuthenticated", resourceCulture);

@@ -13,7 +13,9 @@ using Sportner.Application.Features.Identity.Auth.SignInWithApple;
 using Sportner.Application.Features.Identity.Auth.SignInWithGoogle;
 using Sportner.Application.Features.Identity.Auth.CompleteExternalRegistration;
 using Sportner.Application.Features.Identity.Auth.DeleteAccount;
+using Sportner.Application.Features.Identity.Auth.ForgotPassword;
 using Sportner.Application.Features.Identity.Auth.ResendEmailVerification;
+using Sportner.Application.Features.Identity.Auth.ResetPassword;
 using Sportner.Application.Features.Identity.Auth.UpdatePreferredLanguage;
 using Sportner.Application.Features.Identity.Auth.VerifyEmail;
 using Sportner.Domain.Common.Enums;
@@ -179,6 +181,35 @@ public sealed class AuthController : ApiControllerBase
     }
 
     /// <summary>
+    /// Always 204, whether or not the email belongs to an account — see
+    /// <c>ForgotPasswordCommandHandler</c> for why.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("password/forgot")]
+    [EnableRateLimiting(RateLimitingExtensions.PasswordResetPolicy)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new ForgotPasswordCommand(request.Email), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("password/reset")]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new ResetPasswordCommand(request.Email, request.Code, request.NewPassword),
+            cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    /// <summary>
     /// Persists the app's language choice so server-generated content addressed to this user —
     /// currently badge/quest notifications — renders in it, independent of any single request's
     /// Accept-Language header.
@@ -207,6 +238,10 @@ public sealed class AuthController : ApiControllerBase
     public sealed record LoginRequest(string Username, string Password);
 
     public sealed record VerifyEmailRequest(string Code);
+
+    public sealed record ForgotPasswordRequest(string Email);
+
+    public sealed record ResetPasswordRequest(string Email, string Code, string NewPassword);
 
     public sealed record UpdatePreferredLanguageRequest(Language Language);
 

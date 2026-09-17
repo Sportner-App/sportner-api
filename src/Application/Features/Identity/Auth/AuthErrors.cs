@@ -59,4 +59,16 @@ internal static class AuthErrors
     internal static Error EmailVerificationCooldown => Error.Conflict(
         "Auth.EmailVerificationCooldown",
         ErrorMessagesResource.Auth_EmailVerificationCooldown);
+
+    /// <summary>
+    /// Deliberately generic — covers "code wrong", "code expired" and "no such account" alike so
+    /// the reset endpoint never reveals which case applies (account enumeration defense).
+    /// </summary>
+    internal static Error PasswordResetCodeInvalid => Error.Unauthorized(
+        "Auth.PasswordResetCodeInvalid",
+        ErrorMessagesResource.Auth_PasswordResetCodeInvalid);
+
+    internal static Error PasswordResetCooldown => Error.Conflict(
+        "Auth.PasswordResetCooldown",
+        ErrorMessagesResource.Auth_PasswordResetCooldown);
 }

@@ -71,6 +71,51 @@ public sealed class ResendEmailSender : IEmailSender
         }
     }
 
+    public async Task<EmailSendResult> SendPasswordResetCodeAsync(
+        string toEmail,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ResendEmailRequest(
+            _options.FromAddress,
+            [toEmail],
+            "Sportner şifre sıfırlama kodun",
+            $"""
+             <p>Sportner hesabının şifresini sıfırlamak için kodun:</p>
+             <p style="font-size:28px;font-weight:700;letter-spacing:4px;">{code}</p>
+             <p>Bu kod 15 dakika içinde geçerliliğini yitirecek.</p>
+             <p>Bu isteği sen yapmadıysan bu e-postayı yok sayabilirsin.</p>
+             """);
+
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+                SendEndpoint,
+                request,
+                cancellationToken);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return EmailSendResult.Ok();
+            }
+
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            var error = $"Resend returned HTTP {(int)response.StatusCode}.";
+            _logger.LogWarning("{Error} Response: {Response}", error, Truncate(errorBody, 500));
+
+            return EmailSendResult.Failed(error);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return EmailSendResult.Failed("Resend request timed out.");
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogWarning(exception, "Resend request failed.");
+            return EmailSendResult.Failed("Resend could not be reached.");
+        }
+    }
+
     private static string Truncate(string value, int maxLength) =>
         value.Length <= maxLength ? value : value[..maxLength];
 

@@ -36,6 +36,14 @@ public class User : AggregateRoot
     /// <summary>When the last verification code was sent — drives the resend cooldown.</summary>
     public DateTimeOffset? EmailVerificationSentAt { get; private set; }
 
+    /// <summary>Hash of the currently outstanding password reset code; null once used or never issued.</summary>
+    public string? PasswordResetCodeHash { get; private set; }
+
+    public DateTimeOffset? PasswordResetCodeExpiresAt { get; private set; }
+
+    /// <summary>When the last password reset code was sent — drives the resend cooldown.</summary>
+    public DateTimeOffset? PasswordResetSentAt { get; private set; }
+
     public UserStatus Status { get; private set; }
 
     /// <summary>Language notifications and other server-generated text are written in for this user.</summary>
@@ -307,6 +315,54 @@ public class User : AggregateRoot
         EmailVerifiedAt = utcNow;
         EmailVerificationCodeHash = null;
         EmailVerificationCodeExpiresAt = null;
+        Touch(utcNow);
+    }
+
+    /// <summary>
+    /// Records a freshly-sent password reset code (already hashed by the caller). Unlike email
+    /// verification, this may be issued any number of times — only the resend cooldown limits it.
+    /// </summary>
+    public void IssuePasswordResetCode(string codeHash, DateTimeOffset expiresAt, DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            throw new DomainException("Cannot issue a password reset code without an email.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PasswordHash))
+        {
+            throw new DomainException("Cannot reset a password for an account without one.");
+        }
+
+        PasswordResetCodeHash = codeHash;
+        PasswordResetCodeExpiresAt = expiresAt;
+        PasswordResetSentAt = utcNow;
+        Touch(utcNow);
+    }
+
+    public bool CanResendPasswordResetCode(DateTimeOffset utcNow, TimeSpan cooldown) =>
+        PasswordResetSentAt is null || utcNow - PasswordResetSentAt >= cooldown;
+
+    /// <summary>
+    /// Sets a new password hash and clears the outstanding reset code in one step. The caller is
+    /// responsible for checking the submitted code against <see cref="PasswordResetCodeHash"/> and
+    /// its expiry before calling this.
+    /// </summary>
+    public void ResetPassword(string newPasswordHash, DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (string.IsNullOrWhiteSpace(newPasswordHash))
+        {
+            throw new DomainException("Password hash is required.");
+        }
+
+        PasswordHash = newPasswordHash;
+        PasswordResetCodeHash = null;
+        PasswordResetCodeExpiresAt = null;
+        PasswordResetSentAt = null;
         Touch(utcNow);
     }
 

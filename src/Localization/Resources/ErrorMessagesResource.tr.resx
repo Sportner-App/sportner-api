@@ -171,6 +171,12 @@
   <data name="Auth_EmailVerificationCodeExpired" xml:space="preserve">
     <value>Doğrulama kodunun süresi doldu. Yeni bir kod iste.</value>
   </data>
+  <data name="Auth_PasswordResetCodeInvalid" xml:space="preserve">
+    <value>Bu sıfırlama kodu geçersiz veya süresi dolmuş.</value>
+  </data>
+  <data name="Auth_PasswordResetCooldown" xml:space="preserve">
+    <value>Yeni bir sıfırlama kodu istemeden önce biraz bekle.</value>
+  </data>
   <data name="Auth_EmailVerificationCooldown" xml:space="preserve">
     <value>Yeni bir kod istemeden önce lütfen bekle.</value>
   </data>

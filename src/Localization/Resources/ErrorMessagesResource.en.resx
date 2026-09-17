@@ -171,6 +171,12 @@
   <data name="Auth_EmailVerificationCodeExpired" xml:space="preserve">
     <value>The verification code has expired. Request a new one.</value>
   </data>
+  <data name="Auth_PasswordResetCodeInvalid" xml:space="preserve">
+    <value>This reset code is invalid or has expired.</value>
+  </data>
+  <data name="Auth_PasswordResetCooldown" xml:space="preserve">
+    <value>Please wait before requesting another reset code.</value>
+  </data>
   <data name="Auth_EmailVerificationCooldown" xml:space="preserve">
     <value>Please wait before requesting another code.</value>
   </data>

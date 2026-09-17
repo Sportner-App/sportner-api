@@ -386,6 +386,10 @@ internal static class ModelBuilderExtensions
             .Property(entity => entity.EmailVerificationCodeHash)
             .HasMaxLength(64);
 
+        modelBuilder.Entity<User>()
+            .Property(entity => entity.PasswordResetCodeHash)
+            .HasMaxLength(64);
+
         modelBuilder.Entity<UserProfile>()
             .Property(entity => entity.Username)
             .HasMaxLength(30);
