@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 
 namespace Sportner.Application.Features.Messaging.MarkConversationRead;
@@ -82,6 +83,24 @@ internal sealed class MarkConversationReadCommandHandler
         catch (DomainException)
         {
             return Result.Failure(MessagingErrors.InvalidOperation);
+        }
+
+        // Reading the conversation this way (opening the chat directly, not tapping the inbox
+        // entry) never touched the Notifications table before — the "X new messages" row would
+        // stay unread forever. Clear whatever unread NewMessage notifications point at this
+        // conversation for this viewer, same as if they'd tapped the inbox entry.
+        var unreadMessageNotifications = await _dbContext.Notifications
+            .Where(notification =>
+                notification.RecipientUserId == userId
+                && notification.NotificationType == NotificationType.NewMessage
+                && notification.EntityType == NotificationEntityType.Conversation
+                && notification.EntityId == request.ConversationId
+                && !notification.IsRead)
+            .ToListAsync(cancellationToken);
+
+        foreach (var notification in unreadMessageNotifications)
+        {
+            notification.MarkAsRead(utcNow);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

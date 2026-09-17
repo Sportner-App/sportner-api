@@ -101,7 +101,8 @@ internal sealed class ListMyNotificationsQueryHandler
                 row.notification.Body,
                 row.notification.IsRead,
                 row.notification.ReadAt,
-                row.notification.CreatedAt))
+                row.notification.CreatedAt,
+                row.notification.OccurrenceCount))
             .ToListAsync(cancellationToken);
 
         var hasMore = page.Count > limit;

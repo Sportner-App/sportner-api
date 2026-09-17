@@ -31,6 +31,13 @@ public class Notification : AggregateRoot
 
     public DateTimeOffset? ReadAt { get; private set; }
 
+    /// <summary>
+    /// How many occurrences this row represents — bumped instead of inserting a new row when
+    /// the same actor triggers the same still-unread notification again (e.g. several DMs in a
+    /// row), so the inbox shows one grouped entry ("X, 4 new messages") instead of a flood.
+    /// </summary>
+    public int OccurrenceCount { get; private set; } = 1;
+
     public static Notification Create(
         Guid recipientUserId,
         Guid? actorUserId,
@@ -75,6 +82,20 @@ public class Notification : AggregateRoot
             ReadAt = null,
             CreatedAt = utcNow
         };
+    }
+
+    /// <summary>
+    /// Folds another occurrence into this notification instead of creating a new row: bumps the
+    /// count, refreshes the title/body to the latest (e.g. newest message preview), and moves
+    /// <see cref="CreatedAt"/> forward so it resurfaces at the top of the inbox like a fresh one.
+    /// </summary>
+    public void IncrementOccurrence(string title, string body, DateTimeOffset utcNow)
+    {
+        OccurrenceCount++;
+        Title = NormalizeTitle(title);
+        Body = NormalizeBody(body);
+        CreatedAt = utcNow;
+        Touch(utcNow);
     }
 
     public void MarkAsRead(DateTimeOffset utcNow)

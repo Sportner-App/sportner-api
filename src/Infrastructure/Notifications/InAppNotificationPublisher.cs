@@ -95,17 +95,44 @@ public sealed class InAppNotificationPublisher : INotificationPublisher
 
         if (deliverInApp)
         {
-            var notification = Notification.Create(
-                recipientUserId,
-                actorUserId,
-                type,
-                entityType,
-                entityId,
-                title,
-                body,
-                utcNow);
+            Notification? notification = null;
 
-            _dbContext.Notifications.Add(notification);
+            // Several messages from the same person while still unread fold into one
+            // notification (bumped occurrence count + latest preview) instead of piling up as
+            // separate rows — mirrors how a chat app's notification tray groups by sender.
+            if (type == NotificationType.NewMessage && actorUserId is { } messageActor)
+            {
+                notification = await _dbContext.Notifications
+                    .FirstOrDefaultAsync(
+                        candidate =>
+                            candidate.RecipientUserId == recipientUserId
+                            && candidate.ActorUserId == messageActor
+                            && candidate.NotificationType == type
+                            && candidate.EntityType == entityType
+                            && candidate.EntityId == entityId
+                            && !candidate.IsRead,
+                        cancellationToken);
+            }
+
+            if (notification is not null)
+            {
+                notification.IncrementOccurrence(title, body, utcNow);
+            }
+            else
+            {
+                notification = Notification.Create(
+                    recipientUserId,
+                    actorUserId,
+                    type,
+                    entityType,
+                    entityId,
+                    title,
+                    body,
+                    utcNow);
+
+                _dbContext.Notifications.Add(notification);
+            }
+
             notificationId = notification.Id;
         }
         else

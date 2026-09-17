@@ -40,7 +40,8 @@ public sealed record NotificationResponse(
     string Body,
     bool IsRead,
     DateTimeOffset? ReadAt,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    int OccurrenceCount);
 
 public sealed record NotificationSettingResponse(
     short NotificationType,
