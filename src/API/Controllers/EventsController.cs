@@ -214,7 +214,8 @@ public sealed class EventsController : ApiControllerBase
             request.SkillLevel,
             request.IsPaid,
             request.FeeAmount,
-            request.OrganizationId);
+            request.OrganizationId,
+            request.ParticipantGender);
 
         var result = await Sender.Send(command, cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -243,7 +244,7 @@ public sealed class EventsController : ApiControllerBase
             request.SportId, request.Title, request.Description, request.EventDate,
             request.DurationMinutes, request.Latitude, request.Longitude, request.Address,
             request.MaxParticipants, request.MinParticipantAge, request.MaxParticipantAge,
-            request.IntervalWeeks, request.OccurrenceCount, request.IsPaid, request.FeeAmount), cancellationToken);
+            request.IntervalWeeks, request.OccurrenceCount, request.IsPaid, request.FeeAmount, request.ParticipantGender), cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
     }
 
@@ -540,14 +541,15 @@ public sealed class EventsController : ApiControllerBase
         short? SkillLevel = null,
         bool IsPaid = false,
         decimal? FeeAmount = null,
-        Guid? OrganizationId = null);
+        Guid? OrganizationId = null,
+        short? ParticipantGender = null);
 
     public sealed record CreateRecurringEventsRequest(
         Guid SportId, string Title, string? Description, DateTimeOffset EventDate,
         int DurationMinutes, decimal Latitude, decimal Longitude, string Address,
         int? MaxParticipants, int MinParticipantAge, int MaxParticipantAge,
         int IntervalWeeks, int OccurrenceCount,
-        bool IsPaid = false, decimal? FeeAmount = null);
+        bool IsPaid = false, decimal? FeeAmount = null, short? ParticipantGender = null);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 

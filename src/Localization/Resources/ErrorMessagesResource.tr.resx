@@ -60,6 +60,9 @@
   <data name="Event_ParticipantAgeNotEligible" xml:space="preserve">
     <value>Yaşın bu etkinliğin katılım yaş aralığının dışında.</value>
   </data>
+  <data name="Event_ParticipantGenderNotEligible" xml:space="preserve">
+    <value>Cinsiyet bilgin bu etkinliğin katılım koşulunu karşılamıyor.</value>
+  </data>
   <data name="Event_ParticipantBirthDateMissing" xml:space="preserve">
     <value>Profilde doğum tarihi olmadığı için yaş doğrulanamıyor.</value>
   </data>

@@ -72,6 +72,10 @@ internal static class EventErrors
         "Event.ParticipantAgeNotEligible",
         ErrorMessagesResource.Event_ParticipantAgeNotEligible);
 
+    internal static Error ParticipantGenderNotEligible => Error.Forbidden(
+        "Event.ParticipantGenderNotEligible",
+        ErrorMessagesResource.Event_ParticipantGenderNotEligible);
+
     internal static Error ParticipantBirthDateMissing => Error.Forbidden(
         "Event.ParticipantBirthDateMissing",
         ErrorMessagesResource.Event_ParticipantBirthDateMissing);

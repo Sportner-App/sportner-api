@@ -119,23 +119,29 @@ internal sealed class AssignEventParticipantsCommandHandler
                         return Result.Failure(EventErrors.UserNotFound);
                     }
 
-                    var friendBirthDates = await DbContext.UserProfiles.AsNoTracking()
+                    var friendProfiles = await DbContext.UserProfiles.AsNoTracking()
                         .Where(profile => friendIds.Contains(profile.UserId))
-                        .Select(profile => profile.BirthDate)
+                        .Select(profile => new { profile.BirthDate, profile.Gender })
                         .ToListAsync(ct);
 
                     // Doğum tarihi bilinmiyorsa yaş "aralık dışı" değildir; organizatöre
                     // ne yapacağını söyleyebilmek için iki durumu ayırıyoruz.
-                    if (friendBirthDates.Count != friendIds.Count
-                        || friendBirthDates.Any(birthDate => birthDate is null))
+                    if (friendProfiles.Count != friendIds.Count
+                        || friendProfiles.Any(profile => profile.BirthDate is null))
                     {
                         return Result.Failure(EventErrors.ParticipantBirthDateMissing);
                     }
 
-                    if (friendBirthDates.Any(birthDate =>
-                            !@event.IsParticipantAgeEligible(birthDate!.Value)))
+                    if (friendProfiles.Any(profile =>
+                            !@event.IsParticipantAgeEligible(profile.BirthDate!.Value)))
                     {
                         return Result.Failure(EventErrors.ParticipantAgeNotEligible);
+                    }
+
+                    if (friendProfiles.Any(profile =>
+                            !@event.IsParticipantGenderEligible(profile.Gender)))
+                    {
+                        return Result.Failure(EventErrors.ParticipantGenderNotEligible);
                     }
 
                     var alreadyAssociated = @event.Participants.Any(participant =>

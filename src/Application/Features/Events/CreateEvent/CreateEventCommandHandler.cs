@@ -102,7 +102,8 @@ internal sealed class CreateEventCommandHandler
             request.SkillLevel is { } skill ? (SkillLevel)skill : null,
             request.IsPaid,
             request.FeeAmount,
-            request.OrganizationId);
+            request.OrganizationId,
+            request.ParticipantGender);
 
         _dbContext.Events.Add(@event);
         await _dbContext.SaveChangesAsync(cancellationToken);

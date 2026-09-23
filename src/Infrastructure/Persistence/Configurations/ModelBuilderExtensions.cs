@@ -795,6 +795,12 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>()
             .ToTable(table =>
                 table.HasCheckConstraint(
+                    "CK_Events_ParticipantGender",
+                    "\"ParticipantGender\" IS NULL OR \"ParticipantGender\" IN (1, 2)"));
+
+        modelBuilder.Entity<Event>()
+            .ToTable(table =>
+                table.HasCheckConstraint(
                     "CK_Events_Fee",
                     "(\"IsPaid\" = FALSE AND \"FeeAmount\" IS NULL) OR (\"IsPaid\" = TRUE AND \"FeeAmount\" IS NOT NULL AND \"FeeAmount\" > 0)"));
 

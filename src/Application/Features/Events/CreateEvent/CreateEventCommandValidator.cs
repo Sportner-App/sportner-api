@@ -21,6 +21,10 @@ public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventC
         RuleFor(command => command.MaxParticipantAge).InclusiveBetween(13, 120);
         RuleFor(command => command.MaxParticipantAge)
             .GreaterThanOrEqualTo(command => command.MinParticipantAge);
+        RuleFor(command => command.ParticipantGender)
+            .Must(gender => gender is 1 or 2)
+            .When(command => command.ParticipantGender is not null)
+            .WithMessage("Participant gender is invalid.");
         RuleFor(command => command.SkillLevel)
             .Must(level => level is not null && Enum.IsDefined((SkillLevel)level.Value))
             .When(command => command.SkillLevel is not null)

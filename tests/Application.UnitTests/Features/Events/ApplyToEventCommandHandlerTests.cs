@@ -176,6 +176,46 @@ public sealed class ApplyToEventCommandHandlerTests
         result.Value.ParticipantStatus.Should().Be((short)ParticipantStatus.Pending);
     }
 
+    [Fact]
+    public async Task Handle_Fails_WhenParticipantGenderDoesNotMatch()
+    {
+        var databaseName = Guid.NewGuid().ToString("N");
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero));
+
+        Guid eventId;
+        Guid applicantId;
+
+        await using (var seed = InMemoryDb.Create(databaseName))
+        {
+            var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+            var applicant = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+            var profile = CreateEligibleProfile(applicant.Id, time.GetUtcNow());
+            profile.UpdatePersonalDetails(2, new DateOnly(1995, 1, 1), time.GetUtcNow());
+            applicant.AttachUserProfile(profile);
+            var sport = Sport.Create("Football", 1, time.GetUtcNow(), "football");
+            var @event = DomainEvent.Create(
+                organizer.Id, sport.Id, "Women only match", time.GetUtcNow().AddHours(2),
+                90, 41m, 29m, "Istanbul", time.GetUtcNow(), maxParticipants: 8,
+                participantGender: 1);
+            @event.Publish(time.GetUtcNow());
+
+            seed.Users.AddRange(organizer, applicant);
+            seed.Sports.Add(sport);
+            seed.Events.Add(@event);
+            await seed.SaveChangesAsync();
+            eventId = @event.Id;
+            applicantId = applicant.Id;
+        }
+
+        await using var db = InMemoryDb.Create(databaseName);
+        var handler = new ApplyToEventCommandHandler(db, new TestCurrentUser(applicantId), time);
+
+        var result = await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Code == "Event.ParticipantGenderNotEligible");
+    }
+
     private static UserProfile CreateEligibleProfile(Guid userId, DateTimeOffset utcNow)
     {
         var profile = UserProfile.Create(userId, $"user-{userId:N}"[..30], "User", utcNow);

@@ -60,6 +60,9 @@
   <data name="Event_ParticipantAgeNotEligible" xml:space="preserve">
     <value>Your age is outside the participation age range for this event.</value>
   </data>
+  <data name="Event_ParticipantGenderNotEligible" xml:space="preserve">
+    <value>Your gender does not meet this event’s participation requirement.</value>
+  </data>
   <data name="Event_ParticipantBirthDateMissing" xml:space="preserve">
     <value>Age cannot be verified because the profile has no birth date.</value>
   </data>

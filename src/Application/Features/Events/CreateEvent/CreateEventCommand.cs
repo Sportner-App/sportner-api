@@ -17,4 +17,5 @@ public sealed record CreateEventCommand(
     short? SkillLevel = null,
     bool IsPaid = false,
     decimal? FeeAmount = null,
-    Guid? OrganizationId = null) : ICommand<EventResponse>;
+    Guid? OrganizationId = null,
+    short? ParticipantGender = null) : ICommand<EventResponse>;

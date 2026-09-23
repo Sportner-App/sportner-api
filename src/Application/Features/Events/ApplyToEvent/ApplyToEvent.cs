@@ -94,20 +94,25 @@ internal sealed class ApplyToEventCommandHandler
             return Result<ApplyToEventResponse>.Failure(EventErrors.AlreadyApplied);
         }
 
-        var birthDate = await _dbContext.UserProfiles.AsNoTracking()
-            .Where(profile => profile.UserId == userId)
-            .Select(profile => profile.BirthDate)
+        var profile = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(candidate => candidate.UserId == userId)
+            .Select(candidate => new { candidate.BirthDate, candidate.Gender })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (birthDate is null)
+        if (profile?.BirthDate is null)
         {
             return Result<ApplyToEventResponse>.Failure(
                 EventErrors.ParticipantBirthDateMissing);
         }
 
-        if (!@event.IsParticipantAgeEligible(birthDate.Value))
+        if (!@event.IsParticipantAgeEligible(profile.BirthDate.Value))
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
+        }
+
+        if (!@event.IsParticipantGenderEligible(profile.Gender))
+        {
+            return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantGenderNotEligible);
         }
 
         var (participant, waitlistEntry) = @event.Apply(userId, _timeProvider.GetUtcNow());

@@ -58,14 +58,19 @@ internal sealed class AcceptEventInvitationCommandHandler
             return Result<EventResponse>.Failure(EventErrors.CapacityFull);
         }
 
-        var birthDate = await _dbContext.UserProfiles.AsNoTracking()
-            .Where(profile => profile.UserId == userId)
-            .Select(profile => profile.BirthDate)
+        var profile = await _dbContext.UserProfiles.AsNoTracking()
+            .Where(candidate => candidate.UserId == userId)
+            .Select(candidate => new { candidate.BirthDate, candidate.Gender })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (birthDate is null || !@event.IsParticipantAgeEligible(birthDate.Value))
+        if (profile?.BirthDate is null || !@event.IsParticipantAgeEligible(profile.BirthDate.Value))
         {
             return Result<EventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
+        }
+
+        if (!@event.IsParticipantGenderEligible(profile.Gender))
+        {
+            return Result<EventResponse>.Failure(EventErrors.ParticipantGenderNotEligible);
         }
 
         var utcNow = _timeProvider.GetUtcNow();

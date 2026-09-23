@@ -23,7 +23,8 @@ public sealed record CreateRecurringEventsCommand(
     int IntervalWeeks,
     int OccurrenceCount,
     bool IsPaid = false,
-    decimal? FeeAmount = null) : ICommand<CreateRecurringEventsResponse>;
+    decimal? FeeAmount = null,
+    short? ParticipantGender = null) : ICommand<CreateRecurringEventsResponse>;
 
 /// <param name="EventIds">
 /// Şu an oluşturulmuş etkinlikler — seride yalnızca ilk halka. Kalan tekrarlar
@@ -50,6 +51,9 @@ public sealed class CreateRecurringEventsCommandValidator
         RuleFor(x => x.MinParticipantAge).InclusiveBetween(13, 120);
         RuleFor(x => x.MaxParticipantAge).InclusiveBetween(13, 120)
             .GreaterThanOrEqualTo(x => x.MinParticipantAge);
+        RuleFor(x => x.ParticipantGender)
+            .Must(gender => gender is 1 or 2)
+            .When(x => x.ParticipantGender is not null);
         RuleFor(x => x.IntervalWeeks).Must(value => value is 1 or 2 or 4);
         RuleFor(x => x.OccurrenceCount).InclusiveBetween(
             DomainEvent.MinSeriesOccurrences,
@@ -119,7 +123,8 @@ internal sealed class CreateRecurringEventsCommandHandler
             request.MaxParticipantAge,
             skillLevel: null,
             isPaid: request.IsPaid,
-            feeAmount: request.FeeAmount);
+            feeAmount: request.FeeAmount,
+            participantGender: request.ParticipantGender);
 
         firstOccurrence.StartSeries(request.IntervalWeeks, request.OccurrenceCount, utcNow);
 

@@ -254,6 +254,7 @@ internal sealed class DiscoverEventsQueryHandler
                 row.Event.MaxParticipants,
                 row.Event.MinParticipantAge,
                 row.Event.MaxParticipantAge,
+                row.Event.ParticipantGender,
                 row.Event.SkillLevel != null ? (short?)row.Event.SkillLevel : null,
                 row.Event.IsPaid,
                 row.Event.FeeAmount,

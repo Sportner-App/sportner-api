@@ -39,6 +39,9 @@ public class Event : AggregateRoot
 
     public int MaxParticipantAge { get; private set; }
 
+    /// <summary>Null allows everyone; 1 allows women; 2 allows men.</summary>
+    public short? ParticipantGender { get; private set; }
+
     public SkillLevel? SkillLevel { get; private set; }
 
     public bool IsPaid { get; private set; }
@@ -84,7 +87,8 @@ public class Event : AggregateRoot
         SkillLevel? skillLevel = null,
         bool isPaid = false,
         decimal? feeAmount = null,
-        Guid? organizationId = null)
+        Guid? organizationId = null,
+        short? participantGender = null)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -117,6 +121,7 @@ public class Event : AggregateRoot
             MaxParticipants = NormalizeMaxParticipants(maxParticipants),
             MinParticipantAge = NormalizeParticipantAge(minParticipantAge, nameof(minParticipantAge)),
             MaxParticipantAge = NormalizeParticipantAge(maxParticipantAge, nameof(maxParticipantAge)),
+            ParticipantGender = NormalizeParticipantGender(participantGender),
             SkillLevel = NormalizeSkillLevel(skillLevel),
             Status = EventStatus.Draft,
             CreatedAt = utcNow
@@ -134,6 +139,9 @@ public class Event : AggregateRoot
 
         return @event;
     }
+
+    public bool IsParticipantGenderEligible(short? gender) =>
+        ParticipantGender is null || ParticipantGender == gender;
 
     public bool IsParticipantAgeEligible(DateOnly birthDate)
     {
@@ -294,7 +302,8 @@ public class Event : AggregateRoot
             SkillLevel,
             IsPaid,
             FeeAmount,
-            OrganizationId);
+            OrganizationId,
+            ParticipantGender);
 
         next.SeriesId = SeriesId;
         next.SeriesSequence = SeriesSequence!.Value + 1;
@@ -969,6 +978,16 @@ public class Event : AggregateRoot
         }
 
         return maxParticipants;
+    }
+
+    private static short? NormalizeParticipantGender(short? participantGender)
+    {
+        if (participantGender is not null and not 1 and not 2)
+        {
+            throw new DomainException("Participant gender must be 1 (women), 2 (men), or null.");
+        }
+
+        return participantGender;
     }
 
     private static int NormalizeParticipantAge(int age, string parameterName)
