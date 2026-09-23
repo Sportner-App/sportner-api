@@ -171,4 +171,11 @@
   <data name="ReviewReceived_Body" xml:space="preserve">
     <value>"{0}" için yeni bir değerlendirme aldın.</value>
   </data>
+  <data name="EventUpdated_Title" xml:space="preserve"><value>{0} etkinliği güncelledi</value></data>
+  <data name="EventUpdated_Body" xml:space="preserve"><value>“{0}” etkinliğinde şu bilgiler değişti: {1}.</value></data>
+  <data name="EventUpdated_Field_Details" xml:space="preserve"><value>etkinlik bilgileri</value></data>
+  <data name="EventUpdated_Field_Schedule" xml:space="preserve"><value>tarih ve saat</value></data>
+  <data name="EventUpdated_Field_Location" xml:space="preserve"><value>konum</value></data>
+  <data name="EventUpdated_Field_Capacity" xml:space="preserve"><value>kontenjan</value></data>
+  <data name="EventUpdated_Field_Fee" xml:space="preserve"><value>ücret</value></data>
 </root>

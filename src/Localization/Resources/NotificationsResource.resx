@@ -171,4 +171,11 @@
   <data name="ReviewReceived_Body" xml:space="preserve">
     <value>New review for "{0}".</value>
   </data>
+  <data name="EventUpdated_Title" xml:space="preserve"><value>{0} updated the event</value></data>
+  <data name="EventUpdated_Body" xml:space="preserve"><value>“{0}” was updated: {1}.</value></data>
+  <data name="EventUpdated_Field_Details" xml:space="preserve"><value>details</value></data>
+  <data name="EventUpdated_Field_Schedule" xml:space="preserve"><value>date and time</value></data>
+  <data name="EventUpdated_Field_Location" xml:space="preserve"><value>location</value></data>
+  <data name="EventUpdated_Field_Capacity" xml:space="preserve"><value>capacity</value></data>
+  <data name="EventUpdated_Field_Fee" xml:space="preserve"><value>fee</value></data>
 </root>

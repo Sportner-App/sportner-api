@@ -12,6 +12,47 @@ namespace Sportner.Application.Features.Events;
 /// </summary>
 internal static class EventRosterNotifier
 {
+    internal static async Task NotifyApprovedParticipantsOfUpdateAsync(
+        IApplicationDbContext dbContext,
+        INotificationPublisher notificationPublisher,
+        Domain.Events.Event @event,
+        IReadOnlyCollection<EventUpdateField> changes,
+        CancellationToken cancellationToken)
+    {
+        var recipients = @event.Participants
+            .Where(participant => participant.UserId is { } userId
+                && userId != @event.OrganizerUserId
+                && participant.Status == ParticipantStatus.Approved)
+            .Select(participant => participant.UserId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (recipients.Count == 0 || changes.Count == 0) return;
+
+        var organizerUsername = await NotificationActor.ResolveUsernameAsync(
+            dbContext, @event.OrganizerUserId, cancellationToken);
+        var languages = await NotificationActor.ResolveRecipientLanguagesAsync(
+            dbContext, recipients, cancellationToken);
+
+        foreach (var recipientId in recipients)
+        {
+            var language = languages.GetValueOrDefault(recipientId);
+            var changedLabels = changes
+                .Select(change => NotificationActor.Format(language, $"EventUpdated_Field_{change}"))
+                .ToArray();
+
+            await notificationPublisher.PublishAsync(
+                recipientId,
+                NotificationType.EventUpdated,
+                NotificationActor.Format(language, "EventUpdated_Title", NotificationActor.FormatPrefix(organizerUsername, language)),
+                NotificationActor.Format(language, "EventUpdated_Body", @event.Title, string.Join(", ", changedLabels)),
+                NotificationEntityType.Event,
+                @event.Id,
+                @event.OrganizerUserId,
+                cancellationToken);
+        }
+    }
+
     internal static async Task NotifyParticipantsAsync(
         IApplicationDbContext dbContext,
         INotificationPublisher notificationPublisher,
@@ -61,4 +102,13 @@ internal static class EventRosterNotifier
                 cancellationToken);
         }
     }
+}
+
+internal enum EventUpdateField
+{
+    Details,
+    Schedule,
+    Location,
+    Capacity,
+    Fee
 }

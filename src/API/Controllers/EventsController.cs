@@ -35,6 +35,7 @@ using Sportner.Application.Features.Events.UpdateEventDetails;
 using Sportner.Application.Features.Events.UpdateEventFee;
 using Sportner.Application.Features.Events.UpdateEventLocation;
 using Sportner.Application.Features.Events.UpdateEventSchedule;
+using Sportner.Application.Features.Events.UpdateEvent;
 using Sportner.Application.Features.Events.EventQuestions.AskEventQuestion;
 using Sportner.Application.Features.Events.EventQuestions.ListEventQuestions;
 using Sportner.Application.Features.Events.EventQuestions.ReplyToEventQuestion;
@@ -231,6 +232,21 @@ public sealed class EventsController : ApiControllerBase
             new UpdateEventDetailsCommand(eventId, request.Title, request.Description),
             cancellationToken);
 
+        return result.ToActionResult();
+    }
+
+    [HttpPut("{eventId:guid}/edit")]
+    public async Task<IActionResult> Update(
+        Guid eventId,
+        [FromBody] UpdateEventRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UpdateEventCommand(
+                eventId, request.Title, request.Description, request.EventDate,
+                request.DurationMinutes, request.Latitude, request.Longitude,
+                request.Address, request.MaxParticipants, request.IsPaid, request.FeeAmount),
+            cancellationToken);
         return result.ToActionResult();
     }
 
@@ -556,6 +572,17 @@ public sealed class EventsController : ApiControllerBase
     public sealed record UpdateScheduleRequest(DateTimeOffset EventDate, int DurationMinutes);
 
     public sealed record UpdateEventLocationRequest(decimal Latitude, decimal Longitude, string Address);
+    public sealed record UpdateEventRequest(
+        string Title,
+        string? Description,
+        DateTimeOffset EventDate,
+        int DurationMinutes,
+        decimal Latitude,
+        decimal Longitude,
+        string Address,
+        int? MaxParticipants,
+        bool IsPaid,
+        decimal? FeeAmount);
 
     public sealed record UpdateCapacityRequest(int? MaxParticipants);
 
