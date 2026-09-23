@@ -496,6 +496,9 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<EventParticipant>()
             .Property(entity => entity.GuestLastName)
             .HasMaxLength(50);
+        modelBuilder.Entity<EventParticipant>()
+            .Property(entity => entity.GuestEmail)
+            .HasMaxLength(EventParticipant.GuestEmailMaxLength);
 
         modelBuilder.Entity<EventParticipantRemoval>()
             .Property(entity => entity.Note)

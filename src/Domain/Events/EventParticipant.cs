@@ -1,12 +1,14 @@
 using Sportner.Domain.Common.Base;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
+using System.Net.Mail;
 
 namespace Sportner.Domain.Events;
 
 public class EventParticipant : AuditableEntity
 {
     public const int GuestNameMaxLength = 50;
+    public const int GuestEmailMaxLength = 320;
 
     private EventParticipant()
     {
@@ -21,6 +23,8 @@ public class EventParticipant : AuditableEntity
     public string? GuestFirstName { get; private set; }
 
     public string? GuestLastName { get; private set; }
+
+    public string? GuestEmail { get; private set; }
 
     public ParticipantStatus Status { get; private set; }
 
@@ -118,7 +122,8 @@ public class EventParticipant : AuditableEntity
         Guid eventId,
         DateTimeOffset utcNow,
         string? firstName = null,
-        string? lastName = null)
+        string? lastName = null,
+        string? email = null)
     {
         if (eventId == Guid.Empty)
         {
@@ -133,6 +138,7 @@ public class EventParticipant : AuditableEntity
             Kind = ParticipantKind.Guest,
             GuestFirstName = NormalizeRequiredGuestName(firstName, "first"),
             GuestLastName = NormalizeRequiredGuestName(lastName, "last"),
+            GuestEmail = NormalizeRequiredGuestEmail(email),
             Status = ParticipantStatus.Approved,
             JoinedAt = utcNow,
             CanReview = false,
@@ -363,6 +369,24 @@ public class EventParticipant : AuditableEntity
         if (normalized.Length > GuestNameMaxLength)
         {
             throw new DomainException($"Guest name cannot exceed {GuestNameMaxLength} characters.");
+        }
+
+        return normalized;
+    }
+
+    private static string NormalizeRequiredGuestEmail(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new DomainException("Guest email is required.");
+        }
+
+        var normalized = value.Trim().ToLowerInvariant();
+        if (normalized.Length > GuestEmailMaxLength
+            || !MailAddress.TryCreate(normalized, out var address)
+            || !string.Equals(address.Address, normalized, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new DomainException("Guest email is invalid.");
         }
 
         return normalized;

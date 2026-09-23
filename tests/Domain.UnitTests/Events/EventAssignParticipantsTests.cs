@@ -16,8 +16,8 @@ public sealed class EventAssignParticipantsTests
 
         @event.AssignParticipants(
             [
-                new GuestAssignment("Ali", "Yılmaz"),
-                new GuestAssignment("Veli", "Kaya")
+                new GuestAssignment("Ali", "Yılmaz", "ali@example.com"),
+                new GuestAssignment("Veli", "Kaya", "veli@example.com")
             ],
             [],
             now);
@@ -29,6 +29,7 @@ public sealed class EventAssignParticipantsTests
         named.UserId.Should().BeNull();
         named.Kind.Should().Be(ParticipantKind.Guest);
         named.Status.Should().Be(ParticipantStatus.Approved);
+        named.GuestEmail.Should().Be("ali@example.com");
         named.CanReview.Should().BeFalse();
     }
 
@@ -47,13 +48,31 @@ public sealed class EventAssignParticipantsTests
         var @event = CreateEvent(now, maxParticipants: 10);
 
         var act = () => @event.AssignParticipants(
-            [new GuestAssignment(firstName, lastName)],
+            [new GuestAssignment(firstName, lastName, "guest@example.com")],
             [],
             now);
 
         act.Should()
             .Throw<DomainException>()
-            .WithMessage("Guest first and last name are required.");
+            .WithMessage("Guest first name, last name and email are required.");
+        @event.Participants.Should().ContainSingle(participant => !participant.IsGuest);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("invalid-email")]
+    public void AssignParticipants_Throws_WhenGuestEmailIsInvalid(string? email)
+    {
+        var now = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
+        var @event = CreateEvent(now, maxParticipants: 10);
+
+        var act = () => @event.AssignParticipants(
+            [new GuestAssignment("Ali", "Yılmaz", email)],
+            [],
+            now);
+
+        act.Should().Throw<DomainException>();
         @event.Participants.Should().ContainSingle(participant => !participant.IsGuest);
     }
 
@@ -101,7 +120,7 @@ public sealed class EventAssignParticipantsTests
         var @event = CreateEvent(now, maxParticipants: 2);
 
         var act = () => @event.AssignParticipants(
-            [new GuestAssignment("A", "One"), new GuestAssignment("B", "Two")],
+            [new GuestAssignment("A", "One", "a@example.com"), new GuestAssignment("B", "Two", "b@example.com")],
             [],
             now);
 
@@ -114,7 +133,7 @@ public sealed class EventAssignParticipantsTests
     {
         var now = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
         var @event = CreateEvent(now, maxParticipants: 10);
-        var assigned = @event.AssignParticipants([new GuestAssignment("Ali", "Yılmaz")], [], now);
+        var assigned = @event.AssignParticipants([new GuestAssignment("Ali", "Yılmaz", "ali@example.com")], [], now);
         var guest = assigned.Single();
 
         @event.RemoveAssignedParticipant(guest.Id, now.AddMinutes(1));

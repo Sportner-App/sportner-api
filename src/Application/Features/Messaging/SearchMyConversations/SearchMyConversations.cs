@@ -69,7 +69,11 @@ internal sealed class SearchMyConversationsQueryHandler
         var conversationIds = memberships.Select(member => member.ConversationId).ToList();
 
         var conversations = await _dbContext.Conversations.AsNoTracking()
-            .Where(conversation => conversationIds.Contains(conversation.Id))
+            .Where(conversation =>
+                conversationIds.Contains(conversation.Id)
+                && (conversation.Type != ConversationType.Direct
+                    || _dbContext.Messages.Any(message =>
+                        message.ConversationId == conversation.Id)))
             .Select(conversation => new
             {
                 conversation.Id,

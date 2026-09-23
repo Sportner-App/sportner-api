@@ -69,7 +69,10 @@ internal sealed class ListMyConversationsQueryHandler
         var orderedIds = await _dbContext.Conversations.AsNoTracking()
             .Where(conversation =>
                 myConversationIds.Contains(conversation.Id)
-                && (request.Type == null || (short)conversation.Type == request.Type.Value))
+                && (request.Type == null || (short)conversation.Type == request.Type.Value)
+                && (conversation.Type != Domain.Common.Enums.ConversationType.Direct
+                    || _dbContext.Messages.Any(message =>
+                        message.ConversationId == conversation.Id)))
             .Select(conversation => new
             {
                 conversation.Id,

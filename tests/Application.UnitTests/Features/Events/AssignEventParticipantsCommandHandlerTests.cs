@@ -71,7 +71,7 @@ public sealed class AssignEventParticipantsCommandHandlerTests
         var result = await handler.Handle(
             new AssignEventParticipantsCommand(
                 @event.Id,
-                [new GuestAssignmentRequest("Ali", "Yılmaz"), new GuestAssignmentRequest("Veli", "Kaya")],
+                [new GuestAssignmentRequest("Ali", "Yılmaz", "ali@example.com"), new GuestAssignmentRequest("Veli", "Kaya", "veli@example.com")],
                 [friend.Id]),
             CancellationToken.None);
 
@@ -118,7 +118,22 @@ public sealed class AssignEventParticipantsCommandHandlerTests
         var validator = new AssignEventParticipantsCommandValidator();
         var command = new AssignEventParticipantsCommand(
             Guid.NewGuid(),
-            [new GuestAssignmentRequest(firstName, lastName)],
+            [new GuestAssignmentRequest(firstName, lastName, "guest@example.com")],
+            []);
+
+        validator.Validate(command).IsValid.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("invalid-email")]
+    public void Validator_Fails_WhenGuestEmailIsInvalid(string? email)
+    {
+        var validator = new AssignEventParticipantsCommandValidator();
+        var command = new AssignEventParticipantsCommand(
+            Guid.NewGuid(),
+            [new GuestAssignmentRequest("Ali", "Yılmaz", email)],
             []);
 
         validator.Validate(command).IsValid.Should().BeFalse();

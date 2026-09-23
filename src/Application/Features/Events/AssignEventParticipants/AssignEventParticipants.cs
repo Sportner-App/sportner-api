@@ -14,7 +14,7 @@ using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.AssignEventParticipants;
 
-public sealed record GuestAssignmentRequest(string? FirstName, string? LastName);
+public sealed record GuestAssignmentRequest(string? FirstName, string? LastName, string? Email);
 
 public sealed record AssignEventParticipantsCommand(
     Guid EventId,
@@ -40,6 +40,12 @@ public sealed class AssignEventParticipantsCommandValidator
                     .Must(value => !string.IsNullOrWhiteSpace(value))
                     .WithMessage("Guest last name is required.")
                     .MaximumLength(EventParticipant.GuestNameMaxLength);
+
+                guest.RuleFor(item => item.Email)
+                    .NotEmpty()
+                    .EmailAddress()
+                    .MaximumLength(EventParticipant.GuestEmailMaxLength)
+                    .WithMessage("A valid guest email is required.");
             })
             .When(command => command.Guests is not null);
 
@@ -162,7 +168,7 @@ internal sealed class AssignEventParticipantsCommandHandler
                 try
                 {
                     assigned = @event.AssignParticipants(
-                        guests.Select(guest => new GuestAssignment(guest.FirstName, guest.LastName)).ToList(),
+                        guests.Select(guest => new GuestAssignment(guest.FirstName, guest.LastName, guest.Email)).ToList(),
                         friendIds,
                         utcNow);
                 }

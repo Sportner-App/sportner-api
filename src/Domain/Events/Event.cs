@@ -581,9 +581,10 @@ public class Event : AggregateRoot
 
         if (guestList.Any(guest =>
                 string.IsNullOrWhiteSpace(guest.FirstName)
-                || string.IsNullOrWhiteSpace(guest.LastName)))
+                || string.IsNullOrWhiteSpace(guest.LastName)
+                || string.IsNullOrWhiteSpace(guest.Email)))
         {
-            throw new DomainException("Guest first and last name are required.");
+            throw new DomainException("Guest first name, last name and email are required.");
         }
 
         if (friendIds.Contains(OrganizerUserId))
@@ -746,7 +747,8 @@ public class Event : AggregateRoot
             Id,
             utcNow,
             guest.FirstName,
-            guest.LastName);
+            guest.LastName,
+            guest.Email);
 
         _participants.Add(participant);
         return participant;
