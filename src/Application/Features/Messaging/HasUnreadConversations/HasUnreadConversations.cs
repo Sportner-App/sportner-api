@@ -38,6 +38,7 @@ internal sealed class HasUnreadConversationsQueryHandler
             where membership.UserId == userId
                 && membership.LeftAt == null
                 && message.SenderUserId != userId
+                && (membership.ClearedAt == null || message.CreatedAt > membership.ClearedAt)
                 && (membership.LastReadAt == null || message.CreatedAt > membership.LastReadAt)
             select message.Id
         ).AnyAsync(cancellationToken);

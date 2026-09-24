@@ -13,7 +13,7 @@ internal static class ConversationListBuilder
         IApplicationDbContext dbContext,
         Guid viewerUserId,
         IReadOnlyList<Guid> conversationIds,
-        IReadOnlyDictionary<Guid, (DateTimeOffset? LastReadAt, DateTimeOffset? MutedUntil)> membershipByConversation,
+        IReadOnlyDictionary<Guid, (DateTimeOffset? LastReadAt, DateTimeOffset? MutedUntil, DateTimeOffset? ClearedAt)> membershipByConversation,
         DateTimeOffset utcNow,
         CancellationToken cancellationToken)
     {
@@ -48,21 +48,7 @@ internal static class ConversationListBuilder
             utcNow,
             cancellationToken);
 
-        var lastMessages = await dbContext.Messages.AsNoTracking()
-            .Where(message => conversationIds.Contains(message.ConversationId))
-            .GroupBy(message => message.ConversationId)
-            .Select(group => new
-            {
-                ConversationId = group.Key,
-                LastMessageAt = group.Max(message => message.CreatedAt)
-            })
-            .ToListAsync(cancellationToken);
-
-        var lastMessageAtById = lastMessages.ToDictionary(
-            item => item.ConversationId,
-            item => item.LastMessageAt);
-
-        var previews = await dbContext.Messages.AsNoTracking()
+        var messageRows = await dbContext.Messages.AsNoTracking()
             .Where(message => conversationIds.Contains(message.ConversationId))
             .OrderByDescending(message => message.CreatedAt)
             .Select(message => new
@@ -73,22 +59,38 @@ internal static class ConversationListBuilder
             })
             .ToListAsync(cancellationToken);
 
-        var previewById = previews
-            .GroupBy(item => item.ConversationId)
-            .ToDictionary(
-                group => group.Key,
-                group => group.First().Preview);
+        var visibleMessageRows = messageRows
+            .Where(message =>
+            {
+                membershipByConversation.TryGetValue(message.ConversationId, out var membership);
+                return membership.ClearedAt is null || message.CreatedAt > membership.ClearedAt;
+            })
+            .ToList();
+
+        var lastMessageAtById = visibleMessageRows
+            .GroupBy(message => message.ConversationId)
+            .ToDictionary(group => group.Key, group => group.First().CreatedAt);
+
+        var previewById = visibleMessageRows
+            .GroupBy(message => message.ConversationId)
+            .ToDictionary(group => group.Key, group => group.First().Preview);
 
         var unreadCounts = new Dictionary<Guid, int>();
         foreach (var conversationId in conversationIds)
         {
             membershipByConversation.TryGetValue(conversationId, out var membership);
             var lastReadAt = membership.LastReadAt;
+            var clearedAt = membership.ClearedAt;
 
             var unreadQuery = dbContext.Messages.AsNoTracking()
                 .Where(message =>
                     message.ConversationId == conversationId
                     && message.SenderUserId != viewerUserId);
+
+            if (clearedAt is not null)
+            {
+                unreadQuery = unreadQuery.Where(message => message.CreatedAt > clearedAt);
+            }
 
             if (lastReadAt is not null)
             {

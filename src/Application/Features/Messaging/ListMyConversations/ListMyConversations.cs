@@ -41,12 +41,18 @@ internal sealed class ListMyConversationsQueryHandler
         var utcNow = _timeProvider.GetUtcNow();
 
         var memberships = await _dbContext.ConversationMembers.AsNoTracking()
-            .Where(member => member.UserId == userId && member.LeftAt == null)
+            .Where(member =>
+                member.UserId == userId
+                && member.LeftAt == null
+                && (member.ClearedAt == null || _dbContext.Messages.Any(message =>
+                    message.ConversationId == member.ConversationId
+                    && message.CreatedAt > member.ClearedAt)))
             .Select(member => new
             {
                 member.ConversationId,
                 member.LastReadAt,
-                member.MutedUntil
+                member.MutedUntil,
+                member.ClearedAt
             })
             .ToListAsync(cancellationToken);
 
@@ -62,7 +68,7 @@ internal sealed class ListMyConversationsQueryHandler
 
         var membershipById = memberships.ToDictionary(
             member => member.ConversationId,
-            member => (member.LastReadAt, member.MutedUntil));
+            member => (member.LastReadAt, member.MutedUntil, member.ClearedAt));
 
         var myConversationIds = memberships.Select(member => member.ConversationId).ToList();
 

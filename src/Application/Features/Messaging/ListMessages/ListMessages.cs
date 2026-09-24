@@ -60,6 +60,14 @@ internal sealed class ListMessagesQueryHandler
         var query = _dbContext.Messages.AsNoTracking()
             .Where(message => message.ConversationId == request.ConversationId);
 
+        var member = membership.Value!.Members.First(candidate =>
+            candidate.UserId == userId && candidate.IsActive());
+
+        if (member.ClearedAt is { } clearedAt)
+        {
+            query = query.Where(message => message.CreatedAt > clearedAt);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Before))
         {
             if (!MessageCursor.TryDecode(request.Before, out var beforeCreatedAt, out var beforeId))

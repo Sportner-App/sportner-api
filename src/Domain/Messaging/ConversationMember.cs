@@ -26,6 +26,12 @@ public class ConversationMember : AuditableEntity
 
     public DateTimeOffset? MutedUntil { get; private set; }
 
+    /// <summary>
+    /// Messages at or before this instant are hidden for this member only.
+    /// A later message makes the conversation visible again without changing membership.
+    /// </summary>
+    public DateTimeOffset? ClearedAt { get; private set; }
+
     public static ConversationMember CreateOwner(
         Guid conversationId,
         Guid userId,
@@ -167,6 +173,16 @@ public class ConversationMember : AuditableEntity
         }
 
         MutedUntil = null;
+        Touch(utcNow);
+    }
+
+    public void ClearHistory(DateTimeOffset utcNow)
+    {
+        EnsureActive();
+
+        ClearedAt = utcNow;
+        LastReadAt = utcNow;
+        LastReadMessageId = null;
         Touch(utcNow);
     }
 

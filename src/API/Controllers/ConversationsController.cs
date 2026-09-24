@@ -4,6 +4,7 @@ using Sportner.API.Authorization;
 using Sportner.API.Common;
 using Sportner.Application.Features.Messaging.CreateDirectConversation;
 using Sportner.Application.Features.Messaging.CreateGroupConversation;
+using Sportner.Application.Features.Messaging.DeleteConversation;
 using Sportner.Application.Features.Messaging.GetConversationById;
 using Sportner.Application.Features.Messaging.HasUnreadConversations;
 using Sportner.Application.Features.Messaging.InviteConversationMember;
@@ -130,6 +131,18 @@ public sealed class ConversationsController : ApiControllerBase
             cancellationToken);
 
         return result.ToActionResult();
+    }
+
+    [HttpDelete("{conversationId:guid}")]
+    public async Task<IActionResult> Delete(
+        Guid conversationId,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new DeleteConversationCommand(conversationId),
+            cancellationToken);
+
+        return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
     [HttpPost("{conversationId:guid}/read")]

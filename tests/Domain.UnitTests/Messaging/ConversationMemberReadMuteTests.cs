@@ -47,6 +47,22 @@ public sealed class ConversationMemberReadMuteTests
     }
 
     [Fact]
+    public void ClearHistory_HidesPreviousMessagesAndAdvancesReadBoundary()
+    {
+        var now = DateTimeOffset.Parse("2026-09-24T10:00:00Z");
+        var member = ConversationMember.CreateMember(Guid.NewGuid(), Guid.NewGuid(), now);
+        var messageId = Guid.NewGuid();
+
+        member.MarkRead(messageId, now.AddMinutes(1), now.AddMinutes(2));
+        member.ClearHistory(now.AddMinutes(3));
+
+        Assert.Equal(now.AddMinutes(3), member.ClearedAt);
+        Assert.Equal(now.AddMinutes(3), member.LastReadAt);
+        Assert.Null(member.LastReadMessageId);
+        Assert.True(member.IsActive());
+    }
+
+    [Fact]
     public void Mute_RejectsPastExpiry()
     {
         var now = DateTimeOffset.UtcNow;

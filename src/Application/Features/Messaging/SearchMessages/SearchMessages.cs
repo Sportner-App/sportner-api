@@ -54,10 +54,13 @@ internal sealed class SearchMessagesQueryHandler
         }
 
         var term = request.Q.Trim().ToLowerInvariant();
+        var member = membership.Value!.Members.First(candidate =>
+            candidate.UserId == userId && candidate.IsActive());
 
         var messageIds = await _dbContext.Messages.AsNoTracking()
             .Where(message =>
                 message.ConversationId == request.ConversationId
+                && (member.ClearedAt == null || message.CreatedAt > member.ClearedAt)
                 && message.Content != null
                 && message.Content.ToLower().Contains(term))
             .OrderByDescending(message => message.CreatedAt)
