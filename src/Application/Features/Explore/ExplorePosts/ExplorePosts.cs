@@ -3,14 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
-using Sportner.Application.Abstractions.Recommendations;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Social;
 
 namespace Sportner.Application.Features.Explore.ExplorePosts;
 
-public sealed record ExplorePostsQuery(int Limit = 20)
+/// <summary>Keşfet akışı: en yeniden eskiye. <paramref name="FriendsOnly"/> yalnızca
+/// kabul edilmiş arkadaşların gönderilerini döner (oturum yoksa boş liste).</summary>
+public sealed record ExplorePostsQuery(int Limit = 20, bool FriendsOnly = false)
     : IQuery<IReadOnlyList<PostResponse>>;
 
 public sealed class ExplorePostsQueryValidator : AbstractValidator<ExplorePostsQuery>
@@ -24,18 +25,15 @@ public sealed class ExplorePostsQueryValidator : AbstractValidator<ExplorePostsQ
 internal sealed class ExplorePostsQueryHandler
     : IQueryHandler<ExplorePostsQuery, IReadOnlyList<PostResponse>>
 {
-    private readonly IRecommendationService _recommendationService;
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly IFileStorage _fileStorage;
 
     public ExplorePostsQueryHandler(
-        IRecommendationService recommendationService,
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
         IFileStorage fileStorage)
     {
-        _recommendationService = recommendationService;
         _dbContext = dbContext;
         _currentUser = currentUser;
         _fileStorage = fileStorage;
@@ -47,55 +45,41 @@ internal sealed class ExplorePostsQueryHandler
     {
         var viewerId = _currentUser.UserId;
 
-        if (viewerId is null)
-        {
-            var recentPosts = await _dbContext.Posts.AsNoTracking()
-                .Include(post => post.Media)
-                .OrderByDescending(post => post.CreatedAt)
-                .Take(request.Limit)
-                .ToListAsync(cancellationToken);
-
-            var recentItems = new List<PostResponse>(recentPosts.Count);
-            foreach (var post in recentPosts)
-            {
-                recentItems.Add(await SocialQueries.ToPostResponseAsync(
-                    _dbContext, _fileStorage, post, null, cancellationToken));
-            }
-
-            return Result<IReadOnlyList<PostResponse>>.Success(recentItems);
-        }
-
-        var scored = await _recommendationService.ScorePostsAsync(
-            viewerId.Value,
-            request.Limit,
-            cancellationToken);
-
-        if (scored.Count == 0)
+        // Arkadaş filtresi oturum gerektirir; anonim çağrıda gösterilecek bir şey yok.
+        if (request.FriendsOnly && viewerId is null)
         {
             return Result<IReadOnlyList<PostResponse>>.Success([]);
         }
 
-        var postIds = scored.Select(entry => entry.Item.PostId).ToList();
-        var posts = await _dbContext.Posts.AsNoTracking()
+        var query = _dbContext.Posts.AsNoTracking()
             .Include(post => post.Media)
-            .Where(post => postIds.Contains(post.Id))
+            .Where(post => !post.IsHidden);
+
+        if (viewerId is { } id)
+        {
+            var blockedIds = SocialQueries.BlockedUserIds(_dbContext, id);
+            query = query.Where(post => !blockedIds.Contains(post.UserId));
+
+            if (request.FriendsOnly)
+            {
+                var friendIds = SocialQueries.AcceptedFriendIds(_dbContext, id);
+                query = query.Where(post => friendIds.Contains(post.UserId));
+            }
+        }
+
+        var posts = await query
+            .OrderByDescending(post => post.CreatedAt)
+            .Take(request.Limit)
             .ToListAsync(cancellationToken);
 
-        var postsById = posts.ToDictionary(post => post.Id);
-        var items = new List<PostResponse>(scored.Count);
-
-        foreach (var entry in scored)
+        var items = new List<PostResponse>(posts.Count);
+        foreach (var post in posts)
         {
-            if (!postsById.TryGetValue(entry.Item.PostId, out var post))
-            {
-                continue;
-            }
-
             items.Add(await SocialQueries.ToPostResponseAsync(
                 _dbContext,
                 _fileStorage,
                 post,
-                viewerId.Value,
+                viewerId,
                 cancellationToken));
         }
 

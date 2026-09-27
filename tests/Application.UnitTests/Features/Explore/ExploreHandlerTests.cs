@@ -153,7 +153,7 @@ public sealed class ExploreHandlerTests
     }
 
     [Fact]
-    public async Task ExplorePosts_RanksFriendAboveStranger_AndExcludesBlocked()
+    public async Task ExplorePosts_OrdersNewestFirst_AndExcludesBlocked()
     {
         await using var db = InMemoryDb.Create();
         var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 13, 12, 0, 0, TimeSpan.Zero));
@@ -174,7 +174,6 @@ public sealed class ExploreHandlerTests
         await db.SaveChangesAsync();
 
         var handler = new ExplorePostsQueryHandler(
-            CreateRecommendationService(db, time),
             db,
             new TestCurrentUser(viewer.Id),
             new Mock<IFileStorage>().Object);
@@ -182,8 +181,42 @@ public sealed class ExploreHandlerTests
         var result = await handler.Handle(new ExplorePostsQuery(20), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value![0].Id.Should().Be(friendPost.Id);
+        // Arkadaşlık artık sıralamayı etkilemiyor; yalnızca tarih belirliyor.
+        result.Value!.Select(item => item.Id)
+            .Should().ContainInOrder(strangerPost.Id, friendPost.Id);
         result.Value.Should().NotContain(item => item.Id == blockedPost.Id);
+    }
+
+    [Fact]
+    public async Task ExplorePosts_FriendsOnly_ReturnsOnlyFriendPosts()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 13, 12, 0, 0, TimeSpan.Zero));
+        var now = time.GetUtcNow();
+
+        var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
+        var friend = CreateUserWithProfile(db, "friend", "Friend", now);
+        var stranger = CreateUserWithProfile(db, "stranger", "Stranger", now);
+
+        Accept(db, viewer.Id, friend.Id, now);
+
+        var friendPost = Post.Create(friend.Id, "hi", now.AddHours(-2));
+        var strangerPost = Post.Create(stranger.Id, "yo", now.AddMinutes(-10));
+        db.Posts.AddRange(friendPost, strangerPost);
+        await db.SaveChangesAsync();
+
+        var handler = new ExplorePostsQueryHandler(
+            db,
+            new TestCurrentUser(viewer.Id),
+            new Mock<IFileStorage>().Object);
+
+        var result = await handler.Handle(
+            new ExplorePostsQuery(20, FriendsOnly: true),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Should().ContainSingle(item => item.Id == friendPost.Id);
+        result.Value.Should().NotContain(item => item.Id == strangerPost.Id);
     }
 
     private static RecommendationService CreateRecommendationService(

@@ -45,9 +45,12 @@ public sealed class ExploreController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Posts(
         [FromQuery] int limit = 20,
+        [FromQuery] bool friendsOnly = false,
         CancellationToken cancellationToken = default)
     {
-        var result = await Sender.Send(new ExplorePostsQuery(limit), cancellationToken);
+        var result = await Sender.Send(
+            new ExplorePostsQuery(limit, friendsOnly),
+            cancellationToken);
         return result.ToActionResult();
     }
 }
