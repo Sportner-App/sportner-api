@@ -64,26 +64,42 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Sosyal giriş yapılandırmasını açılışta zorunlu kılar. Yalnızca API
+    /// çağırmalı: Apple/Google token doğrulaması orada yapılıyor.
+    ///
+    /// Eksik yapılandırma sessizce geçtiğinde doğrulayıcılar boş string'i
+    /// beklenen audience sanıp her token'ı reddediyor ve kullanıcı "kimlik
+    /// doğrulanamadı" görüyordu — uygulama ise sorunsuz ayağa kalkmış
+    /// oluyordu. Bu yüzden API'de açılışta patlaması tercih ediliyor.
+    /// </summary>
+    public static IServiceCollection ValidateSocialAuthOptionsOnStart(
+        this IServiceCollection services)
+    {
+        services.AddOptions<GoogleAuthOptions>().ValidateOnStart();
+        services.AddOptions<AppleAuthOptions>().ValidateOnStart();
+
+        return services;
+    }
+
     private static IServiceCollection AddAuthenticationServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
-        // Sosyal giriş ayarları eksik olduğunda uygulama sorunsuz ayağa kalkıp
-        // yalnızca Apple/Google girişini bozuyordu: doğrulayıcılar boş string'i
-        // audience olarak kullanıp her token'ı reddediyor, kullanıcıya da genel
-        // bir "doğrulanamadı" mesajı dönüyordu. Artık eksik yapılandırma
-        // açılışta hata veriyor, sessizce üretime çıkmıyor.
+        // Yalnızca bağlanıyor, burada doğrulanmıyor: bu metot API ile birlikte
+        // üç worker tarafından da çağrılıyor ve worker'lar sosyal giriş
+        // yapmadığı için bu anahtarlar onların ortamında tanımlı değil.
+        // Doğrulamayı API kendi başlangıcında açıyor:
+        // ValidateSocialAuthOptionsOnStart()
         services.AddOptions<GoogleAuthOptions>()
             .Bind(configuration.GetSection(GoogleAuthOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
         services.AddOptions<AppleAuthOptions>()
             .Bind(configuration.GetSection(AppleAuthOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
         services.AddSingleton<ITokenHasher, TokenHasher>();
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();

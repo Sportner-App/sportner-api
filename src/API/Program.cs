@@ -29,6 +29,9 @@ builder.Host.UseSerilog((context, services, configuration) =>
 builder.Services.AddCustomCollection(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+// Apple/Google token doğrulaması yalnızca burada yapılıyor; worker'lar bu
+// yapılandırmayı taşımadığı için zorunluluk API'ye özel.
+builder.Services.ValidateSocialAuthOptionsOnStart();
 builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomLocalization();
 builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
