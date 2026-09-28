@@ -22,6 +22,22 @@ using Sportner.Application.Abstractions.Location;
 using Sportner.Infrastructure.Location;
 namespace Sportner.Infrastructure;
 
+/// <summary>
+/// Bu bileşim API ve üç worker tarafından paylaşılıyor, ortamları ise aynı
+/// değil: worker'lar yalnızca cron işleri çalıştırıyor, depolama/e-posta/adres
+/// anahtarlarını taşımıyorlar.
+///
+/// <para><b>Kural:</b> <see cref="AddInfrastructure"/> içinde açılışta zorunlu
+/// kılınan her şey, her host'ta gerçekten bulunan bir şey olmalı. Bir host'a
+/// özel zorunluluk, o host'un kendi çağırdığı ayrı bir metoda taşınır —
+/// <see cref="ValidateSocialAuthOptionsOnStart"/> bunun örneği.</para>
+///
+/// <para>Bu kural Apple/Google seçenekleri burada <c>ValidateOnStart</c> ile
+/// bağlandığı ve üç worker birden açılışta çöktüğü için yazıldı. Aynı tuzak
+/// depolama, e-posta ve Places seçenekleri için de geçerli; hepsi bilerek
+/// doğrulamasız bağlanıyor. <c>SharedCompositionTests</c> bu sözleşmeyi
+/// koruyor: buraya açılış doğrulaması eklenirse test kırmızıya döner.</para>
+/// </summary>
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
@@ -120,6 +136,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Doğrulamasız bağlanıyor. Depolamayı yalnızca API kullanıyor, ama bu
+        // metot worker'larda da çalışıyor: buraya ValidateOnStart eklemek
+        // onları açılışta düşürür. Zorunlu kılmak gerekirse API'nin kendi
+        // çağırdığı bir metoda koyun — ValidateSocialAuthOptionsOnStart gibi.
         services.Configure<SupabaseStorageOptions>(
             configuration.GetSection(SupabaseStorageOptions.SectionName));
 
@@ -140,6 +160,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Doğrulamasız bağlanıyor: anahtar boşsa Nominatim'e düşüyoruz, ayrıca
+        // bu metot worker'larda da çalışıyor. Bkz. sınıf başındaki kural.
         services.Configure<GooglePlacesOptions>(
             configuration.GetSection(GooglePlacesOptions.SectionName));
 
@@ -178,6 +200,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Doğrulamasız bağlanıyor: anahtar boşsa loglayan gönderene düşüyoruz,
+        // ayrıca bu metot worker'larda da çalışıyor. Bkz. sınıf başındaki kural.
         services.Configure<ResendOptions>(configuration.GetSection(ResendOptions.SectionName));
 
         services.AddHttpClient<ResendEmailSender>(client =>
