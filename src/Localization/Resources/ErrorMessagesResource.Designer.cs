@@ -1189,5 +1189,23 @@ namespace Sportner.Localization.Resources {
             }
         }
 
-    }
+            public static string Location_SearchFailed {
+            get {
+                return ResourceManager.GetString("Location_SearchFailed", resourceCulture);
+            }
+        }
+
+        public static string Location_PlaceNotFound {
+            get {
+                return ResourceManager.GetString("Location_PlaceNotFound", resourceCulture);
+            }
+        }
+
+        public static string Location_ReverseFailed {
+            get {
+                return ResourceManager.GetString("Location_ReverseFailed", resourceCulture);
+            }
+        }
+
+}
 }

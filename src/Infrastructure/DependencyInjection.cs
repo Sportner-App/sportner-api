@@ -17,6 +17,8 @@ using Sportner.Infrastructure.Persistence.Interceptors;
 using Sportner.Infrastructure.Persistence.Seed;
 using Sportner.Infrastructure.Storage;
 
+using Sportner.Application.Abstractions.Location;
+using Sportner.Infrastructure.Location;
 namespace Sportner.Infrastructure;
 
 public static class DependencyInjection
@@ -46,6 +48,7 @@ public static class DependencyInjection
 
         services.AddAuthenticationServices(configuration);
         services.AddStorageServices(configuration);
+        services.AddLocationServices(configuration);
         services.AddScoped<INotificationPublisher, InAppNotificationPublisher>();
         services.AddHttpClient<IPushSender, ExpoPushSender>(client =>
         {
@@ -104,6 +107,44 @@ public static class DependencyInjection
             configuration.GetSection(SupabaseStorageOptions.SectionName));
 
         services.AddHttpClient<IFileStorage, SupabaseFileStorage>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddLocationServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<GooglePlacesOptions>(
+            configuration.GetSection(GooglePlacesOptions.SectionName));
+
+        services.AddHttpClient<GooglePlaceProvider>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        });
+
+        services.AddHttpClient<NominatimPlaceProvider>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+            // Nominatim's usage policy requires an identifying User-Agent and
+            // rejects requests without one.
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "SportnerApi/1.0 (contact@sportner.app)");
+        });
+
+        // No Google Places key configured (local dev, or before billing is set
+        // up) → fall back to Nominatim so address search still works, instead
+        // of failing every lookup. Same shape as the email sender fallback.
+        services.AddScoped<IPlaceProvider>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<GooglePlacesOptions>>().Value;
+
+            return string.IsNullOrWhiteSpace(options.ApiKey)
+                ? provider.GetRequiredService<NominatimPlaceProvider>()
+                : provider.GetRequiredService<GooglePlaceProvider>();
+        });
 
         return services;
     }

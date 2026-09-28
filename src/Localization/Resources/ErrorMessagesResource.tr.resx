@@ -579,4 +579,13 @@
   <data name="Quest_NotAuthenticated" xml:space="preserve">
     <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
   </data>
+  <data name="Location_SearchFailed" xml:space="preserve">
+    <value>Adres araması şu anda yapılamıyor. Lütfen tekrar dene.</value>
+  </data>
+  <data name="Location_PlaceNotFound" xml:space="preserve">
+    <value>Seçilen adres bulunamadı.</value>
+  </data>
+  <data name="Location_ReverseFailed" xml:space="preserve">
+    <value>Seçilen nokta için adres bulunamadı.</value>
+  </data>
 </root>

@@ -579,4 +579,13 @@
   <data name="Quest_NotAuthenticated" xml:space="preserve">
     <value>The request is not associated with an authenticated user.</value>
   </data>
+  <data name="Location_SearchFailed" xml:space="preserve">
+    <value>Address search is temporarily unavailable. Please try again.</value>
+  </data>
+  <data name="Location_PlaceNotFound" xml:space="preserve">
+    <value>The selected address could not be found.</value>
+  </data>
+  <data name="Location_ReverseFailed" xml:space="preserve">
+    <value>No address could be found for the selected point.</value>
+  </data>
 </root>
