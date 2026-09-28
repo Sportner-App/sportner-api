@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Sportner.Infrastructure.Authentication;
 
 /// <summary>
@@ -9,5 +11,6 @@ public sealed class GoogleAuthOptions
 {
     public const string SectionName = "GoogleAuth";
 
+    [Required(AllowEmptyStrings = false)]
     public string WebClientId { get; set; } = string.Empty;
 }

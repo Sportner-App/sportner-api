@@ -65,8 +65,21 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-        services.Configure<GoogleAuthOptions>(configuration.GetSection(GoogleAuthOptions.SectionName));
-        services.Configure<AppleAuthOptions>(configuration.GetSection(AppleAuthOptions.SectionName));
+
+        // Sosyal giriş ayarları eksik olduğunda uygulama sorunsuz ayağa kalkıp
+        // yalnızca Apple/Google girişini bozuyordu: doğrulayıcılar boş string'i
+        // audience olarak kullanıp her token'ı reddediyor, kullanıcıya da genel
+        // bir "doğrulanamadı" mesajı dönüyordu. Artık eksik yapılandırma
+        // açılışta hata veriyor, sessizce üretime çıkmıyor.
+        services.AddOptions<GoogleAuthOptions>()
+            .Bind(configuration.GetSection(GoogleAuthOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<AppleAuthOptions>()
+            .Bind(configuration.GetSection(AppleAuthOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddSingleton<ITokenHasher, TokenHasher>();
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
