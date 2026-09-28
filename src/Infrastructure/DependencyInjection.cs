@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -106,7 +107,15 @@ public static class DependencyInjection
         services.Configure<SupabaseStorageOptions>(
             configuration.GetSection(SupabaseStorageOptions.SectionName));
 
-        services.AddHttpClient<IFileStorage, SupabaseFileStorage>();
+        // Somut tip olarak kaydedilip sarmalanıyor: yüklenen görseller depoya
+        // yazılmadan önce küçültülsün. IFileStorage bütün yükleme yollarının
+        // tek geçiş noktası, o yüzden altı çağrı yerinin hiçbirine dokunmak
+        // gerekmiyor — ileride eklenecekler de kapsanıyor.
+        services.AddHttpClient<SupabaseFileStorage>();
+
+        services.AddTransient<IFileStorage>(provider => new ResizingFileStorage(
+            provider.GetRequiredService<SupabaseFileStorage>(),
+            provider.GetRequiredService<ILogger<ResizingFileStorage>>()));
 
         return services;
     }
