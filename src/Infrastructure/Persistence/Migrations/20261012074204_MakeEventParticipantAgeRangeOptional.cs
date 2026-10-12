@@ -11,9 +11,14 @@ namespace Sportner.Infrastructure.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Age bounds become optional: null = no limit on that side.
-            migrationBuilder.DropCheckConstraint(
-                name: "CK_Events_ParticipantAgeRange",
-                table: "Events");
+            //
+            // IF EXISTS kullaniliyor: AddEventParticipationAgeRange gecmiste
+            // uygulanmis gorunuyor ama kisit production veritabaninda yok, bir
+            // noktada dusurulmus. EF'in DropCheckConstraint'i kosulsuz calisip
+            // "constraint does not exist" (42704) ile patliyor ve migration
+            // uygulama acilisinda calistigi icin API hic ayaga kalkmiyor.
+            migrationBuilder.Sql(
+                "ALTER TABLE \"Events\" DROP CONSTRAINT IF EXISTS \"CK_Events_ParticipantAgeRange\";");
 
             migrationBuilder.AlterColumn<int>(
                 name: "MinParticipantAge",
@@ -44,9 +49,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropCheckConstraint(
-                name: "CK_Events_ParticipantAgeRange",
-                table: "Events");
+            migrationBuilder.Sql(
+                "ALTER TABLE \"Events\" DROP CONSTRAINT IF EXISTS \"CK_Events_ParticipantAgeRange\";");
 
             // Unbounded sides fall back to the widest allowed range.
             migrationBuilder.Sql("UPDATE \"Events\" SET \"MinParticipantAge\" = 13 WHERE \"MinParticipantAge\" IS NULL;");
