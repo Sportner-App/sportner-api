@@ -66,6 +66,9 @@
   <data name="Event_ParticipantBirthDateMissing" xml:space="preserve">
     <value>Age cannot be verified because the profile has no birth date.</value>
   </data>
+  <data name="Event_ParticipantGenderMissing" xml:space="preserve">
+    <value>Gender cannot be verified because the profile has no gender.</value>
+  </data>
   <data name="Event_InvitationNotFound" xml:space="preserve">
     <value>An active invitation was not found for this event.</value>
   </data>

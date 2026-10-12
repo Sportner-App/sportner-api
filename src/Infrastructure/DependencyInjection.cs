@@ -98,6 +98,29 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Gercek e-posta gonderimini zorunlu kilar.
+    ///
+    /// <see cref="AddEmailServices"/> Resend anahtari bosken sessizce
+    /// <c>LoggingEmailSender</c>'a dusuyor. Bu yerelde kullanisli ama
+    /// production'da sessiz bir arizadir: dogrulama ve parola sifirlama kodlari
+    /// kimseye ulasmaz, uustelik bu hicbir yerde fark edilmez. Worker'lar
+    /// e-posta gondermedigi icin zorunluluk cagiran host'a birakildi (bkz.
+    /// sinif basindaki kural).
+    /// </summary>
+    public static IServiceCollection ValidateEmailOptionsOnStart(
+        this IServiceCollection services)
+    {
+        services.AddOptions<ResendOptions>()
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.ApiKey),
+                "Resend:ApiKey tanimli degil; dogrulama ve parola sifirlama "
+                + "e-postalari gonderilemez.")
+            .ValidateOnStart();
+
+        return services;
+    }
+
     private static IServiceCollection AddAuthenticationServices(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -149,9 +172,12 @@ public static class DependencyInjection
         // gerekmiyor — ileride eklenecekler de kapsanıyor.
         services.AddHttpClient<SupabaseFileStorage>();
 
-        services.AddTransient<IFileStorage>(provider => new ResizingFileStorage(
-            provider.GetRequiredService<SupabaseFileStorage>(),
-            provider.GetRequiredService<ILogger<ResizingFileStorage>>()));
+        // Sarmalama sirasi: dogrulama en disda. Kucultme katmani cozemedigi
+        // icerigi oldugu gibi gecirdigi icin, imza kontrolu ondan once calismali.
+        services.AddTransient<IFileStorage>(provider => new ValidatingFileStorage(
+            new ResizingFileStorage(
+                provider.GetRequiredService<SupabaseFileStorage>(),
+                provider.GetRequiredService<ILogger<ResizingFileStorage>>())));
 
         return services;
     }

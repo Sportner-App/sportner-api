@@ -91,9 +91,38 @@ internal static class NotificationActor
     }
 
     /// <summary>Formats a <see cref="NotificationsResource"/> template in the given language.</summary>
+    /// <summary>
+    /// Bir resx sablonunu secilen dilde doldurur.
+    ///
+    /// Bildirim uretimi cagiran islemin (etkinlik guncelleme, katilim onayi…)
+    /// icinde calisiyor. Eksik bir ceviri anahtari ya da sablonla uyusmayan
+    /// argumanlar yuzunden istisna atilirsa o islem de basarisiz oluyordu:
+    /// kullanici, ceviri dosyasindaki bir eksik yuzunden etkinligini
+    /// guncelleyemiyordu. Bildirim ikincil bir is, bu yuzden metin
+    /// uretilemedigi durumda bozulmus ama zararsiz bir metinle devam ediyoruz.
+    ///
+    /// Eksikligin fark edilmeden kalmamasi icin kaynak anahtarlarini dogrulayan
+    /// testler var (bkz. NotificationResourceTests).
+    /// </summary>
     internal static string Format(Language language, string resourceKey, params object[] args)
     {
-        var template = NotificationsResource.ResourceManager.GetString(resourceKey, language.ToCultureInfo())!;
-        return string.Format(CultureInfo.InvariantCulture, template, args);
+        var template = NotificationsResource.ResourceManager.GetString(
+            resourceKey,
+            language.ToCultureInfo());
+
+        if (string.IsNullOrEmpty(template))
+        {
+            return resourceKey;
+        }
+
+        try
+        {
+            return string.Format(CultureInfo.InvariantCulture, template, args);
+        }
+        catch (FormatException)
+        {
+            // Sablondaki yer tutucu sayisi argumanlarla uyusmuyor.
+            return template;
+        }
     }
 }

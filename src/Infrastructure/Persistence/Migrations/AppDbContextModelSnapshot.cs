@@ -186,13 +186,13 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .HasPrecision(9, 6)
                         .HasColumnType("numeric(9,6)");
 
-                    b.Property<int>("MaxParticipantAge")
+                    b.Property<int?>("MaxParticipantAge")
                         .HasColumnType("integer");
 
                     b.Property<int?>("MaxParticipants")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MinParticipantAge")
+                    b.Property<int?>("MinParticipantAge")
                         .HasColumnType("integer");
 
                     b.Property<Guid?>("OrganizationId")

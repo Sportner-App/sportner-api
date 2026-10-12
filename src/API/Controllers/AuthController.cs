@@ -232,8 +232,8 @@ public sealed class AuthController : ApiControllerBase
         string Email,
         string FirstName,
         string? LastName,
-    short? Gender,
-        DateOnly BirthDate);
+        short? Gender,
+        DateOnly? BirthDate);
 
     public sealed record LoginRequest(string Username, string Password);
 
@@ -254,8 +254,8 @@ public sealed class AuthController : ApiControllerBase
         string Username,
         string FirstName,
         string? LastName,
-        DateOnly BirthDate,
-        short Gender = 0);
+        DateOnly? BirthDate = null,
+        short? Gender = null);
 
     public sealed record RefreshTokenRequest(string RefreshToken);
 

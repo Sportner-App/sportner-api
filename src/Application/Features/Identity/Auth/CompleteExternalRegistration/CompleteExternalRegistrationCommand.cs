@@ -7,7 +7,7 @@ public sealed record CompleteExternalRegistrationCommand(
     string Username,
     string FirstName,
     string? LastName,
-    DateOnly BirthDate,
-    short Gender,
+    DateOnly? BirthDate,
+    short? Gender,
     string? IpAddress,
     string? UserAgent) : ICommand<AuthenticationResponse>;

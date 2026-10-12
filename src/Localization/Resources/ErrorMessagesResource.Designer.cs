@@ -163,6 +163,12 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("Event_ParticipantBirthDateMissing", resourceCulture);
             }
         }
+        
+        public static string Event_ParticipantGenderMissing {
+            get {
+                return ResourceManager.GetString("Event_ParticipantGenderMissing", resourceCulture);
+            }
+        }
 
         public static string Event_InvitationNotFound {
             get {

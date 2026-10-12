@@ -24,10 +24,6 @@ internal static class OnboardingErrors
         "Onboarding.SportRequired",
         ErrorMessagesResource.Onboarding_SportRequired);
 
-    internal static Error PersonalDetailsRequired => Error.Conflict(
-        "Onboarding.PersonalDetailsRequired",
-        ErrorMessagesResource.Onboarding_PersonalDetailsRequired);
-
     internal static Error AvatarRequired => Error.Conflict(
         "Onboarding.AvatarRequired",
         ErrorMessagesResource.Onboarding_AvatarRequired);

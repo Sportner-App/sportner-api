@@ -77,7 +77,7 @@ internal sealed class RegisterCommandHandler
             request.FirstName.Trim(),
             utcNow,
             string.IsNullOrWhiteSpace(request.LastName) ? null : request.LastName.Trim());
-        profile.UpdatePersonalDetails(request.Gender!.Value, request.BirthDate, utcNow);
+        profile.UpdatePersonalDetails(request.Gender, request.BirthDate, utcNow);
 
         user.AttachUserProfile(profile);
 

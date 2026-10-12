@@ -64,10 +64,24 @@ internal sealed class UpdateEventCommandHandler
                 var normalizedDescription = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
                 var normalizedAddress = request.Address.Trim();
 
-                if (@event.Title != normalizedTitle || @event.Description != normalizedDescription)
+                // Bildirim metni eski basligi kullaniyor; guncellemeden once sakla.
+                var previousTitle = @event.Title;
+                var titleChanged = @event.Title != normalizedTitle;
+                var descriptionChanged = @event.Description != normalizedDescription;
+
+                if (titleChanged || descriptionChanged)
                 {
                     @event.UpdateDetails(normalizedTitle, normalizedDescription, utcNow);
-                    changes.Add(EventUpdateField.Details);
+
+                    if (titleChanged)
+                    {
+                        changes.Add(EventUpdateField.Title);
+                    }
+
+                    if (descriptionChanged)
+                    {
+                        changes.Add(EventUpdateField.Description);
+                    }
                 }
 
                 if (@event.EventDate != request.EventDate || @event.DurationMinutes != request.DurationMinutes)
@@ -96,8 +110,8 @@ internal sealed class UpdateEventCommandHandler
 
                 if (changes.Count > 0)
                 {
-                    await EventRosterNotifier.NotifyApprovedParticipantsOfUpdateAsync(
-                        DbContext, _notificationPublisher, @event, changes, ct);
+                    await EventRosterNotifier.NotifyParticipantsOfUpdateAsync(
+                        DbContext, _notificationPublisher, @event, changes, previousTitle, ct);
                 }
 
                 return Result.Success();

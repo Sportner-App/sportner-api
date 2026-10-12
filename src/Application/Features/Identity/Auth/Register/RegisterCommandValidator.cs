@@ -30,16 +30,17 @@ internal sealed class RegisterCommandValidator : AbstractValidator<RegisterComma
             .NotEmpty()
             .MaximumLength(50);
 
+        // Gender and birth date are optional (App Store 5.1.1(v)); validated only when given.
         RuleFor(command => command.Gender)
-            .NotNull()
-            .InclusiveBetween((short)0, (short)2);
+            .InclusiveBetween((short)0, (short)2)
+            .When(command => command.Gender is not null);
 
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
         RuleFor(command => command.BirthDate)
-            .NotEmpty()
             .LessThanOrEqualTo(today.AddYears(-13))
             .WithMessage("Users must be at least 13 years old.")
             .GreaterThanOrEqualTo(today.AddYears(-120))
-            .WithMessage("Birth date is not plausible.");
+            .WithMessage("Birth date is not plausible.")
+            .When(command => command.BirthDate is not null);
     }
 }

@@ -80,6 +80,10 @@ internal static class EventErrors
         "Event.ParticipantBirthDateMissing",
         ErrorMessagesResource.Event_ParticipantBirthDateMissing);
 
+    internal static Error ParticipantGenderMissing => Error.Forbidden(
+        "Event.ParticipantGenderMissing",
+        ErrorMessagesResource.Event_ParticipantGenderMissing);
+
     internal static Error InvitationNotFound => Error.NotFound(
         "Event.InvitationNotFound",
         ErrorMessagesResource.Event_InvitationNotFound);

@@ -216,6 +216,73 @@ public sealed class ApplyToEventCommandHandlerTests
         result.Errors.Should().Contain(error => error.Code == "Event.ParticipantGenderNotEligible");
     }
 
+    [Fact]
+    public async Task Handle_Succeeds_WithoutBirthDate_WhenEventHasNoAgeRestriction()
+    {
+        var result = await ApplyWithoutBirthDateAsync(minParticipantAge: null, maxParticipantAge: null);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_FailsWithBirthDateMissing_WhenEventHasAgeRestriction()
+    {
+        var result = await ApplyWithoutBirthDateAsync(minParticipantAge: 18, maxParticipantAge: null);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Code == "Event.ParticipantBirthDateMissing");
+    }
+
+    [Fact]
+    public async Task Handle_FailsWithGenderMissing_WhenEventIsGenderRestricted()
+    {
+        var result = await ApplyWithoutBirthDateAsync(
+            minParticipantAge: null, maxParticipantAge: null, participantGender: 1);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Code == "Event.ParticipantGenderMissing");
+    }
+
+    private static async Task<Sportner.Application.Common.Results.Result<Sportner.Application.Features.Events.ApplyToEventResponse>> ApplyWithoutBirthDateAsync(
+        int? minParticipantAge,
+        int? maxParticipantAge,
+        short? participantGender = null)
+    {
+        var databaseName = Guid.NewGuid().ToString("N");
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero));
+
+        Guid eventId;
+        Guid applicantId;
+
+        await using (var seed = InMemoryDb.Create(databaseName))
+        {
+            var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+            var applicant = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+            applicant.AttachUserProfile(
+                UserProfile.Create(applicant.Id, $"user-{applicant.Id:N}"[..30], "User", time.GetUtcNow()));
+            var sport = Sport.Create("Football", 1, time.GetUtcNow(), "football");
+            var @event = DomainEvent.Create(
+                organizer.Id, sport.Id, "Match", time.GetUtcNow().AddHours(2),
+                90, 41m, 29m, "Istanbul", time.GetUtcNow(), maxParticipants: 8,
+                minParticipantAge: minParticipantAge,
+                maxParticipantAge: maxParticipantAge,
+                participantGender: participantGender);
+            @event.Publish(time.GetUtcNow());
+
+            seed.Users.AddRange(organizer, applicant);
+            seed.Sports.Add(sport);
+            seed.Events.Add(@event);
+            await seed.SaveChangesAsync();
+            eventId = @event.Id;
+            applicantId = applicant.Id;
+        }
+
+        await using var db = InMemoryDb.Create(databaseName);
+        var handler = new ApplyToEventCommandHandler(db, new TestCurrentUser(applicantId), time);
+
+        return await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
+    }
+
     private static UserProfile CreateEligibleProfile(Guid userId, DateTimeOffset utcNow)
     {
         var profile = UserProfile.Create(userId, $"user-{userId:N}"[..30], "User", utcNow);

@@ -17,10 +17,16 @@ public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventC
         RuleFor(command => command.MaxParticipants)
             .GreaterThan(0)
             .When(command => command.MaxParticipants is not null);
-        RuleFor(command => command.MinParticipantAge).InclusiveBetween(13, 120);
-        RuleFor(command => command.MaxParticipantAge).InclusiveBetween(13, 120);
+        // Age bounds are optional: null means the organizer set no limit on that side.
+        RuleFor(command => command.MinParticipantAge)
+            .InclusiveBetween(13, 120)
+            .When(command => command.MinParticipantAge is not null);
         RuleFor(command => command.MaxParticipantAge)
-            .GreaterThanOrEqualTo(command => command.MinParticipantAge);
+            .InclusiveBetween(13, 120)
+            .When(command => command.MaxParticipantAge is not null);
+        RuleFor(command => command.MaxParticipantAge)
+            .GreaterThanOrEqualTo(command => command.MinParticipantAge)
+            .When(command => command.MinParticipantAge is not null && command.MaxParticipantAge is not null);
         RuleFor(command => command.ParticipantGender)
             .Must(gender => gender is 1 or 2)
             .When(command => command.ParticipantGender is not null)

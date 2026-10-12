@@ -1,9 +1,8 @@
 using Serilog;
-using Microsoft.EntityFrameworkCore;
-using Sportner.Infrastructure.Persistence;
 using Sportner.API.Extensions.Authentication;
 using Sportner.API.Extensions.Collection;
 using Sportner.API.Extensions.Cors;
+using Sportner.API.Extensions.Forwarding;
 using Sportner.API.Extensions.HealthCheck;
 using Sportner.API.Extensions.Localization;
 using Sportner.API.Extensions.RateLimiting;
@@ -11,6 +10,7 @@ using Sportner.API.Extensions.Seeding;
 using Sportner.API.Extensions.Swagger;
 using Sportner.API.BackgroundServices;
 using Sportner.API.Hubs;
+using Sportner.API.Logging;
 using Sportner.API.Middleware;
 using Sportner.API.Realtime;
 using Sportner.Application;
@@ -24,6 +24,9 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
+        // SignalR token'ı query string'de geliyor; ham istek yolu loglandığı
+        // için maskelenmeden kaydedilirdi.
+        .Enrich.With<RedactQueryStringSecretsEnricher>()
         .WriteTo.Console());
 
 builder.Services.AddCustomCollection(builder.Configuration);
@@ -32,9 +35,16 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // Apple/Google token doğrulaması yalnızca burada yapılıyor; worker'lar bu
 // yapılandırmayı taşımadığı için zorunluluk API'ye özel.
 builder.Services.ValidateSocialAuthOptionsOnStart();
-builder.Services.AddCustomAuthentication(builder.Configuration);
+// Yerelde Resend anahtarsiz calisilabilir (kodlar loga yazilir); production'da
+// anahtarsiz baslamak, kodlarin kimseye ulasmadigi sessiz bir ariza olurdu.
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.ValidateEmailOptionsOnStart();
+}
+builder.Services.AddCustomAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddCustomLocalization();
 builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
+builder.Services.AddCustomForwardedHeaders();
 builder.Services.AddCustomRateLimiting();
 builder.Services.AddHostedService<ApiNotificationDeliveryService>();
 // Overrides Application's NullChatRealtimeNotifier — must register after AddApplication.
@@ -42,35 +52,28 @@ builder.Services.AddSingleton<IChatRealtimeNotifier, SignalRChatRealtimeNotifier
 
 var app = builder.Build();
 
-var cleanupEmail = Environment.GetEnvironmentVariable("SPORTNER_DELETE_TEST_USER_EMAIL");
-if (!string.IsNullOrWhiteSpace(cleanupEmail))
-{
-    await using var scope = app.Services.CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var normalizedEmail = cleanupEmail.Trim().ToLowerInvariant();
-    var userIds = await dbContext.UserExternalLogins
-        .Where(login => login.Email != null && login.Email.ToLower() == normalizedEmail)
-        .Select(login => login.UserId)
-        .Distinct()
-        .ToListAsync();
+// Proxy başlıklarını en başta çöz: aşağıdaki hiçbir middleware ham bağlantı
+// adresini görmemeli (özellikle UseHttpsRedirection ve UseRateLimiter).
+app.UseForwardedHeaders();
 
-    var deletedCount = await dbContext.Users
-        .Where(user => userIds.Contains(user.Id))
-        .ExecuteDeleteAsync();
-
-    Console.WriteLine($"Deleted {deletedCount} test user(s) for the requested email.");
-    return;
-}
+// Hata yanitlari da dahil her yanit kapsansin diye erkende.
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseCustomLocalization();
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
-app.UseCustomSwagger();
+// Swagger tüm uç noktaları, DTO'ları ve parametreleri açık eder; production'da
+// kapalı. Gerekirse Swagger:Enabled=true ile geçici olarak açılabilir.
+if (app.Configuration.GetValue("Swagger:Enabled", app.Environment.IsDevelopment()))
+{
+    app.UseCustomSwagger();
+}
 
 if (!app.Environment.IsDevelopment())
 {
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
 

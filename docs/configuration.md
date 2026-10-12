@@ -46,10 +46,36 @@ Supabase__ServiceRoleKey
 JwtSettings__Secret
 ```
 
+Outside the Development environment the API **refuses to start** unless these
+hold (see `AuthenticationExtension`):
+
+```text
+JwtSettings__Issuer      non-empty
+JwtSettings__Audience    non-empty
+JwtSettings__Secret      at least 32 bytes
+```
+
+An empty issuer or audience silently disables that check during token
+validation, which would let a token minted by any other service through. The
+secret floor matches HMAC-SHA256's 256-bit key size.
+
 ## Auth (username + password)
 
 V1 uses username/password (`POST /api/auth/register`, `POST /api/auth/login`). No OTP/SMS/2FA.
 
 Demo users (after seed / password backfill): username `ahmet` / `elif` / `mert` / `zeynep`, password `Demo123!`.
+
+### Email delivery
+
+Verification and password-reset codes go out through Resend. Outside
+Development the API **refuses to start** without `Resend__ApiKey`: falling back
+to the logging sender there would mean codes silently reach nobody.
+`Resend__FromAddress` must use a domain verified in the Resend dashboard
+(`sportner.app`).
+
+`EmailVerification__StaticCode` is gone. It pinned every issued code to one
+fixed value so friends could test without a verified domain — but password
+reset shares the same generator, so one guessable code unlocked every account.
+Delete the variable from any environment that still defines it.
 
 JWT settings remain under `JwtSettings`.

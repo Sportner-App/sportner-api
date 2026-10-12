@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Security.Cryptography;
 
 namespace Sportner.Application.Features.Identity.Auth;
@@ -12,19 +11,14 @@ internal static class EmailVerificationCodes
     public static readonly TimeSpan ResendCooldown = TimeSpan.FromSeconds(60);
 
     /// <summary>
-    /// Cryptographically random 6-digit code, zero-padded (e.g. "004821") — unless
-    /// EmailVerification__StaticCode is set (friend/QA testing without a verified email
-    /// domain), in which case every issued code is that fixed value. Remove the env var
-    /// once real delivery is set up; this must never be set outside a test environment.
+    /// Cryptographically random 6-digit code, zero-padded (e.g. "004821").
+    ///
+    /// Daha once EmailVerification__StaticCode ortam degiskeni bu uretimi sabit
+    /// bir degere cevirebiliyordu (dogrulanmis alan adi yokken QA icin). O
+    /// mekanizma kaldirildi: <see cref="PasswordResetCodes"/> de bu metodu
+    /// kullandigi icin sabit kod, parola sifirlamayi da tek bir tahmine
+    /// indiriyordu — yani her hesap icin ayni kod gecerliydi.
     /// </summary>
-    public static string Generate()
-    {
-        var staticCode = Environment.GetEnvironmentVariable("EmailVerification__StaticCode");
-        if (!string.IsNullOrWhiteSpace(staticCode) && staticCode.Length == 6 && staticCode.All(char.IsAsciiDigit))
-        {
-            return staticCode;
-        }
-
-        return RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-    }
+    public static string Generate() =>
+        RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
 }

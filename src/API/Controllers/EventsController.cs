@@ -552,8 +552,8 @@ public sealed class EventsController : ApiControllerBase
         decimal Longitude,
         string Address,
         int? MaxParticipants,
-        int MinParticipantAge,
-        int MaxParticipantAge,
+        int? MinParticipantAge,
+        int? MaxParticipantAge,
         short? SkillLevel = null,
         bool IsPaid = false,
         decimal? FeeAmount = null,
@@ -563,7 +563,7 @@ public sealed class EventsController : ApiControllerBase
     public sealed record CreateRecurringEventsRequest(
         Guid SportId, string Title, string? Description, DateTimeOffset EventDate,
         int DurationMinutes, decimal Latitude, decimal Longitude, string Address,
-        int? MaxParticipants, int MinParticipantAge, int MaxParticipantAge,
+        int? MaxParticipants, int? MinParticipantAge, int? MaxParticipantAge,
         int IntervalWeeks, int OccurrenceCount,
         bool IsPaid = false, decimal? FeeAmount = null, short? ParticipantGender = null);
 

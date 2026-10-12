@@ -35,9 +35,14 @@ public class Event : AggregateRoot
 
     public int? MaxParticipants { get; private set; }
 
-    public int MinParticipantAge { get; private set; }
+    /// <summary>Null means no lower age bound.</summary>
+    public int? MinParticipantAge { get; private set; }
 
-    public int MaxParticipantAge { get; private set; }
+    /// <summary>Null means no upper age bound.</summary>
+    public int? MaxParticipantAge { get; private set; }
+
+    /// <summary>True when the organizer set any age bound; only then is a birth date needed to join.</summary>
+    public bool HasAgeRestriction => MinParticipantAge is not null || MaxParticipantAge is not null;
 
     /// <summary>Null allows everyone; 1 allows women; 2 allows men.</summary>
     public short? ParticipantGender { get; private set; }
@@ -82,8 +87,8 @@ public class Event : AggregateRoot
         DateTimeOffset utcNow,
         string? description = null,
         int? maxParticipants = null,
-        int minParticipantAge = 18,
-        int maxParticipantAge = 60,
+        int? minParticipantAge = null,
+        int? maxParticipantAge = null,
         SkillLevel? skillLevel = null,
         bool isPaid = false,
         decimal? feeAmount = null,
@@ -129,7 +134,7 @@ public class Event : AggregateRoot
 
         @event.ApplyFee(isPaid, feeAmount);
 
-        if (@event.MinParticipantAge > @event.MaxParticipantAge)
+        if (@event.MinParticipantAge is { } min && @event.MaxParticipantAge is { } max && min > max)
         {
             throw new DomainException("Minimum participant age cannot exceed maximum participant age.");
         }
@@ -140,11 +145,23 @@ public class Event : AggregateRoot
         return @event;
     }
 
+    /// <summary>
+    /// True when the event is gender-restricted and the applicant has no usable gender
+    /// (none, or 0 = "prefer not to say"); the client then asks for it inline.
+    /// </summary>
+    public bool IsParticipantGenderMissing(short? gender) =>
+        ParticipantGender is not null && gender is null or 0;
+
     public bool IsParticipantGenderEligible(short? gender) =>
         ParticipantGender is null || ParticipantGender == gender;
 
     public bool IsParticipantAgeEligible(DateOnly birthDate)
     {
+        if (!HasAgeRestriction)
+        {
+            return true;
+        }
+
         var eventDay = DateOnly.FromDateTime(EventDate.UtcDateTime);
         var age = eventDay.Year - birthDate.Year;
         if (birthDate > eventDay.AddYears(-age))
@@ -152,7 +169,8 @@ public class Event : AggregateRoot
             age--;
         }
 
-        return age >= MinParticipantAge && age <= MaxParticipantAge;
+        return (MinParticipantAge is null || age >= MinParticipantAge)
+            && (MaxParticipantAge is null || age <= MaxParticipantAge);
     }
 
     public void UpdateDetails(string title, string? description, DateTimeOffset utcNow)
@@ -992,7 +1010,7 @@ public class Event : AggregateRoot
         return participantGender;
     }
 
-    private static int NormalizeParticipantAge(int age, string parameterName)
+    private static int? NormalizeParticipantAge(int? age, string parameterName)
     {
         if (age is < 13 or > 120)
         {

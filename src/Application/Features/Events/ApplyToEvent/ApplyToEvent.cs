@@ -99,18 +99,25 @@ internal sealed class ApplyToEventCommandHandler
             .Select(candidate => new { candidate.BirthDate, candidate.Gender })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (profile?.BirthDate is null)
+        // Birth date is only asked for when the organizer restricted ages; the client
+        // answers ParticipantBirthDateMissing with an inline birth-date prompt.
+        if (@event.HasAgeRestriction && profile?.BirthDate is null)
         {
             return Result<ApplyToEventResponse>.Failure(
                 EventErrors.ParticipantBirthDateMissing);
         }
 
-        if (!@event.IsParticipantAgeEligible(profile.BirthDate.Value))
+        if (profile?.BirthDate is { } birthDate && !@event.IsParticipantAgeEligible(birthDate))
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
         }
 
-        if (!@event.IsParticipantGenderEligible(profile.Gender))
+        if (@event.IsParticipantGenderMissing(profile?.Gender))
+        {
+            return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantGenderMissing);
+        }
+
+        if (!@event.IsParticipantGenderEligible(profile?.Gender))
         {
             return Result<ApplyToEventResponse>.Failure(EventErrors.ParticipantGenderNotEligible);
         }

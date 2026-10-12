@@ -6,6 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Sportner.API</RootNamespace>
     <UserSecretsId>201f11de-341a-4820-a1cf-e1389198995d</UserSecretsId>
+
+    <!--
+      Web SDK'si Server GC'yi varsayilan olarak aciyor: konteynerin gordugu her
+      cekirdek icin ayri heap acar ve bellegi bosa cikarmak yerine tutar. 2 vCPU
+      / 1 GB'lik bir konteynerde bu ~330 MB'a cikiyordu; oysa servisin CPU
+      kullanimi ortalama 0.004 vCPU.
+
+      Workstation GC bu olcekte hem yeterli hem daha az bellek tutuyor, duraklama
+      sureleri de daha kisa. Trafik artip throughput darbogaz olursa geri acilir
+      (once metrikten dogrula).
+    -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>

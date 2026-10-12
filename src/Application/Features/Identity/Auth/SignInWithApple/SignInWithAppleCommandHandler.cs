@@ -83,6 +83,7 @@ internal sealed class SignInWithAppleCommandHandler
                 _dbContext,
                 request.FirstName,
                 request.LastName,
+                identity.Email,
                 identity.ProviderUserId,
                 cancellationToken);
 

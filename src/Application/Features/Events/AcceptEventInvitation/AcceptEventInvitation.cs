@@ -63,12 +63,22 @@ internal sealed class AcceptEventInvitationCommandHandler
             .Select(candidate => new { candidate.BirthDate, candidate.Gender })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (profile?.BirthDate is null || !@event.IsParticipantAgeEligible(profile.BirthDate.Value))
+        if (@event.HasAgeRestriction && profile?.BirthDate is null)
+        {
+            return Result<EventResponse>.Failure(EventErrors.ParticipantBirthDateMissing);
+        }
+
+        if (profile?.BirthDate is { } birthDate && !@event.IsParticipantAgeEligible(birthDate))
         {
             return Result<EventResponse>.Failure(EventErrors.ParticipantAgeNotEligible);
         }
 
-        if (!@event.IsParticipantGenderEligible(profile.Gender))
+        if (@event.IsParticipantGenderMissing(profile?.Gender))
+        {
+            return Result<EventResponse>.Failure(EventErrors.ParticipantGenderMissing);
+        }
+
+        if (!@event.IsParticipantGenderEligible(profile?.Gender))
         {
             return Result<EventResponse>.Failure(EventErrors.ParticipantGenderNotEligible);
         }

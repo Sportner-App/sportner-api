@@ -7,6 +7,22 @@ public static class CorsExtensions
         IConfiguration configuration,
         IHostEnvironment environment)
     {
+        // Dogrulama burada, AddCors'un disinda: policy lambda'si ilk istege
+        // kadar calismadigi icin icine konan bir hata basta degil, trafik
+        // basladiktan sonra patlardi.
+        if (!environment.IsDevelopment())
+        {
+            var configured = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
+            if (configured.Any(origin => origin.Trim() == "*"))
+            {
+                throw new InvalidOperationException(
+                    "Cors:AllowedOrigins '*' iceremez: asagidaki politika AllowCredentials "
+                    + "kullaniyor, yani her siteye kimlik bilgisiyle erisim verilmis olurdu. "
+                    + "Izin verilecek origin'leri tek tek yazin.");
+            }
+        }
+
         services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
@@ -21,6 +37,8 @@ public static class CorsExtensions
                 }
                 else
                 {
+                    // Bos liste kasitli: mobil istemci CORS'a tabi degil, yani
+                    // production'da izinli tarayici origin'i olmamasi normal.
                     var origins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
                     policy.WithOrigins(origins)
                         .AllowAnyMethod()

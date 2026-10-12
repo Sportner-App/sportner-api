@@ -162,12 +162,12 @@ internal sealed class DiscoverEventsQueryHandler
 
         if (request.MinParticipantAge is { } minAge)
         {
-            events = events.Where(@event => @event.MaxParticipantAge >= minAge);
+            events = events.Where(@event => @event.MaxParticipantAge == null || @event.MaxParticipantAge >= minAge);
         }
 
         if (request.MaxParticipantAge is { } maxAge)
         {
-            events = events.Where(@event => @event.MinParticipantAge <= maxAge);
+            events = events.Where(@event => @event.MinParticipantAge == null || @event.MinParticipantAge <= maxAge);
         }
 
         if (request.OrganizerGender is { } gender)

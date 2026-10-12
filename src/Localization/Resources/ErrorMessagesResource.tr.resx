@@ -66,6 +66,9 @@
   <data name="Event_ParticipantBirthDateMissing" xml:space="preserve">
     <value>Profilde doğum tarihi olmadığı için yaş doğrulanamıyor.</value>
   </data>
+  <data name="Event_ParticipantGenderMissing" xml:space="preserve">
+    <value>Profilde cinsiyet bilgisi olmadığı için katılım koşulu doğrulanamıyor.</value>
+  </data>
   <data name="Event_InvitationNotFound" xml:space="preserve">
     <value>Bu etkinlik için aktif bir davet bulunamadı.</value>
   </data>

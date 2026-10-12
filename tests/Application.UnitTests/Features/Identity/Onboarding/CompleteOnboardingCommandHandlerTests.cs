@@ -69,7 +69,7 @@ public sealed class CompleteOnboardingCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Fails_WhenPersonalDetailsAreMissing()
+    public async Task Handle_Succeeds_WhenPersonalDetailsAreMissing()
     {
         await using var db = InMemoryDb.Create();
         var time = new FakeTimeProvider(UtcNow);
@@ -84,7 +84,8 @@ public sealed class CompleteOnboardingCommandHandlerTests
         var result = await CreateHandler(db, time, user.Id)
             .Handle(new CompleteOnboardingCommand(), CancellationToken.None);
 
-        result.Errors.Should().Contain(error => error.Code == "Onboarding.PersonalDetailsRequired");
+        // Gender and birth date are optional (App Store 5.1.1(v)).
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]

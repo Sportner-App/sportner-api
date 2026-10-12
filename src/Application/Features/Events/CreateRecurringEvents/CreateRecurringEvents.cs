@@ -18,8 +18,8 @@ public sealed record CreateRecurringEventsCommand(
     decimal Longitude,
     string Address,
     int? MaxParticipants,
-    int MinParticipantAge,
-    int MaxParticipantAge,
+    int? MinParticipantAge,
+    int? MaxParticipantAge,
     int IntervalWeeks,
     int OccurrenceCount,
     bool IsPaid = false,
@@ -48,9 +48,13 @@ public sealed class CreateRecurringEventsCommandValidator
         RuleFor(x => x.Longitude).InclusiveBetween(-180m, 180m);
         RuleFor(x => x.Address).NotEmpty();
         RuleFor(x => x.MaxParticipants).GreaterThan(0).When(x => x.MaxParticipants is not null);
-        RuleFor(x => x.MinParticipantAge).InclusiveBetween(13, 120);
+        RuleFor(x => x.MinParticipantAge).InclusiveBetween(13, 120)
+            .When(x => x.MinParticipantAge is not null);
         RuleFor(x => x.MaxParticipantAge).InclusiveBetween(13, 120)
-            .GreaterThanOrEqualTo(x => x.MinParticipantAge);
+            .When(x => x.MaxParticipantAge is not null);
+        RuleFor(x => x.MaxParticipantAge)
+            .GreaterThanOrEqualTo(x => x.MinParticipantAge)
+            .When(x => x.MinParticipantAge is not null && x.MaxParticipantAge is not null);
         RuleFor(x => x.ParticipantGender)
             .Must(gender => gender is 1 or 2)
             .When(x => x.ParticipantGender is not null);

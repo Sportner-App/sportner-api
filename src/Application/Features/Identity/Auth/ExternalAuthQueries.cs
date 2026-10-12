@@ -5,19 +5,29 @@ namespace Sportner.Application.Features.Identity.Auth;
 
 internal static class ExternalAuthQueries
 {
+    /// <summary>
+    /// Apple "Hide My Email" adresleri rastgele bir yerel bolum tasiyor
+    /// (ornegin <c>x7k2p9@privaterelay.appleid.com</c>); kullanici adi olarak
+    /// oneremeyiz.
+    /// </summary>
+    private const string AppleRelayDomain = "privaterelay.appleid.com";
+
     public static async Task<string> SuggestUsernameAsync(
         IApplicationDbContext dbContext,
         string? firstName,
         string? lastName,
+        string? email,
         string providerUserId,
         CancellationToken cancellationToken)
     {
-        var source = string.Concat(firstName, lastName);
-        var baseName = new string(source
-            .ToLowerInvariant()
-            .Normalize(System.Text.NormalizationForm.FormD)
-            .Where(character => char.IsAsciiLetterOrDigit(character))
-            .ToArray());
+        var baseName = Sanitize(string.Concat(firstName, lastName));
+
+        if (baseName.Length < 3)
+        {
+            // Apple ad ve soyadi yalnizca ilk yetkilendirmede donuyor; tekrar
+            // giriste elde kalan tek okunabilir ipucu e-posta oluyor.
+            baseName = Sanitize(LocalPartOf(email));
+        }
 
         if (baseName.Length < 3)
         {
@@ -48,5 +58,36 @@ internal static class ExternalAuthQueries
         }
 
         return $"sportner{Guid.NewGuid():N}"[..30];
+    }
+
+    private static string Sanitize(string? source) =>
+        new((source ?? string.Empty)
+            .ToLowerInvariant()
+            .Normalize(System.Text.NormalizationForm.FormD)
+            .Where(char.IsAsciiLetterOrDigit)
+            .ToArray());
+
+    private static string? LocalPartOf(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return null;
+        }
+
+        var separator = email.IndexOf('@');
+
+        if (separator <= 0)
+        {
+            return null;
+        }
+
+        var domain = email[(separator + 1)..];
+
+        if (domain.EndsWith(AppleRelayDomain, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return email[..separator];
     }
 }

@@ -14,13 +14,16 @@ internal sealed class CompleteExternalRegistrationCommandValidator
         RuleFor(command => command.FirstName).NotEmpty().MaximumLength(50);
         RuleFor(command => command.LastName).MaximumLength(50)
             .When(command => !string.IsNullOrWhiteSpace(command.LastName));
-        RuleFor(command => command.Gender).InclusiveBetween((short)0, (short)2);
+        RuleFor(command => command.Gender)
+            .InclusiveBetween((short)0, (short)2)
+            .When(command => command.Gender is not null);
 
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
         RuleFor(command => command.BirthDate)
             .LessThanOrEqualTo(today.AddYears(-13))
             .WithMessage("Users must be at least 13 years old.")
             .GreaterThanOrEqualTo(today.AddYears(-120))
-            .WithMessage("Birth date is not plausible.");
+            .WithMessage("Birth date is not plausible.")
+            .When(command => command.BirthDate is not null);
     }
 }

@@ -84,6 +84,7 @@ internal sealed class SignInWithGoogleCommandHandler
                 _dbContext,
                 identity.FirstName,
                 identity.LastName,
+                identity.Email,
                 identity.ProviderUserId,
                 cancellationToken);
 

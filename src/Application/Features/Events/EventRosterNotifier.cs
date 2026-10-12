@@ -12,17 +12,27 @@ namespace Sportner.Application.Features.Events;
 /// </summary>
 internal static class EventRosterNotifier
 {
-    internal static async Task NotifyApprovedParticipantsOfUpdateAsync(
+    /// <param name="previousTitle">
+    /// Guncelleme uygulanmadan onceki baslik. Bildirim metni bunu kullaniyor:
+    /// katilimci etkinligi eski adiyla taniyor, yeni adi yazarsak hangi
+    /// etkinlikten bahsedildigini anlamiyor.
+    /// </param>
+    internal static async Task NotifyParticipantsOfUpdateAsync(
         IApplicationDbContext dbContext,
         INotificationPublisher notificationPublisher,
         Domain.Events.Event @event,
         IReadOnlyCollection<EventUpdateField> changes,
+        string previousTitle,
         CancellationToken cancellationToken)
     {
+        // Bekleyenler de dahil: tekil guncelleme uclari (UpdateEventSchedule
+        // vb.) zaten onlara da haber veriyordu, toplu uc vermeyince ayni
+        // degisiklik hangi uctan yapildigina gore farkli kisilere ulasiyordu.
         var recipients = @event.Participants
             .Where(participant => participant.UserId is { } userId
                 && userId != @event.OrganizerUserId
-                && participant.Status == ParticipantStatus.Approved)
+                && participant.Status is ParticipantStatus.Pending
+                    or ParticipantStatus.Approved)
             .Select(participant => participant.UserId!.Value)
             .Distinct()
             .ToList();
@@ -45,7 +55,7 @@ internal static class EventRosterNotifier
                 recipientId,
                 NotificationType.EventUpdated,
                 NotificationActor.Format(language, "EventUpdated_Title", NotificationActor.FormatPrefix(organizerUsername, language)),
-                NotificationActor.Format(language, "EventUpdated_Body", @event.Title, string.Join(", ", changedLabels)),
+                NotificationActor.Format(language, "EventUpdated_Body", previousTitle, string.Join(", ", changedLabels)),
                 NotificationEntityType.Event,
                 @event.Id,
                 @event.OrganizerUserId,
@@ -106,7 +116,10 @@ internal static class EventRosterNotifier
 
 internal enum EventUpdateField
 {
-    Details,
+    // Baslik ve aciklama ayri: tek bir "etkinlik bilgileri" etiketi
+    // katilimciya neyin degistigini soylemiyordu.
+    Title,
+    Description,
     Schedule,
     Location,
     Capacity,

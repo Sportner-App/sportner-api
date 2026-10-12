@@ -8,15 +8,49 @@ namespace Sportner.API.Extensions.Authentication;
 
 public static class AuthenticationExtension
 {
+    /// <summary>
+    /// HMAC-SHA256 icin anahtarin en az 256 bit (32 bayt) olmasi gerekir; daha
+    /// kisa bir sir imzanin kaba kuvvetle uretilmesini kolaylastirir.
+    /// </summary>
+    private const int MinimumSecretBytes = 32;
+
     public static IServiceCollection AddCustomAuthentication(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         var section = configuration.GetSection("JwtSettings");
         var secret = section["Secret"]
             ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
         var issuer = section["Issuer"];
         var audience = section["Audience"];
+
+        // Bos birakilan issuer/audience dogrulamayi sessizce kapatiyor (asagidaki
+        // ValidateIssuer/ValidateAudience kosullarina bakin). Gelistirmede bu
+        // kullanissli; production'da baska bir servisin urettigi token'in kabul
+        // edilmesi anlamina gelir, o yuzden baslangicta durduruyoruz.
+        if (!environment.IsDevelopment())
+        {
+            if (string.IsNullOrWhiteSpace(issuer))
+            {
+                throw new InvalidOperationException(
+                    "JwtSettings:Issuer production ortaminda zorunludur; bos birakilirsa "
+                    + "token dogrulamasi issuer kontrolu yapmaz.");
+            }
+
+            if (string.IsNullOrWhiteSpace(audience))
+            {
+                throw new InvalidOperationException(
+                    "JwtSettings:Audience production ortaminda zorunludur; bos birakilirsa "
+                    + "token dogrulamasi audience kontrolu yapmaz.");
+            }
+
+            if (Encoding.UTF8.GetByteCount(secret) < MinimumSecretBytes)
+            {
+                throw new InvalidOperationException(
+                    $"JwtSettings:Secret en az {MinimumSecretBytes} bayt olmalidir.");
+            }
+        }
 
         var validationParameters = new TokenValidationParameters
         {

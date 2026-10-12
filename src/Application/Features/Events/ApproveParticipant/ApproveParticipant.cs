@@ -47,17 +47,23 @@ internal sealed class ApproveParticipantCommandHandler
                     .Select(profile => new { profile.BirthDate, profile.Gender })
                     .FirstOrDefaultAsync(ct);
 
-                if (participantProfile?.BirthDate is null)
+                if (@event.HasAgeRestriction && participantProfile?.BirthDate is null)
                 {
                     return Result.Failure(EventErrors.ParticipantBirthDateMissing);
                 }
 
-                if (!@event.IsParticipantAgeEligible(participantProfile.BirthDate.Value))
+                if (participantProfile?.BirthDate is { } birthDate
+                    && !@event.IsParticipantAgeEligible(birthDate))
                 {
                     return Result.Failure(EventErrors.ParticipantAgeNotEligible);
                 }
 
-                if (!@event.IsParticipantGenderEligible(participantProfile.Gender))
+                if (@event.IsParticipantGenderMissing(participantProfile?.Gender))
+                {
+                    return Result.Failure(EventErrors.ParticipantGenderMissing);
+                }
+
+                if (!@event.IsParticipantGenderEligible(participantProfile?.Gender))
                 {
                     return Result.Failure(EventErrors.ParticipantGenderNotEligible);
                 }
