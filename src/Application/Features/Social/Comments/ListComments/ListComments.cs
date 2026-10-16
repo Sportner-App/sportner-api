@@ -99,11 +99,15 @@ internal sealed class ListCommentsQueryHandler
                 row.comment.ReplyCount,
                 row.comment.CreatedAt,
                 row.comment.ReplyToUserId,
-                row.replyToProfile != null ? row.replyToProfile.Username : null))
+                row.replyToProfile != null ? row.replyToProfile.Username : null,
+                Array.Empty<PostMentionResponse>()))
             .ToListAsync(cancellationToken);
 
         var hasMore = page.Count > limit;
-        var items = hasMore ? page.Take(limit).ToList() : page;
+        var items = await CommentMentionQueries.AttachMentionsAsync(
+            dbContext: _dbContext,
+            comments: hasMore ? page.Take(limit).ToList() : page,
+            cancellationToken: cancellationToken);
         var nextCursor = hasMore && items.Count > 0 ? items[^1].Id.ToString("D") : null;
 
         return Result<CursorPagedResult<CommentResponse>>.Success(

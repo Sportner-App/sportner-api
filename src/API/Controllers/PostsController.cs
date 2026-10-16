@@ -80,7 +80,7 @@ public sealed class PostsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new UpdatePostContentCommand(postId, request.Content),
+            new UpdatePostContentCommand(postId, request.Content, request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult();
@@ -155,7 +155,9 @@ public sealed class PostsController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
-    public sealed record UpdatePostContentBody(string? Content);
+    public sealed record UpdatePostContentBody(
+        string? Content,
+        IReadOnlyList<Guid>? MentionedUserIds = null);
 
     public sealed record ReorderMediaBody(IReadOnlyList<Guid> OrderedMediaIds);
 }

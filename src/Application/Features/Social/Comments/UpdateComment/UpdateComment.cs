@@ -4,11 +4,15 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social.Posts;
 using Sportner.Application.Features.Social.Comments.CreateComment;
 
 namespace Sportner.Application.Features.Social.Comments.UpdateComment;
 
-public sealed record UpdateCommentCommand(Guid CommentId, string Content) : ICommand<CommentResponse>;
+public sealed record UpdateCommentCommand(
+    Guid CommentId,
+    string Content,
+    IReadOnlyList<Guid>? MentionedUserIds = null) : ICommand<CommentResponse>;
 
 public sealed class UpdateCommentCommandValidator : AbstractValidator<UpdateCommentCommand>
 {
@@ -58,7 +62,19 @@ internal sealed class UpdateCommentCommandHandler
             return Result<CommentResponse>.Failure(PostErrors.NotOwner);
         }
 
-        comment.UpdateContent(request.Content, _timeProvider.GetUtcNow());
+        var mentions = await PostMentionResolver.ResolveAsync(
+            _dbContext, userId, request.MentionedUserIds, cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<CommentResponse>.Failure(mentions.Errors);
+        }
+
+        var utcNow = _timeProvider.GetUtcNow();
+        comment.UpdateContent(request.Content, utcNow);
+        // Metinden cikarilan etiket kaydi da gitmeli: aksi halde kisi adi
+        // gecmeyen bir yorumda etiketli kalir.
+        comment.SetMentions(mentions.Value!, utcNow);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<CommentResponse>.Success(

@@ -37,7 +37,7 @@ public sealed class CommentsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new CreateCommentCommand(postId, request.Content),
+            new CreateCommentCommand(postId, request.Content, request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -67,13 +67,19 @@ public sealed class CommentsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new CreateReplyCommand(postId, parentCommentId, request.Content),
+            new CreateReplyCommand(
+                postId,
+                parentCommentId,
+                request.Content,
+                request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
     }
 
-    public sealed record CreateCommentBody(string Content);
+    public sealed record CreateCommentBody(
+        string Content,
+        IReadOnlyList<Guid>? MentionedUserIds = null);
 }
 
 [Authorize]
@@ -87,7 +93,7 @@ public sealed class CommentActionsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new UpdateCommentCommand(commentId, request.Content),
+            new UpdateCommentCommand(commentId, request.Content, request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult();
@@ -100,5 +106,7 @@ public sealed class CommentActionsController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
-    public sealed record UpdateCommentBody(string Content);
+    public sealed record UpdateCommentBody(
+        string Content,
+        IReadOnlyList<Guid>? MentionedUserIds = null);
 }

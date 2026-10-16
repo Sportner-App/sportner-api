@@ -7,6 +7,7 @@ using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
+using Sportner.Application.Features.Social.Posts;
 using Sportner.Application.Features.Social.Comments.CreateComment;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
@@ -14,7 +15,11 @@ using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Comments.CreateReply;
 
-public sealed record CreateReplyCommand(Guid PostId, Guid ParentCommentId, string Content)
+public sealed record CreateReplyCommand(
+    Guid PostId,
+    Guid ParentCommentId,
+    string Content,
+    IReadOnlyList<Guid>? MentionedUserIds = null)
     : ICommand<CommentResponse>;
 
 public sealed class CreateReplyCommandValidator : AbstractValidator<CreateReplyCommand>
@@ -130,6 +135,14 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
             return Result<CommentResponse>.Failure(PostErrors.Forbidden);
         }
 
+        var mentions = await PostMentionResolver.ResolveAsync(
+            _dbContext, userId, request.MentionedUserIds, cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<CommentResponse>.Failure(mentions.Errors);
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         var replyToUserId = target.IsReply() ? target.UserId : (Guid?)null;
         var reply = PostComment.CreateReply(
@@ -140,6 +153,7 @@ internal sealed class CreateReplyCommandHandler : ICommandHandler<CreateReplyCom
             utcNow,
             replyToUserId);
 
+        reply.SetMentions(mentions.Value!, utcNow);
         _dbContext.PostComments.Add(reply);
         root.IncrementReplyCount(utcNow);
         post.IncrementCommentCount(utcNow);

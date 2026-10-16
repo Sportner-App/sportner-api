@@ -6,6 +6,9 @@ namespace Sportner.Domain.Social;
 public class PostComment : AggregateRoot
 {
     private const int MaxContentLength = 1000;
+    private const int MaxMentions = 20;
+
+    private readonly List<CommentMention> _mentions = [];
 
     private PostComment()
     {
@@ -26,6 +29,42 @@ public class PostComment : AggregateRoot
     public int ReplyCount { get; private set; }
 
     public bool IsHidden { get; private set; }
+
+    public IReadOnlyCollection<CommentMention> Mentions => _mentions.AsReadOnly();
+
+    /// <summary>
+    /// Yorumun etiketlerini verilen listeyle değiştirir. Kimin
+    /// etiketlenebileceğine (arkadaşlık) uygulama katmanı karar verir.
+    /// </summary>
+    public void SetMentions(
+        IReadOnlyCollection<(Guid UserId, string Username)> mentions,
+        DateTimeOffset utcNow)
+    {
+        var distinct = mentions
+            .GroupBy(mention => mention.UserId)
+            .Select(group => group.First())
+            .ToList();
+
+        if (distinct.Count > MaxMentions)
+        {
+            throw new DomainException(
+                $"A comment may mention a maximum of {MaxMentions} people.");
+        }
+
+        if (distinct.Any(mention => mention.UserId == UserId))
+        {
+            throw new DomainException("A comment cannot mention its own author.");
+        }
+
+        _mentions.Clear();
+
+        foreach (var mention in distinct)
+        {
+            _mentions.Add(CommentMention.Create(Id, mention.UserId, mention.Username, utcNow));
+        }
+
+        Touch(utcNow);
+    }
 
     public static PostComment CreateRoot(
         Guid postId,

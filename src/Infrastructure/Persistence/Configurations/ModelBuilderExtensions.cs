@@ -158,9 +158,13 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.PostId, entity.DisplayOrder })
             .IsUnique();
 
-        // Ayni kisi bir gonderide bir kez etiketlenir.
+        // Ayni kisi bir gonderide/yorumda bir kez etiketlenir.
         modelBuilder.Entity<PostMention>()
             .HasIndex(entity => new { entity.PostId, entity.UserId })
+            .IsUnique();
+
+        modelBuilder.Entity<CommentMention>()
+            .HasIndex(entity => new { entity.CommentId, entity.UserId })
             .IsUnique();
 
         // Etiketlenen kullaniciya acik yabanci anahtar: gezinme ozelligi
@@ -168,6 +172,21 @@ internal static class ModelBuilderExtensions
         // var olmayan bir kimlik durabiliyor. PostLikes/PostComments ile ayni
         // davranis.
         modelBuilder.Entity<PostMention>()
+            .HasOne<Sportner.Domain.Users.User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Yorum iliskisi acikca tanimlaniyor: kural geregi EF principal adindan
+        // "PostCommentId" bekliyor ve bizim CommentId alanimizi FK saymayip
+        // golge bir sutun daha uretiyor.
+        modelBuilder.Entity<PostComment>()
+            .HasMany(entity => entity.Mentions)
+            .WithOne()
+            .HasForeignKey(entity => entity.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CommentMention>()
             .HasOne<Sportner.Domain.Users.User>()
             .WithMany()
             .HasForeignKey(entity => entity.UserId)
@@ -335,6 +354,7 @@ internal static class ModelBuilderExtensions
 
         // "Etiketlendigim gonderiler" sorgusu icin.
         modelBuilder.Entity<PostMention>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<CommentMention>().HasIndex(entity => entity.UserId);
 
         modelBuilder.Entity<Album>().HasIndex(entity => entity.OwnerUserId);
         modelBuilder.Entity<Album>().HasIndex(entity => entity.EventId);
@@ -555,6 +575,10 @@ internal static class ModelBuilderExtensions
             .HasMaxLength(2200);
 
         modelBuilder.Entity<PostMention>()
+            .Property(entity => entity.Username)
+            .HasMaxLength(30);
+
+        modelBuilder.Entity<CommentMention>()
             .Property(entity => entity.Username)
             .HasMaxLength(30);
 

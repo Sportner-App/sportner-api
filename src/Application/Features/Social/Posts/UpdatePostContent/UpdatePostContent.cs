@@ -5,10 +5,14 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social.Posts;
 
 namespace Sportner.Application.Features.Social.Posts.UpdatePostContent;
 
-public sealed record UpdatePostContentCommand(Guid PostId, string? Content) : ICommand<PostResponse>;
+public sealed record UpdatePostContentCommand(
+    Guid PostId,
+    string? Content,
+    IReadOnlyList<Guid>? MentionedUserIds = null) : ICommand<PostResponse>;
 
 public sealed class UpdatePostContentCommandValidator : AbstractValidator<UpdatePostContentCommand>
 {
@@ -62,7 +66,17 @@ internal sealed class UpdatePostContentCommandHandler
             return Result<PostResponse>.Failure(PostErrors.NotOwner);
         }
 
-        post.UpdateContent(request.Content, _timeProvider.GetUtcNow());
+        var mentions = await PostMentionResolver.ResolveAsync(
+            _dbContext, userId, request.MentionedUserIds, cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<PostResponse>.Failure(mentions.Errors);
+        }
+
+        var utcNow = _timeProvider.GetUtcNow();
+        post.UpdateContent(request.Content, utcNow);
+        post.SetMentions(mentions.Value!, utcNow);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<PostResponse>.Success(

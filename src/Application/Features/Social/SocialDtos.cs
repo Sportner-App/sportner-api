@@ -96,4 +96,5 @@ public sealed record CommentResponse(
     int ReplyCount,
     DateTimeOffset CreatedAt,
     Guid? ReplyToUserId,
-    string? ReplyToUsername);
+    string? ReplyToUsername,
+    IReadOnlyList<PostMentionResponse> Mentions);

@@ -81,6 +81,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<PostMention> PostMentions => Set<PostMention>();
 
+    public DbSet<CommentMention> CommentMentions => Set<CommentMention>();
+
     public DbSet<PostLike> PostLikes => Set<PostLike>();
 
     public DbSet<PostComment> PostComments => Set<PostComment>();

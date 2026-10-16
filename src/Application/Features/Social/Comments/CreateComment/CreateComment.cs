@@ -7,13 +7,17 @@ using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
+using Sportner.Application.Features.Social.Posts;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Social.Comments.CreateComment;
 
-public sealed record CreateCommentCommand(Guid PostId, string Content) : ICommand<CommentResponse>;
+public sealed record CreateCommentCommand(
+    Guid PostId,
+    string Content,
+    IReadOnlyList<Guid>? MentionedUserIds = null) : ICommand<CommentResponse>;
 
 public sealed class CreateCommentCommandValidator : AbstractValidator<CreateCommentCommand>
 {
@@ -82,8 +86,17 @@ internal sealed class CreateCommentCommandHandler
             return Result<CommentResponse>.Failure(PostErrors.Forbidden);
         }
 
+        var mentions = await PostMentionResolver.ResolveAsync(
+            _dbContext, userId, request.MentionedUserIds, cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<CommentResponse>.Failure(mentions.Errors);
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         var comment = PostComment.CreateRoot(post.Id, userId, request.Content, utcNow);
+        comment.SetMentions(mentions.Value!, utcNow);
         _dbContext.PostComments.Add(comment);
         post.IncrementCommentCount(utcNow);
 
@@ -102,6 +115,29 @@ internal sealed class CreateCommentCommandHandler
             post.Id,
             userId,
             cancellationToken);
+
+        // Etiketlenenler yorum sahibinden ayri bildirim alir. Gonderi sahibi de
+        // etiketlendiyse iki bildirim gelmesin diye o eleniyor.
+        foreach (var mention in mentions.Value!.Where(m => m.UserId != post.UserId))
+        {
+            var language = await NotificationActor.ResolveRecipientLanguageAsync(
+                _dbContext, mention.UserId, cancellationToken);
+
+            await _notificationPublisher.PublishAsync(
+                mention.UserId,
+                NotificationType.PostMentioned,
+                NotificationActor.Format(
+                    language, nameof(NotificationsResource.PostMentioned_Title)),
+                NotificationActor.Format(
+                    language,
+                    nameof(NotificationsResource.PostMentioned_Body),
+                    await NotificationActor.PrefixAsync(
+                        _dbContext, userId, language, cancellationToken)),
+                NotificationEntityType.Post,
+                post.Id,
+                userId,
+                cancellationToken);
+        }
 
         await _badgeAwarder.EvaluateAfterCommentCreatedAsync(userId, cancellationToken);
 
@@ -135,6 +171,19 @@ internal sealed class CreateCommentCommandHandler
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
+        var mentions = comment.Mentions
+            .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
+            .ToList();
+
+        // Yorum etiketler Include edilmeden yuklendiyse koleksiyon bos gelir.
+        if (mentions.Count == 0)
+        {
+            mentions = await dbContext.CommentMentions.AsNoTracking()
+                .Where(mention => mention.CommentId == comment.Id)
+                .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
+                .ToListAsync(cancellationToken);
+        }
+
         return new CommentResponse(
             comment.Id,
             comment.PostId,
@@ -148,6 +197,7 @@ internal sealed class CreateCommentCommandHandler
             comment.ReplyCount,
             comment.CreatedAt,
             comment.ReplyToUserId,
-            replyToUsername);
+            replyToUsername,
+            mentions);
     }
 }

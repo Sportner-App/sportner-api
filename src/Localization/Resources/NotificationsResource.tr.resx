@@ -160,10 +160,10 @@
     <value>"{0}" etkinliği {1} içinde başlıyor.</value>
   </data>
   <data name="PostMentioned_Title" xml:space="preserve">
-    <value>Bir gönderide etiketlendin</value>
+    <value>Etiketlendin</value>
   </data>
   <data name="PostMentioned_Body" xml:space="preserve">
-    <value>{0} seni bir gönderide etiketledi.</value>
+    <value>{0} seni bir paylaşımda etiketledi.</value>
   </data>
   <data name="EventAttendancePending_Title" xml:space="preserve">
     <value>Yoklamayı al</value>
