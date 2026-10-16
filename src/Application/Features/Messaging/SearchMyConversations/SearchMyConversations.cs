@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Common.Enums;
 
@@ -48,7 +49,7 @@ internal sealed class SearchMyConversationsQueryHandler
                 MessagingErrors.NotAuthenticated);
         }
 
-        var term = request.Q.Trim().ToLowerInvariant();
+        var term = SearchText.Normalize(request.Q);
         var utcNow = _timeProvider.GetUtcNow();
 
         var memberships = await _dbContext.ConversationMembers.AsNoTracking()
@@ -113,16 +114,17 @@ internal sealed class SearchMyConversationsQueryHandler
             .Where(conversation =>
             {
                 if (conversation.Title is not null
-                    && conversation.Title.ToLowerInvariant().Contains(term))
+                    && SearchText.Normalize(conversation.Title).Contains(term))
                 {
                     return true;
                 }
 
                 return peerRows.Any(peer =>
                     peer.ConversationId == conversation.Id
-                    && ((peer.Username is not null && peer.Username.ToLowerInvariant().Contains(term))
+                    && ((peer.Username is not null
+                            && SearchText.Normalize(peer.Username).Contains(term))
                         || (peer.FirstName is not null
-                            && peer.FirstName.ToLowerInvariant().Contains(term))));
+                            && SearchText.Normalize(peer.FirstName).Contains(term))));
             })
             .Select(conversation => conversation.Id)
             .Take(request.Take)

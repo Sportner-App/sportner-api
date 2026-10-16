@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Abstractions.Recommendations;
 using Sportner.Application.Common.Geo;
 using Sportner.Application.Features.Social;
@@ -377,8 +378,9 @@ internal sealed class RecommendationService : IRecommendationService
 
         if (!string.IsNullOrWhiteSpace(request.City))
         {
-            var city = request.City.Trim().ToLowerInvariant();
-            eventsQuery = eventsQuery.Where(@event => @event.Address.ToLower().Contains(city));
+            var city = SearchText.Normalize(request.City);
+            eventsQuery = eventsQuery.Where(@event =>
+                SearchText.Normalize(@event.Address).Contains(city));
         }
 
         if (originLat is { } lat

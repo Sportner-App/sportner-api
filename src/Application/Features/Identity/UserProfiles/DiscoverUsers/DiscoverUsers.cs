@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Common.Enums;
@@ -58,8 +59,8 @@ internal sealed class DiscoverUsersQueryHandler
         }
 
         var pagination = new PaginationRequest(request.Page, request.PageSize);
-        var search = request.Search?.Trim().ToLowerInvariant();
-        var city = request.City?.Trim().ToLowerInvariant();
+        var search = SearchText.Normalize(request.Search);
+        var city = SearchText.Normalize(request.City);
 
         var query =
             from profile in _dbContext.UserProfiles.AsNoTracking()
@@ -75,15 +76,18 @@ internal sealed class DiscoverUsersQueryHandler
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(profile =>
-                (profile.Username != null && profile.Username.ToLower().Contains(search))
-                || (profile.FirstName != null && profile.FirstName.ToLower().Contains(search))
-                || (profile.LastName != null && profile.LastName.ToLower().Contains(search)));
+                (profile.Username != null
+                    && SearchText.Normalize(profile.Username).Contains(search))
+                || (profile.FirstName != null
+                    && SearchText.Normalize(profile.FirstName).Contains(search))
+                || (profile.LastName != null
+                    && SearchText.Normalize(profile.LastName).Contains(search)));
         }
 
         if (!string.IsNullOrWhiteSpace(city))
         {
             query = query.Where(profile =>
-                profile.City != null && profile.City.ToLower() == city);
+                profile.City != null && SearchText.Normalize(profile.City) == city);
         }
 
         if (request.SportId is { } sportId)

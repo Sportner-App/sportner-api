@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Common.Enums;
 
@@ -44,7 +45,7 @@ internal sealed class SearchFriendsQueryHandler
                 FriendshipErrors.NotAuthenticated);
         }
 
-        var term = request.Q.Trim().ToLowerInvariant();
+        var term = SearchText.Normalize(request.Q);
 
         var query =
             from friendship in _dbContext.Friendships.AsNoTracking()
@@ -55,9 +56,10 @@ internal sealed class SearchFriendsQueryHandler
                 : friendship.RequesterUserId
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on friendUserId equals profile.UserId
-            where profile.Username.ToLower().Contains(term)
-                || profile.FirstName.ToLower().Contains(term)
-                || (profile.LastName != null && profile.LastName.ToLower().Contains(term))
+            where SearchText.Normalize(profile.Username).Contains(term)
+                || SearchText.Normalize(profile.FirstName).Contains(term)
+                || (profile.LastName != null
+                    && SearchText.Normalize(profile.LastName).Contains(term))
             orderby profile.Username
             select new FriendListItemResponse(
                 friendship.Id,

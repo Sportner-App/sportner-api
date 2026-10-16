@@ -3,6 +3,7 @@ using FluentValidation;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Geo;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
@@ -156,8 +157,9 @@ internal sealed class DiscoverEventsQueryHandler
 
         if (cityFilter is not null)
         {
-            var lowered = cityFilter.ToLowerInvariant();
-            events = events.Where(@event => @event.Address.ToLower().Contains(lowered));
+            var lowered = SearchText.Normalize(cityFilter);
+            events = events.Where(@event =>
+                SearchText.Normalize(@event.Address).Contains(lowered));
         }
 
         if (request.MinParticipantAge is { } minAge)

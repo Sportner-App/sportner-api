@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Messaging.SearchMessages;
@@ -53,7 +54,7 @@ internal sealed class SearchMessagesQueryHandler
             return Result<IReadOnlyList<MessageResponse>>.Failure(membership.Errors);
         }
 
-        var term = request.Q.Trim().ToLowerInvariant();
+        var term = SearchText.Normalize(request.Q);
         var member = membership.Value!.Members.First(candidate =>
             candidate.UserId == userId && candidate.IsActive());
 
@@ -62,7 +63,7 @@ internal sealed class SearchMessagesQueryHandler
                 message.ConversationId == request.ConversationId
                 && (member.ClearedAt == null || message.CreatedAt > member.ClearedAt)
                 && message.Content != null
-                && message.Content.ToLower().Contains(term))
+                && SearchText.Normalize(message.Content).Contains(term))
             .OrderByDescending(message => message.CreatedAt)
             .Take(request.Take)
             .Select(message => message.Id)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Localization;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
@@ -25,7 +26,7 @@ internal sealed class ListActiveSportsQueryHandler
         var preferEnglish = CatalogLocalization.PreferEnglish;
         var search = string.IsNullOrWhiteSpace(request.Search)
             ? null
-            : request.Search.Trim().ToLowerInvariant();
+            : SearchText.Normalize(request.Search);
 
         var sports = _dbContext.Sports.AsNoTracking()
             .Where(sport => sport.IsActive);
@@ -33,9 +34,10 @@ internal sealed class ListActiveSportsQueryHandler
         if (search is not null)
         {
             sports = sports.Where(sport =>
-                sport.Name.ToLower().Contains(search)
-                || (sport.NameEn != null && sport.NameEn.ToLower().Contains(search))
-                || sport.Slug.ToLower().Contains(search));
+                SearchText.Normalize(sport.Name).Contains(search)
+                || (sport.NameEn != null
+                    && SearchText.Normalize(sport.NameEn).Contains(search))
+                || SearchText.Normalize(sport.Slug).Contains(search));
         }
 
         if (!string.IsNullOrWhiteSpace(request.CategorySlug))

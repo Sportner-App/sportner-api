@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sportner.Application.Common.Search;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
@@ -25,6 +26,21 @@ internal static class ModelBuilderExtensions
         ConfigureDefaults(modelBuilder);
         ConfigureSmallIntColumns(modelBuilder);
         ConfigureRelationships(modelBuilder);
+        ConfigureSearchFunctions(modelBuilder);
+    }
+
+    /// <summary>
+    /// <see cref="SearchText.Normalize"/> çağrılarını veritabanındaki
+    /// <c>sportner_search_normalize</c> fonksiyonuna çevirir, böylece aynı
+    /// sadeleştirme hem bellekte hem SQL'de geçerli olur. Fonksiyonu
+    /// migration oluşturur; burada yalnızca eşleme tanımlanıyor.
+    /// </summary>
+    private static void ConfigureSearchFunctions(ModelBuilder modelBuilder)
+    {
+        modelBuilder
+            .HasDbFunction(() => SearchText.Normalize(default!))
+            .HasName("sportner_search_normalize")
+            .HasSchema("public");
     }
 
     private static void ConfigureUniqueIndexes(ModelBuilder modelBuilder)
