@@ -182,7 +182,12 @@ public class NotificationSetting : AggregateRoot
             NotificationType.EventRequestRejected => (true, true, false),
             NotificationType.EventReminder => (true, true, false),
             NotificationType.EventCancelled => (true, true, false),
-            NotificationType.PostLiked => (true, false, false),
+            // Beğeni de diğer etkileşimler gibi telefona düşer. Push kapalıyken
+            // bildirim yalnızca uygulama içinde birikiyordu ve kullanıcının bunu
+            // açmasının yolu yoktu: ayar uçları hazır ama uygulamada henüz ekranı
+            // yok. Hacim sorun olursa çözüm varsayılanı kapatmak değil, beğenileri
+            // toplu bildirime ("5 kişi beğendi") çevirmek olmalı.
+            NotificationType.PostLiked => (true, true, false),
             NotificationType.PostCommented => (true, true, false),
             NotificationType.CommentReplied => (true, true, false),
             NotificationType.BadgeEarned => (true, true, false),
