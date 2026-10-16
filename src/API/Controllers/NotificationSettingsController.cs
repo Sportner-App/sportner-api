@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sportner.API.Common;
 using Sportner.Application.Features.Notifications.GetMyNotificationSettings;
 using Sportner.Application.Features.Notifications.UpdateNotificationSetting;
+using Sportner.Application.Features.Notifications.UpdateNotificationSettings;
 
 namespace Sportner.API.Controllers;
 
@@ -14,6 +15,22 @@ public sealed class NotificationSettingsController : ApiControllerBase
     public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new GetMyNotificationSettingsQuery(), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    /// <summary>
+    /// Ayarlar ekranı türleri gruplar halinde sunuyor; tek anahtar onlarca türü
+    /// birden değiştirdiği için grup tek işlemde yazılır.
+    /// </summary>
+    [HttpPut]
+    public async Task<IActionResult> UpdateMany(
+        [FromBody] UpdateNotificationSettingsBody request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UpdateNotificationSettingsCommand(request.Settings),
+            cancellationToken);
+
         return result.ToActionResult();
     }
 
@@ -33,6 +50,9 @@ public sealed class NotificationSettingsController : ApiControllerBase
 
         return result.ToActionResult();
     }
+
+    public sealed record UpdateNotificationSettingsBody(
+        IReadOnlyList<NotificationSettingUpdate> Settings);
 
     public sealed record UpdateNotificationSettingBody(
         bool InAppEnabled,
