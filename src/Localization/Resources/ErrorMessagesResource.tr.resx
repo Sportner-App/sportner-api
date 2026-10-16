@@ -219,6 +219,9 @@
   <data name="Post_NotAuthenticated" xml:space="preserve">
     <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
   </data>
+  <data name="Post_MentionNotAllowed" xml:space="preserve">
+    <value>Yalnızca arkadaşlarını etiketleyebilirsin.</value>
+  </data>
   <data name="Post_NotFound" xml:space="preserve">
     <value>Gönderi bulunamadı.</value>
   </data>

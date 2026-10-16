@@ -219,6 +219,9 @@
   <data name="Post_NotAuthenticated" xml:space="preserve">
     <value>The request is not associated with an authenticated user.</value>
   </data>
+  <data name="Post_MentionNotAllowed" xml:space="preserve">
+    <value>You can only tag your friends.</value>
+  </data>
   <data name="Post_NotFound" xml:space="preserve">
     <value>The post was not found.</value>
   </data>

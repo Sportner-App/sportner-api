@@ -469,6 +469,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Post_MentionNotAllowed {
+            get {
+                return ResourceManager.GetString("Post_MentionNotAllowed", resourceCulture);
+            }
+        }
+
         public static string Post_NotFound {
             get {
                 return ResourceManager.GetString("Post_NotFound", resourceCulture);

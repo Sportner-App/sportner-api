@@ -59,6 +59,10 @@ internal static class PostErrors
         "Post.NotFound",
         ErrorMessagesResource.Post_NotFound);
 
+    internal static Error MentionNotAllowed => Error.Validation(
+        "Post.MentionNotAllowed",
+        ErrorMessagesResource.Post_MentionNotAllowed);
+
     internal static Error UserNotFound => Error.NotFound(
         "Post.UserNotFound",
         ErrorMessagesResource.Post_UserNotFound);

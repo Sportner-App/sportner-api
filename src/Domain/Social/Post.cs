@@ -8,8 +8,10 @@ public class Post : AggregateRoot
 {
     private const int MaxContentLength = 2200;
     private const int MaxMediaItems = 10;
+    private const int MaxMentions = 20;
 
     private readonly List<PostMedia> _media = [];
+    private readonly List<PostMention> _mentions = [];
 
     private Post()
     {
@@ -28,6 +30,8 @@ public class Post : AggregateRoot
     public bool IsHidden { get; private set; }
 
     public IReadOnlyCollection<PostMedia> Media => _media.AsReadOnly();
+
+    public IReadOnlyCollection<PostMention> Mentions => _mentions.AsReadOnly();
 
     public static Post Create(Guid userId, string? content, DateTimeOffset utcNow)
     {
@@ -102,6 +106,46 @@ public class Post : AggregateRoot
         Touch(utcNow);
 
         return media;
+    }
+
+    /// <summary>
+    /// Gönderinin etiketlerini verilen listeyle değiştirir.
+    ///
+    /// Düzenlemede de kullanıldığı için ekleme değil değiştirme: kullanıcı
+    /// metinden bir etiketi sildiğinde kaydın da gitmesi gerekiyor, yoksa
+    /// etiketlenen kişi gönderide adı geçmediği hâlde etiketli kalır.
+    ///
+    /// Kimin etiketlenebileceğine (arkadaşlık, engel) uygulama katmanı karar
+    /// verir; burada yalnızca sayı sınırı ve tekrarsızlık korunur.
+    /// </summary>
+    public void SetMentions(
+        IReadOnlyCollection<(Guid UserId, string Username)> mentions,
+        DateTimeOffset utcNow)
+    {
+        var distinct = mentions
+            .GroupBy(mention => mention.UserId)
+            .Select(group => group.First())
+            .ToList();
+
+        if (distinct.Count > MaxMentions)
+        {
+            throw new DomainException(
+                $"A post may mention a maximum of {MaxMentions} people.");
+        }
+
+        if (distinct.Any(mention => mention.UserId == UserId))
+        {
+            throw new DomainException("A post cannot mention its own author.");
+        }
+
+        _mentions.Clear();
+
+        foreach (var mention in distinct)
+        {
+            _mentions.Add(PostMention.Create(Id, mention.UserId, mention.Username, utcNow));
+        }
+
+        Touch(utcNow);
     }
 
     public string RemoveMedia(Guid mediaId, DateTimeOffset utcNow)

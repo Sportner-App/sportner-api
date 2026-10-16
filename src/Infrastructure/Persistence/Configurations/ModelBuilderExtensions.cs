@@ -158,6 +158,21 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.PostId, entity.DisplayOrder })
             .IsUnique();
 
+        // Ayni kisi bir gonderide bir kez etiketlenir.
+        modelBuilder.Entity<PostMention>()
+            .HasIndex(entity => new { entity.PostId, entity.UserId })
+            .IsUnique();
+
+        // Etiketlenen kullaniciya acik yabanci anahtar: gezinme ozelligi
+        // olmadigi icin EF bunu kendiliginden kurmuyor, kurulmazsa tabloda
+        // var olmayan bir kimlik durabiliyor. PostLikes/PostComments ile ayni
+        // davranis.
+        modelBuilder.Entity<PostMention>()
+            .HasOne<Sportner.Domain.Users.User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<AlbumMedia>()
             .HasIndex(entity => new { entity.AlbumId, entity.DisplayOrder })
             .IsUnique();
@@ -317,6 +332,9 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.UserId, entity.CreatedAt });
 
         modelBuilder.Entity<PostMedia>().HasIndex(entity => entity.PostId);
+
+        // "Etiketlendigim gonderiler" sorgusu icin.
+        modelBuilder.Entity<PostMention>().HasIndex(entity => entity.UserId);
 
         modelBuilder.Entity<Album>().HasIndex(entity => entity.OwnerUserId);
         modelBuilder.Entity<Album>().HasIndex(entity => entity.EventId);
@@ -535,6 +553,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Post>()
             .Property(entity => entity.Content)
             .HasMaxLength(2200);
+
+        modelBuilder.Entity<PostMention>()
+            .Property(entity => entity.Username)
+            .HasMaxLength(30);
 
         modelBuilder.Entity<PostMedia>()
             .Property(entity => entity.FileName)

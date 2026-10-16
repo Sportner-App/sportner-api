@@ -79,6 +79,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<PostMedia> PostMedia => Set<PostMedia>();
 
+    public DbSet<PostMention> PostMentions => Set<PostMention>();
+
     public DbSet<PostLike> PostLikes => Set<PostLike>();
 
     public DbSet<PostComment> PostComments => Set<PostComment>();

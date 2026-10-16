@@ -159,6 +159,12 @@
   <data name="EventReminder_Body" xml:space="preserve">
     <value>"{0}" starts in {1}.</value>
   </data>
+  <data name="PostMentioned_Title" xml:space="preserve">
+    <value>You were tagged in a post</value>
+  </data>
+  <data name="PostMentioned_Body" xml:space="preserve">
+    <value>{0} tagged you in a post.</value>
+  </data>
   <data name="EventAttendancePending_Title" xml:space="preserve">
     <value>Take attendance</value>
   </data>

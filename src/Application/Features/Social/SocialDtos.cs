@@ -70,7 +70,18 @@ public sealed record PostResponse(
     short MediaCount,
     bool LikedByMe,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<PostMediaResponse> Media);
+    IReadOnlyList<PostMediaResponse> Media,
+    IReadOnlyList<PostMentionResponse> Mentions);
+
+/// <summary>
+/// Gönderide etiketlenen kullanıcı. İstemci içerikteki "@kullanıcıadı"
+/// yazısını buradaki <paramref name="Username"/> ile eşleştirip
+/// <paramref name="UserId"/>'ye bağlıyor; etiket metne değil kimliğe
+/// bağlandığı için kişi adını değiştirse de bağlantı doğru kalıyor.
+/// </summary>
+public sealed record PostMentionResponse(
+    Guid UserId,
+    string Username);
 
 public sealed record CommentResponse(
     Guid Id,

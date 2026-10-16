@@ -3,12 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Gamification;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Quests;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Constants;
+using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 using Sportner.Domain.Social;
 
 namespace Sportner.Application.Features.Social.Posts.CreatePost;
@@ -21,7 +25,8 @@ public sealed record CreatePostMediaInput(
 
 public sealed record CreatePostCommand(
     string? Content,
-    IReadOnlyList<CreatePostMediaInput>? Media) : ICommand<PostResponse>;
+    IReadOnlyList<CreatePostMediaInput>? Media,
+    IReadOnlyList<Guid>? MentionedUserIds = null) : ICommand<PostResponse>;
 
 public sealed class CreatePostCommandValidator : AbstractValidator<CreatePostCommand>
 {
@@ -30,6 +35,9 @@ public sealed class CreatePostCommandValidator : AbstractValidator<CreatePostCom
         RuleFor(command => command.Content).MaximumLength(2200);
         RuleFor(command => command.Media).Must(media => media is null || media.Count <= 10)
             .WithMessage("A post may contain a maximum of 10 media items.");
+        RuleFor(command => command.MentionedUserIds)
+            .Must(ids => ids is null || ids.Count <= 20)
+            .WithMessage("A post may mention a maximum of 20 people.");
     }
 }
 
@@ -41,6 +49,7 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
     private readonly IFileStorage _fileStorage;
     private readonly IBadgeAwarder _badgeAwarder;
     private readonly IQuestProgressTracker _questProgressTracker;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public CreatePostCommandHandler(
         IApplicationDbContext dbContext,
@@ -48,8 +57,10 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
         TimeProvider timeProvider,
         IFileStorage fileStorage,
         IBadgeAwarder badgeAwarder,
-        IQuestProgressTracker questProgressTracker)
+        IQuestProgressTracker questProgressTracker,
+        INotificationPublisher notificationPublisher)
     {
+        _notificationPublisher = notificationPublisher;
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
@@ -96,8 +107,17 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
             }
         }
 
+        var mentions = await PostMentionResolver.ResolveAsync(
+            _dbContext, userId, request.MentionedUserIds, cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<PostResponse>.Failure(mentions.Errors);
+        }
+
         var utcNow = _timeProvider.GetUtcNow();
         var post = Post.Create(userId, request.Content, utcNow);
+        post.SetMentions(mentions.Value!, utcNow);
 
         if (request.Media is not null)
         {
@@ -152,6 +172,8 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
             1,
             cancellationToken);
 
+        await NotifyMentionedAsync(userId, post, mentions.Value!, cancellationToken);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<PostResponse>.Success(
@@ -161,5 +183,45 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
                 post,
                 userId,
                 cancellationToken));
+    }
+
+    private async Task NotifyMentionedAsync(
+        Guid authorUserId,
+        Post post,
+        IReadOnlyList<(Guid UserId, string Username)> mentions,
+        CancellationToken cancellationToken)
+    {
+        if (mentions.Count == 0)
+        {
+            return;
+        }
+
+        var authorUsername = await NotificationActor.ResolveUsernameAsync(
+            _dbContext, authorUserId, cancellationToken);
+
+        var languages = await NotificationActor.ResolveRecipientLanguagesAsync(
+            _dbContext,
+            mentions.Select(mention => mention.UserId).ToList(),
+            cancellationToken);
+
+        foreach (var mention in mentions)
+        {
+            var language = languages.GetValueOrDefault(mention.UserId);
+            var text = NotificationActor.Format(
+                language,
+                nameof(NotificationsResource.PostMentioned_Body),
+                NotificationActor.FormatPrefix(authorUsername, language));
+
+            await _notificationPublisher.PublishAsync(
+                mention.UserId,
+                NotificationType.PostMentioned,
+                NotificationActor.Format(
+                    language, nameof(NotificationsResource.PostMentioned_Title)),
+                text,
+                NotificationEntityType.Post,
+                post.Id,
+                authorUserId,
+                cancellationToken);
+        }
     }
 }

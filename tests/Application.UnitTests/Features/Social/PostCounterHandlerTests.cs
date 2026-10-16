@@ -53,7 +53,8 @@ public sealed class PostCounterHandlerTests
             time,
             fileStorage.Object,
             badgeAwarder.Object,
-            new Mock<IQuestProgressTracker>().Object);
+            new Mock<IQuestProgressTracker>().Object,
+            notifications.Object);
 
         var created = await createHandler.Handle(
             new CreatePostCommand("Hello Sportner", Media: null),

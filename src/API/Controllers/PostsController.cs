@@ -25,6 +25,10 @@ public sealed class PostsController : ApiControllerBase
     public async Task<IActionResult> Create(
         [FromForm] string? content,
         [FromForm] List<IFormFile>? files,
+        // Multipart gonderi oldugu icin etiketler de form alani: istemci
+        // etiketlenen her kullanici icin ayri bir mentionedUserIds girdisi
+        // gonderiyor.
+        [FromForm] List<Guid>? mentionedUserIds,
         CancellationToken cancellationToken)
     {
         var media = new List<CreatePostMediaInput>();
@@ -44,7 +48,10 @@ public sealed class PostsController : ApiControllerBase
         try
         {
             var result = await Sender.Send(
-                new CreatePostCommand(content, media.Count == 0 ? null : media),
+                new CreatePostCommand(
+                    content,
+                    media.Count == 0 ? null : media,
+                    mentionedUserIds is { Count: > 0 } ? mentionedUserIds : null),
                 cancellationToken);
 
             return result.ToActionResult(StatusCodes.Status201Created);

@@ -216,6 +216,7 @@ public class NotificationSetting : AggregateRoot
             NotificationType.EventUpdated => (true, true, false),
             NotificationType.ConversationMemberAdded => (true, true, false),
             NotificationType.EventAttendancePending => (true, true, false),
+            NotificationType.PostMentioned => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

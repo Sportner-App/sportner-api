@@ -246,6 +246,20 @@ internal static class SocialQueries
                 .ToList();
         }
 
+        var mentions = post.Mentions
+            .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
+            .ToList();
+
+        // Gonderi etiketler Include edilmeden yuklendiyse koleksiyon bos gelir;
+        // Media'daki ayni durum gibi burada da ayrica cekiliyor.
+        if (mentions.Count == 0)
+        {
+            mentions = await dbContext.PostMentions.AsNoTracking()
+                .Where(mention => mention.PostId == post.Id)
+                .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
+                .ToListAsync(cancellationToken);
+        }
+
         return new PostResponse(
             post.Id,
             post.UserId,
@@ -258,7 +272,8 @@ internal static class SocialQueries
             post.MediaCount,
             likedByMe,
             post.CreatedAt,
-            media);
+            media,
+            mentions);
     }
 
     private static PostMediaResponse ToPostMediaResponse(IFileStorage fileStorage, PostMedia item) =>

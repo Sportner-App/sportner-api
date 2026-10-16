@@ -44,6 +44,8 @@ public interface IApplicationDbContext
     DbSet<UserBlock> UserBlocks { get; }
     DbSet<Post> Posts { get; }
     DbSet<PostMedia> PostMedia { get; }
+
+    DbSet<PostMention> PostMentions { get; }
     DbSet<PostLike> PostLikes { get; }
     DbSet<PostComment> PostComments { get; }
     DbSet<Notification> Notifications { get; }
