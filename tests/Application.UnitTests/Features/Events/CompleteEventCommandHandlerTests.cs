@@ -76,6 +76,59 @@ public sealed class CompleteEventCommandHandlerTests
         capturedTitle.Should().BeNull();
     }
 
+    /// <summary>
+    /// Değerlendirmelerin açılması organizatörün yoklamayı almasına bağlı, o yüzden
+    /// etkinlik bitince istenen eylem bu. Bildirim gitmezse organizatörün tek şansı
+    /// uygulamayı açıp yoklama sheet'ine denk gelmek kalıyor.
+    /// </summary>
+    [Fact]
+    public async Task Handle_PromptsOrganizerForAttendance_WhenEventCompletes()
+    {
+        await using var db = InMemoryDb.Create();
+        var now = new DateTimeOffset(2026, 3, 2, 10, 0, 0, TimeSpan.Zero);
+        var time = new FakeTimeProvider(now);
+
+        var organizer = TestUsers.CreateActive("+905551110041", now);
+        var sport = Sport.Create("Futbol", 1, now, "futbol");
+
+        var @event = DomainEvent.Create(
+            organizer.Id, sport.Id, "Halı saha", now.AddHours(-2),
+            durationMinutes: 90, latitude: 41m, longitude: 29m, address: "Istanbul",
+            now.AddHours(-3), maxParticipants: 10);
+        @event.Publish(now.AddHours(-3));
+
+        db.Users.Add(organizer);
+        db.Sports.Add(sport);
+        db.Events.Add(@event);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        string? capturedTitle = null;
+        var notifications = new Mock<INotificationPublisher>();
+        notifications
+            .Setup(p => p.PublishAsync(
+                organizer.Id, NotificationType.EventAttendancePending,
+                It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<NotificationEntityType>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Guid, NotificationType, string, string, NotificationEntityType, Guid?, Guid?, CancellationToken>(
+                (_, _, title, _, _, _, _, _) => capturedTitle = title)
+            .Returns(Task.CompletedTask);
+
+        var handler = new CompleteEventCommandHandler(
+            db,
+            new TestCurrentUser(organizer.Id),
+            time,
+            Mock.Of<IBadgeAwarder>(),
+            Mock.Of<IQuestProgressTracker>(),
+            notifications.Object);
+
+        var result = await handler.Handle(new CompleteEventCommand(@event.Id), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue(because: string.Join("; ", result.Errors.Select(e => e.Message)));
+        capturedTitle.Should().Be("Yoklamayı al");
+    }
+
     [Fact]
     public async Task ConfirmAttendance_NotifiesThatParticipant_InTheirOwnLanguage()
     {

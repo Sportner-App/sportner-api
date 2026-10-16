@@ -159,6 +159,12 @@
   <data name="EventReminder_Body" xml:space="preserve">
     <value>"{0}" etkinliği {1} içinde başlıyor.</value>
   </data>
+  <data name="EventAttendancePending_Title" xml:space="preserve">
+    <value>Yoklamayı al</value>
+  </data>
+  <data name="EventAttendancePending_Body" xml:space="preserve">
+    <value>"{0}" sona erdi — kimlerin geldiğini işaretle ki değerlendirmeler açılsın.</value>
+  </data>
   <data name="EventReviewPrompt_Title" xml:space="preserve">
     <value>Katılımcıları değerlendir</value>
   </data>

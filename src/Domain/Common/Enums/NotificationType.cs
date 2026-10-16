@@ -36,5 +36,6 @@ public enum NotificationType : short
     EventFeeUpdated = 31,
     EventCapacityUpdated = 32,
     ConversationMemberAdded = 33,
-    EventUpdated = 34
+    EventUpdated = 34,
+    EventAttendancePending = 35
 }

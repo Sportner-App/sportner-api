@@ -159,6 +159,12 @@
   <data name="EventReminder_Body" xml:space="preserve">
     <value>"{0}" starts in {1}.</value>
   </data>
+  <data name="EventAttendancePending_Title" xml:space="preserve">
+    <value>Take attendance</value>
+  </data>
+  <data name="EventAttendancePending_Body" xml:space="preserve">
+    <value>"{0}" is over — mark who showed up so reviews can open.</value>
+  </data>
   <data name="EventReviewPrompt_Title" xml:space="preserve">
     <value>Rate your teammates</value>
   </data>

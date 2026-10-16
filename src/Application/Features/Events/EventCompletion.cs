@@ -43,6 +43,55 @@ internal static class EventCompletion
         // AttendanceConfirmation.ConfirmAsync herkese kendi bildirimini gönderiyor.
         // Organizatör yoklamayı hiç almazsa AttendanceAutoConfirmDispatcher bunu
         // AttendanceAutoConfirmGraceDays sonra devralıyor.
+        //
+        // Organizatöre bunun yerine yoklama bildirimi gidiyor: değerlendirmelerin
+        // açılması onun bir adımına bağlı, dolayısıyla istenen eylem bu.
+        await SendAttendancePromptAsync(
+            dbContext, @event, notificationPublisher, cancellationToken);
+    }
+
+    /// <summary>
+    /// Etkinlik bittiğinde organizatörden yoklamayı almasını ister. Yoklama
+    /// alınmadan kimse değerlendirme yapamıyor, yani bu adım atılmazsa etkinlik
+    /// otomatik onay devreye girene kadar kilitli kalıyor.
+    ///
+    /// Tamamlama birden fazla yoldan tetiklenebiliyor (zamanlanmış iş ve
+    /// organizatörün elle kapatması), o yüzden aynı (etkinlik, alıcı) çifti için
+    /// daha önce gönderilmişse tekrarlanmıyor.
+    /// </summary>
+    internal static async Task SendAttendancePromptAsync(
+        IApplicationDbContext dbContext,
+        Event @event,
+        INotificationPublisher notificationPublisher,
+        CancellationToken cancellationToken)
+    {
+        var alreadySent = await dbContext.Notifications.AsNoTracking().AnyAsync(
+            notification =>
+                notification.RecipientUserId == @event.OrganizerUserId
+                && notification.NotificationType == NotificationType.EventAttendancePending
+                && notification.EntityType == NotificationEntityType.Event
+                && notification.EntityId == @event.Id,
+            cancellationToken);
+
+        if (alreadySent)
+        {
+            return;
+        }
+
+        var language = await NotificationActor.ResolveRecipientLanguageAsync(
+            dbContext, @event.OrganizerUserId, cancellationToken);
+
+        await notificationPublisher.PublishAsync(
+            @event.OrganizerUserId,
+            NotificationType.EventAttendancePending,
+            NotificationActor.Format(
+                language, nameof(NotificationsResource.EventAttendancePending_Title)),
+            NotificationActor.Format(
+                language, nameof(NotificationsResource.EventAttendancePending_Body), @event.Title),
+            NotificationEntityType.Event,
+            @event.Id,
+            actorUserId: null,
+            cancellationToken);
     }
 
     /// <summary>

@@ -350,6 +350,18 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string EventAttendancePending_Title {
+            get {
+                return ResourceManager.GetString("EventAttendancePending_Title", resourceCulture);
+            }
+        }
+
+        public static string EventAttendancePending_Body {
+            get {
+                return ResourceManager.GetString("EventAttendancePending_Body", resourceCulture);
+            }
+        }
+
         public static string EventReviewPrompt_Title {
             get {
                 return ResourceManager.GetString("EventReviewPrompt_Title", resourceCulture);
