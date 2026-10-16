@@ -52,5 +52,11 @@ internal static class MessageMapping
             message.ReplyToMessageId,
             message.EditedAt,
             message.IsRedacted(),
-            message.CreatedAt);
+            message.CreatedAt,
+            // Sorgu Include etmediyse boş gelir; liste ucu ediyor.
+            message.Mentions
+                .Select(mention => new MessageMentionResponse(
+                    mention.UserId,
+                    mention.Username))
+                .ToList());
 }

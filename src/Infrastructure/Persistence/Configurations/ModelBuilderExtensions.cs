@@ -167,6 +167,10 @@ internal static class ModelBuilderExtensions
             .HasIndex(entity => new { entity.CommentId, entity.UserId })
             .IsUnique();
 
+        modelBuilder.Entity<MessageMention>()
+            .HasIndex(entity => new { entity.MessageId, entity.UserId })
+            .IsUnique();
+
         // Etiketlenen kullaniciya acik yabanci anahtar: gezinme ozelligi
         // olmadigi icin EF bunu kendiliginden kurmuyor, kurulmazsa tabloda
         // var olmayan bir kimlik durabiliyor. PostLikes/PostComments ile ayni
@@ -184,6 +188,18 @@ internal static class ModelBuilderExtensions
             .HasMany(entity => entity.Mentions)
             .WithOne()
             .HasForeignKey(entity => entity.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Message>()
+            .HasMany(entity => entity.Mentions)
+            .WithOne()
+            .HasForeignKey(entity => entity.MessageId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MessageMention>()
+            .HasOne<Sportner.Domain.Users.User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<CommentMention>()
@@ -355,6 +371,7 @@ internal static class ModelBuilderExtensions
         // "Etiketlendigim gonderiler" sorgusu icin.
         modelBuilder.Entity<PostMention>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<CommentMention>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<MessageMention>().HasIndex(entity => entity.UserId);
 
         modelBuilder.Entity<Album>().HasIndex(entity => entity.OwnerUserId);
         modelBuilder.Entity<Album>().HasIndex(entity => entity.EventId);
@@ -579,6 +596,10 @@ internal static class ModelBuilderExtensions
             .HasMaxLength(30);
 
         modelBuilder.Entity<CommentMention>()
+            .Property(entity => entity.Username)
+            .HasMaxLength(30);
+
+        modelBuilder.Entity<MessageMention>()
             .Property(entity => entity.Username)
             .HasMaxLength(30);
 

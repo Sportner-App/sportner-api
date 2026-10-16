@@ -547,6 +547,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Messaging_MentionNotAllowed {
+            get {
+                return ResourceManager.GetString("Messaging_MentionNotAllowed", resourceCulture);
+            }
+        }
+
         public static string Messaging_NotAuthenticated {
             get {
                 return ResourceManager.GetString("Messaging_NotAuthenticated", resourceCulture);

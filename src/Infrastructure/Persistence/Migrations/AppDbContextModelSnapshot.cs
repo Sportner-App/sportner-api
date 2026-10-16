@@ -771,6 +771,45 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Messaging.MessageMention", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("MessageId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MessageMentions");
+                });
+
             modelBuilder.Entity("Sportner.Domain.Moderation.Report", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2644,6 +2683,21 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Messaging.MessageMention", b =>
+                {
+                    b.HasOne("Sportner.Domain.Messaging.Message", null)
+                        .WithMany("Mentions")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Sportner.Domain.Moderation.Report", b =>
                 {
                     b.HasOne("Sportner.Domain.Moderation.ReportReason", null)
@@ -3013,6 +3067,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Sportner.Domain.Messaging.Conversation", b =>
                 {
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Messaging.Message", b =>
+                {
+                    b.Navigation("Mentions");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Social.Album", b =>

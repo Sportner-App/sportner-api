@@ -258,6 +258,9 @@
   <data name="Post_InvalidCursor" xml:space="preserve">
     <value>The pagination cursor is invalid.</value>
   </data>
+  <data name="Messaging_MentionNotAllowed" xml:space="preserve">
+    <value>You can only tag people in this conversation.</value>
+  </data>
   <data name="Messaging_NotAuthenticated" xml:space="preserve">
     <value>The request is not associated with an authenticated user.</value>
   </data>

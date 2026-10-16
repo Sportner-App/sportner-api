@@ -258,6 +258,9 @@
   <data name="Post_InvalidCursor" xml:space="preserve">
     <value>Sayfalama imleci geçersiz.</value>
   </data>
+  <data name="Messaging_MentionNotAllowed" xml:space="preserve">
+    <value>Yalnızca bu sohbetteki kişileri etiketleyebilirsin.</value>
+  </data>
   <data name="Messaging_NotAuthenticated" xml:space="preserve">
     <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
   </data>

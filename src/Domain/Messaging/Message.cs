@@ -6,6 +6,10 @@ namespace Sportner.Domain.Messaging;
 
 public class Message : AggregateRoot
 {
+    private const int MaxMentions = 20;
+
+    private readonly List<MessageMention> _mentions = [];
+
     private Message()
     {
     }
@@ -27,6 +31,42 @@ public class Message : AggregateRoot
     public Guid? ReplyToMessageId { get; private set; }
 
     public DateTimeOffset? EditedAt { get; private set; }
+
+    public IReadOnlyCollection<MessageMention> Mentions => _mentions.AsReadOnly();
+
+    /// <summary>
+    /// Mesajın etiketlerini verilen listeyle değiştirir. Kimin
+    /// etiketlenebileceğine (sohbet üyeliği) uygulama katmanı karar verir.
+    /// </summary>
+    public void SetMentions(
+        IReadOnlyCollection<(Guid UserId, string Username)> mentions,
+        DateTimeOffset utcNow)
+    {
+        var distinct = mentions
+            .GroupBy(mention => mention.UserId)
+            .Select(group => group.First())
+            .ToList();
+
+        if (distinct.Count > MaxMentions)
+        {
+            throw new DomainException(
+                $"A message may mention a maximum of {MaxMentions} people.");
+        }
+
+        if (distinct.Any(mention => mention.UserId == SenderUserId))
+        {
+            throw new DomainException("A message cannot mention its own sender.");
+        }
+
+        _mentions.Clear();
+
+        foreach (var mention in distinct)
+        {
+            _mentions.Add(MessageMention.Create(Id, mention.UserId, mention.Username, utcNow));
+        }
+
+        Touch(utcNow);
+    }
 
     public static Message CreateText(
         Guid conversationId,

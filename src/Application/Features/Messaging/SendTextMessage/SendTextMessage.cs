@@ -15,7 +15,8 @@ namespace Sportner.Application.Features.Messaging.SendTextMessage;
 public sealed record SendTextMessageCommand(
     Guid ConversationId,
     string Content,
-    Guid? ReplyToMessageId = null) : ICommand<MessageResponse>;
+    Guid? ReplyToMessageId = null,
+    IReadOnlyList<Guid>? MentionedUserIds = null) : ICommand<MessageResponse>;
 
 public sealed class SendTextMessageCommandValidator : AbstractValidator<SendTextMessageCommand>
 {
@@ -113,6 +114,14 @@ internal sealed class SendTextMessageCommandHandler
             }
         }
 
+        var mentions = await MessageMentionResolver.ResolveAsync(
+            _dbContext, conversation, userId, request.MentionedUserIds, cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<MessageResponse>.Failure(mentions.Errors);
+        }
+
         var message = Message.CreateText(
             conversation.Id,
             userId,
@@ -120,9 +129,15 @@ internal sealed class SendTextMessageCommandHandler
             utcNow,
             request.ReplyToMessageId);
 
+        message.SetMentions(mentions.Value!, utcNow);
         _dbContext.Messages.Add(message);
 
-        await NotifyOtherMembersAsync(conversation, userId, request.Content, cancellationToken);
+        await NotifyOtherMembersAsync(
+            conversation,
+            userId,
+            request.Content,
+            mentions.Value!.Select(mention => mention.UserId).ToHashSet(),
+            cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -139,15 +154,21 @@ internal sealed class SendTextMessageCommandHandler
         Conversation conversation,
         Guid senderUserId,
         string content,
+        IReadOnlySet<Guid> mentionedUserIds,
         CancellationToken cancellationToken)
     {
         var utcNow = _timeProvider.GetUtcNow();
         var preview = content.Length <= 120 ? content : content[..117] + "...";
+
+        // Etiketlenen kişi sessize alma filtresini aşar. Grup sohbetinde
+        // etiketlemenin tüm anlamı bu: sohbeti susturmuş biri, doğrudan kendisine
+        // seslenildiğinde haberdar olmalı. Önizlemede adı geçtiği için bildirimin
+        // neden geldiği de görünür oluyor.
         var recipients = conversation.Members
             .Where(member =>
                 member.IsActive()
                 && member.UserId != senderUserId
-                && !member.IsMuted(utcNow))
+                && (!member.IsMuted(utcNow) || mentionedUserIds.Contains(member.UserId)))
             .Select(member => member.UserId)
             .ToList();
 

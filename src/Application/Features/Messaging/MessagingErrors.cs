@@ -12,6 +12,10 @@ internal static class MessagingErrors
         "Messaging.NotAuthenticated",
         ErrorMessagesResource.Messaging_NotAuthenticated);
 
+    internal static Error MentionNotAllowed => Error.Validation(
+        "Messaging.MentionNotAllowed",
+        ErrorMessagesResource.Messaging_MentionNotAllowed);
+
     internal static Error ConversationNotFound => Error.NotFound(
         "Messaging.ConversationNotFound",
         ErrorMessagesResource.Messaging_ConversationNotFound);

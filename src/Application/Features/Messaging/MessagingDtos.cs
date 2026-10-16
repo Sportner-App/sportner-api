@@ -57,4 +57,14 @@ public sealed record MessageResponse(
     Guid? ReplyToMessageId,
     DateTimeOffset? EditedAt,
     bool IsRedacted,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<MessageMentionResponse> Mentions);
+
+/// <summary>
+/// Mesajda etiketlenen kullanıcı. İstemci içerikteki "@kullanıcıadı" yazısını
+/// <paramref name="Username"/> ile eşleştirip <paramref name="UserId"/>'ye
+/// bağlıyor.
+/// </summary>
+public sealed record MessageMentionResponse(
+    Guid UserId,
+    string Username);

@@ -36,7 +36,11 @@ public sealed class MessagesController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new SendTextMessageCommand(conversationId, request.Content, request.ReplyToMessageId),
+            new SendTextMessageCommand(
+                conversationId,
+                request.Content,
+                request.ReplyToMessageId,
+                request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -104,7 +108,10 @@ public sealed class MessagesController : ApiControllerBase
         return result.ToActionResult();
     }
 
-    public sealed record SendTextRequest(string Content, Guid? ReplyToMessageId = null);
+    public sealed record SendTextRequest(
+        string Content,
+        Guid? ReplyToMessageId = null,
+        IReadOnlyList<Guid>? MentionedUserIds = null);
 
     public sealed record EditMessageRequest(string Content);
 }

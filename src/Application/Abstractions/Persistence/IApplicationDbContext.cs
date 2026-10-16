@@ -48,6 +48,8 @@ public interface IApplicationDbContext
     DbSet<PostMention> PostMentions { get; }
 
     DbSet<CommentMention> CommentMentions { get; }
+
+    DbSet<MessageMention> MessageMentions { get; }
     DbSet<PostLike> PostLikes { get; }
     DbSet<PostComment> PostComments { get; }
     DbSet<Notification> Notifications { get; }

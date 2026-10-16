@@ -58,6 +58,7 @@ internal sealed class ListMessagesQueryHandler
         };
 
         var query = _dbContext.Messages.AsNoTracking()
+            .Include(message => message.Mentions)
             .Where(message => message.ConversationId == request.ConversationId);
 
         var member = membership.Value!.Members.First(candidate =>
