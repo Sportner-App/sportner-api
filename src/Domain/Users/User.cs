@@ -705,11 +705,24 @@ public class User : AggregateRoot
         return OnboardingCompletedAt is not null;
     }
 
+    /// <summary>
+    /// Whether the account is in good standing and may produce content.
+    ///
+    /// Deliberately does not call <see cref="CanAuthenticate"/>: that one also
+    /// requires a credential to exist, and for a social sign-up the only
+    /// credential is the <c>ExternalLogins</c> collection — a backing field that
+    /// is empty unless the caller included it. Every content handler loads the
+    /// user without that Include, so the check used to reject anyone who signed
+    /// up with Google or Apple: no events, no posts, no comments, no
+    /// organizations. Whoever reaches a content handler already passed JWT
+    /// authentication, so which credential they hold is settled by then.
+    ///
+    /// <see cref="UserStatus.Active"/> already excludes PendingVerification,
+    /// Suspended, Banned and Deleted.
+    /// </summary>
     public bool CanCreateContent()
     {
-        return CanAuthenticate()
-            && Status is not UserStatus.Suspended
-            && Status is not UserStatus.Banned;
+        return Status is UserStatus.Active;
     }
 
     private UserSport FindSport(Guid sportId)
