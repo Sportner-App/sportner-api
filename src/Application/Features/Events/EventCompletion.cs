@@ -31,13 +31,18 @@ internal static class EventCompletion
             1,
             cancellationToken);
 
-        // Participants only become review-eligible once their attendance is confirmed, which
-        // domain rules require to happen AFTER the event completes (see ConfirmAttendance) — so
-        // at this exact moment only the organizer is already eligible to review. Each
-        // participant gets their own review-prompt notification when their attendance is
-        // confirmed instead (ConfirmAttendanceCommandHandler).
-        await SendReviewPromptAsync(
-            dbContext, @event, @event.OrganizerUserId, notificationPublisher, cancellationToken);
+        // Burada değerlendirme bildirimi gönderilmiyor. Daha önce organizatöre
+        // gönderiliyordu, "bu anda yalnızca organizatör değerlendirmeye uygun"
+        // varsayımıyla — ama CompleteIfDue yalnızca durumu Completed yapıyor,
+        // kimsenin yoklamasını almıyor. Dolayısıyla organizatör dahil hiç kimsenin
+        // CanReview değeri true olmuyor ve bildirime dokunan organizatör
+        // "şu an puanlanacak kimse yok, organizatör yoklamayı tamamlayınca açılır"
+        // diyen boş bir ekrana düşüyordu: kendisini beklemesi söyleniyordu.
+        //
+        // Gerçek bildirim zaten doğru anda gidiyor: yoklama onaylanınca
+        // AttendanceConfirmation.ConfirmAsync herkese kendi bildirimini gönderiyor.
+        // Organizatör yoklamayı hiç almazsa AttendanceAutoConfirmDispatcher bunu
+        // AttendanceAutoConfirmGraceDays sonra devralıyor.
     }
 
     /// <summary>

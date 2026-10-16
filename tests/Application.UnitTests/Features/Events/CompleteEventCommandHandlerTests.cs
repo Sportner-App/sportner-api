@@ -21,8 +21,15 @@ namespace Sportner.Application.UnitTests.Features.Events;
 /// </summary>
 public sealed class CompleteEventCommandHandlerTests
 {
+    /// <summary>
+    /// Tamamlanma anında değerlendirme bildirimi gitmez. CompleteIfDue yalnızca
+    /// durumu çeviriyor, kimsenin yoklamasını almıyor; organizatör dahil hiç
+    /// kimsenin CanReview değeri true olmuyor. Bildirim gönderilirse organizatör
+    /// boş bir değerlendirme ekranına düşüyor ve orada kendisini beklemesi
+    /// söyleniyor. Gerçek bildirim yoklama onaylanınca gidiyor (aşağıdaki test).
+    /// </summary>
     [Fact]
-    public async Task Handle_NotifiesOrganizer_WhenEventCompletes()
+    public async Task Handle_DoesNotPromptForReviews_WhenEventCompletes()
     {
         await using var db = InMemoryDb.Create();
         var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 24, 5, 0, 0, TimeSpan.Zero));
@@ -66,7 +73,7 @@ public sealed class CompleteEventCommandHandlerTests
         var result = await handler.Handle(new CompleteEventCommand(@event.Id), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue(because: string.Join("; ", result.Errors.Select(e => e.Message)));
-        capturedTitle.Should().Be("Katılımcıları değerlendir");
+        capturedTitle.Should().BeNull();
     }
 
     [Fact]
