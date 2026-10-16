@@ -220,11 +220,16 @@ public class User : AggregateRoot
     }
 
     /// <summary>
-    /// Self-service account deletion. Soft delete only (Status field, per project
-    /// convention) — no row or related data is physically removed. Revokes every
-    /// active session so any token issued before deletion stops working immediately,
-    /// since <see cref="EnsureNotDeleted"/> would otherwise block the usual
-    /// <see cref="RevokeAllSessions"/> call once the status flips.
+    /// Self-service account deletion. Soft delete (Status field, per project
+    /// convention): the row, the profile and every piece of content stay in place.
+    /// Revokes every active session so any token issued before deletion stops
+    /// working immediately, since <see cref="EnsureNotDeleted"/> would otherwise
+    /// block the usual <see cref="RevokeAllSessions"/> call once the status flips.
+    ///
+    /// Identifiers are released as well — see the comment in the body.
+    ///
+    /// Sessions and external logins must be loaded by the caller; both are backing
+    /// collections, so an un-included navigation silently does nothing here.
     /// </summary>
     public void Delete(DateTimeOffset utcNow)
     {
@@ -237,6 +242,26 @@ public class User : AggregateRoot
         {
             session.Revoke(utcNow);
         }
+
+        // Kimliğe işaret eden alanlar serbest bırakılır, böylece kullanıcı aynı
+        // e-posta ya da aynı Google/Apple hesabıyla yeniden kayıt olabilir.
+        //
+        // Bunlar bırakılmazsa dönen kullanıcı kalıcı olarak kilitleniyor:
+        // e-posta "IX_Users_Email" kısmi benzersiz indeksine takıldığı için
+        // kayıt EmailTaken ile, sosyal hesap ise silinmiş kullanıcıya bağlı
+        // kaldığı için giriş AccountNotAccessible ile reddediliyordu ve
+        // kullanıcının yapabileceği hiçbir şey kalmıyordu.
+        //
+        // Profil, gönderiler, mesajlar ve etkinlik geçmişi silinmez; yalnızca
+        // oturum açmaya yarayan belirteçler kaldırılır.
+        Email = null;
+        EmailVerifiedAt = null;
+        EmailVerificationCodeHash = null;
+        EmailVerificationCodeExpiresAt = null;
+        PasswordHash = null;
+        PasswordResetCodeHash = null;
+        PasswordResetCodeExpiresAt = null;
+        _externalLogins.Clear();
 
         Status = UserStatus.Deleted;
         Touch(utcNow);

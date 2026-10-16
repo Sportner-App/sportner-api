@@ -29,7 +29,12 @@ internal sealed class DeleteAccountCommandHandler : ICommandHandler<DeleteAccoun
             return Result.Failure(AuthErrors.InvalidRefreshToken);
         }
 
+        // Her ikisi de yedek alan (backing field) üzerinden eşlenen koleksiyon:
+        // Include edilmezse User.Delete() boş liste üzerinde dönüyor, oturumlar
+        // iptal edilmiyor ve sosyal hesap bağlantıları silinmeden kalıyordu.
         var user = await _dbContext.Users
+            .Include(candidate => candidate.Sessions)
+            .Include(candidate => candidate.ExternalLogins)
             .FirstOrDefaultAsync(candidate => candidate.Id == userId, cancellationToken);
 
         if (user is null)
