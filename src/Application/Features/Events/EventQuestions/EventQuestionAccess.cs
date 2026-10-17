@@ -65,6 +65,17 @@ internal static class EventQuestionAccess
             : EventQnAAuthorRole.Visitor;
     }
 
+    /// <summary>
+    /// Sorgu Include etmediyse koleksiyon boş gelir; liste ucu ediyor.
+    /// </summary>
+    internal static IReadOnlyList<EventQuestionMentionResponse> ToMentionResponses(
+        Domain.Events.EventQuestion question) =>
+        question.Mentions
+            .Select(mention => new EventQuestionMentionResponse(
+                mention.UserId,
+                mention.Username))
+            .ToList();
+
     internal static string Preview(string content) =>
         content.Length <= 120 ? content : content[..117] + "...";
 
@@ -109,6 +120,7 @@ internal static class EventQuestionAccess
             question.ReplyCount,
             (short)ResolveRole(question.AuthorUserId, organizerUserId, participantUserIds),
             question.CreatedAt,
-            replies ?? []);
+            replies ?? [],
+            ToMentionResponses(question));
     }
 }

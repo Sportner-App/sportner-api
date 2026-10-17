@@ -59,4 +59,14 @@ public sealed record EventQuestionResponse(
     int ReplyCount,
     short AuthorRole,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<EventQuestionResponse> Replies);
+    IReadOnlyList<EventQuestionResponse> Replies,
+    IReadOnlyList<EventQuestionMentionResponse> Mentions);
+
+/// <summary>
+/// Soruda etiketlenen kullanıcı. İstemci metindeki "@kullanıcıadı" yazısını
+/// <paramref name="Username"/> ile eşleştirip <paramref name="UserId"/>'ye
+/// bağlıyor.
+/// </summary>
+public sealed record EventQuestionMentionResponse(
+    Guid UserId,
+    string Username);

@@ -20,6 +20,10 @@ internal static class EventErrors
         "Event.NotFound",
         ErrorMessagesResource.Event_NotFound);
 
+    internal static Error MentionNotAllowed => Error.Validation(
+        "Event.MentionNotAllowed",
+        ErrorMessagesResource.Event_MentionNotAllowed);
+
     internal static Error SportNotFound => Error.NotFound(
         "Event.SportNotFound",
         ErrorMessagesResource.Event_SportNotFound);

@@ -447,6 +447,45 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.ToTable("EventQuestions");
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Events.EventQuestionMention", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("QuestionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("QuestionId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("EventQuestionMentions");
+                });
+
             modelBuilder.Entity("Sportner.Domain.Events.EventReminderDispatch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2596,6 +2635,21 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Events.EventQuestionMention", b =>
+                {
+                    b.HasOne("Sportner.Domain.Events.EventQuestion", null)
+                        .WithMany("Mentions")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Sportner.Domain.Events.EventReminderDispatch", b =>
                 {
                     b.HasOne("Sportner.Domain.Events.Event", null)
@@ -3062,6 +3116,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Navigation("Participants");
 
                     b.Navigation("Waitlist");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Events.EventQuestion", b =>
+                {
+                    b.Navigation("Mentions");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Messaging.Conversation", b =>

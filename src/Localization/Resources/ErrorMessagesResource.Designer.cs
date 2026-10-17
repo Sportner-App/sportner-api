@@ -62,6 +62,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Event_MentionNotAllowed {
+            get {
+                return ResourceManager.GetString("Event_MentionNotAllowed", resourceCulture);
+            }
+        }
+
         public static string Event_NotFound {
             get {
                 return ResourceManager.GetString("Event_NotFound", resourceCulture);

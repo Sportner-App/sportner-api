@@ -15,6 +15,9 @@
   <data name="Event_NotAuthenticated" xml:space="preserve">
     <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
   </data>
+  <data name="Event_MentionNotAllowed" xml:space="preserve">
+    <value>Yalnızca bu etkinliktekileri etiketleyebilirsin.</value>
+  </data>
   <data name="Event_NotFound" xml:space="preserve">
     <value>Etkinlik bulunamadı.</value>
   </data>

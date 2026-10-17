@@ -85,6 +85,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<MessageMention> MessageMentions => Set<MessageMention>();
 
+    public DbSet<EventQuestionMention> EventQuestionMentions => Set<EventQuestionMention>();
+
     public DbSet<PostLike> PostLikes => Set<PostLike>();
 
     public DbSet<PostComment> PostComments => Set<PostComment>();

@@ -13,7 +13,10 @@ using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.EventQuestions.AskEventQuestion;
 
-public sealed record AskEventQuestionCommand(Guid EventId, string Content)
+public sealed record AskEventQuestionCommand(
+    Guid EventId,
+    string Content,
+    IReadOnlyList<Guid>? MentionedUserIds = null)
     : ICommand<EventQuestionResponse>;
 
 public sealed class AskEventQuestionCommandValidator
@@ -122,6 +125,20 @@ internal sealed class AskEventQuestionCommandHandler
             return Result<EventQuestionResponse>.Failure(EventQuestionErrors.InvalidContent);
         }
 
+        var mentions = await EventQuestionMentionResolver.ResolveAsync(
+            _dbContext,
+            @event.Id,
+            @event.OrganizerUserId,
+            userId,
+            request.MentionedUserIds,
+            cancellationToken);
+
+        if (mentions.IsFailure)
+        {
+            return Result<EventQuestionResponse>.Failure(mentions.Errors);
+        }
+
+        question.SetMentions(mentions.Value!, utcNow);
         _dbContext.EventQuestions.Add(question);
 
         var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
@@ -140,7 +157,51 @@ internal sealed class AskEventQuestionCommandHandler
             userId,
             cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        // Etiketlenenler ayrica bildirilir; organizator zaten soru bildirimini aldi.
+
+        foreach (var mention in mentions.Value!.Where(
+
+            candidate => candidate.UserId != @event.OrganizerUserId))
+
+        {
+
+            var mentionLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+
+                _dbContext, mention.UserId, cancellationToken);
+
+        
+
+            await _notificationPublisher.PublishAsync(
+
+                mention.UserId,
+
+                NotificationType.PostMentioned,
+
+                NotificationActor.Format(
+
+                    mentionLanguage, nameof(NotificationsResource.PostMentioned_Title)),
+
+                NotificationActor.Format(
+
+                    mentionLanguage,
+
+                    nameof(NotificationsResource.PostMentioned_Body),
+
+                    await NotificationActor.PrefixAsync(
+
+                        _dbContext, userId, mentionLanguage, cancellationToken)),
+
+                NotificationEntityType.Event,
+
+                @event.Id,
+
+                userId,
+
+                cancellationToken);
+
+        }
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
         var participants = await EventQuestionAccess.ListParticipantUserIdsAsync(
             _dbContext,

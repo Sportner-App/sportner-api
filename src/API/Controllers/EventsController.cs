@@ -520,7 +520,10 @@ public sealed class EventsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new AskEventQuestionCommand(eventId, request.Content),
+            new AskEventQuestionCommand(
+                eventId,
+                request.Content,
+                request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -536,7 +539,11 @@ public sealed class EventsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new ReplyToEventQuestionCommand(eventId, questionId, request.Content),
+            new ReplyToEventQuestionCommand(
+                eventId,
+                questionId,
+                request.Content,
+                request.MentionedUserIds),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -599,5 +606,7 @@ public sealed class EventsController : ApiControllerBase
         string? Description,
         short? Visibility);
 
-    public sealed record AskEventQuestionBody(string Content);
+    public sealed record AskEventQuestionBody(
+        string Content,
+        IReadOnlyList<Guid>? MentionedUserIds = null);
 }

@@ -8,6 +8,10 @@ public class EventQuestion : AggregateRoot
     public const int MinContentLength = 5;
     public const int MaxContentLength = 1000;
 
+    private const int MaxMentions = 20;
+
+    private readonly List<EventQuestionMention> _mentions = [];
+
     private EventQuestion()
     {
     }
@@ -23,6 +27,43 @@ public class EventQuestion : AggregateRoot
     public string Content { get; private set; } = string.Empty;
 
     public int ReplyCount { get; private set; }
+
+    public IReadOnlyCollection<EventQuestionMention> Mentions => _mentions.AsReadOnly();
+
+    /// <summary>
+    /// Etiketleri verilen listeyle değiştirir. Kimin etiketlenebileceğine
+    /// (etkinlik katılımcılığı) uygulama katmanı karar verir.
+    /// </summary>
+    public void SetMentions(
+        IReadOnlyCollection<(Guid UserId, string Username)> mentions,
+        DateTimeOffset utcNow)
+    {
+        var distinct = mentions
+            .GroupBy(mention => mention.UserId)
+            .Select(group => group.First())
+            .ToList();
+
+        if (distinct.Count > MaxMentions)
+        {
+            throw new DomainException(
+                $"A question may mention a maximum of {MaxMentions} people.");
+        }
+
+        if (distinct.Any(mention => mention.UserId == AuthorUserId))
+        {
+            throw new DomainException("A question cannot mention its own author.");
+        }
+
+        _mentions.Clear();
+
+        foreach (var mention in distinct)
+        {
+            _mentions.Add(
+                EventQuestionMention.Create(Id, mention.UserId, mention.Username, utcNow));
+        }
+
+        Touch(utcNow);
+    }
 
     public static EventQuestion CreateQuestion(
         Guid eventId,

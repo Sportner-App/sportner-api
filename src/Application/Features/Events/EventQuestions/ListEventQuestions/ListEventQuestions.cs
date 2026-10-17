@@ -60,6 +60,7 @@ internal sealed class ListEventQuestionsQueryHandler
         var pageSize = request.PageSize is < 1 or > 50 ? 20 : request.PageSize;
 
         var rootsQuery = _dbContext.EventQuestions.AsNoTracking()
+            .Include(question => question.Mentions)
             .Where(question => question.EventId == @event.Id && question.ParentId == null);
 
         if (_currentUser.UserId is { } viewerId)
@@ -81,6 +82,7 @@ internal sealed class ListEventQuestionsQueryHandler
         var replies = rootIds.Count == 0
             ? []
             : await _dbContext.EventQuestions.AsNoTracking()
+                .Include(question => question.Mentions)
                 .Where(question =>
                     question.EventId == @event.Id
                     && question.ParentId != null
@@ -150,7 +152,8 @@ internal sealed class ListEventQuestionsQueryHandler
                     @event.OrganizerUserId,
                     participants),
                 question.CreatedAt,
-                nested);
+                nested,
+                EventQuestionAccess.ToMentionResponses(question));
         }
 
         var repliesByRoot = replies
