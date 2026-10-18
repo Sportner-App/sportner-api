@@ -45,4 +45,10 @@ jobs:
         env:
           ConnectionStrings__SupabaseConnection: "Host=localhost;Port=5432;Database=sportner_test;Username=postgres;Password=postgres;SSL Mode=Disable"
           JwtSettings__Secret: "ci-only-test-secret-do-not-use-in-prod-32chars+"
+          # Program.cs calls ValidateSocialAuthOptionsOnStart, so the host refuses to
+          # start when these are missing — which is the point in production, but here it
+          # fails every test that boots the app. The values are never used: nothing in the
+          # suite verifies an Apple or Google token.
+          GoogleAuth__WebClientId: "ci-only.apps.googleusercontent.com"
+          AppleAuth__BundleId: "com.yagizerdenler.sportner"
         run: dotnet test Sportner.slnx --configuration Release --no-build --verbosity normal
