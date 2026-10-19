@@ -386,6 +386,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string NewMessage_EventTitle {
+            get {
+                return ResourceManager.GetString("NewMessage_EventTitle", resourceCulture);
+            }
+        }
+
         public static string ReviewReceived_Title {
             get {
                 return ResourceManager.GetString("ReviewReceived_Title", resourceCulture);

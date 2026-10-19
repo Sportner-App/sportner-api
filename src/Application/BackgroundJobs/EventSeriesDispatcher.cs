@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sportner.Application.Abstractions.BackgroundJobs;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Features.Events;
 
 namespace Sportner.Application.BackgroundJobs;
 
@@ -103,6 +104,17 @@ internal sealed class EventSeriesDispatcher : IEventSeriesDispatcher
 
         var next = latest.CreateNextSeriesOccurrence(utcNow);
         _dbContext.Events.Add(next);
+
+        // Halka yayına alınmış olarak doğuyor (CreateNextSeriesOccurrence
+        // içinde Publish çağrılıyor), ama sohbeti PublishEvent komutu
+        // kuruyordu — bu yol oradan geçmiyor. Sonuç: seri etkinliklerinin
+        // sohbeti hiç oluşmuyordu, organizatör dahil kimse açamıyordu.
+        await EventAccess.EnsureEventConversationAsync(
+            _dbContext,
+            next,
+            utcNow,
+            cancellationToken);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(

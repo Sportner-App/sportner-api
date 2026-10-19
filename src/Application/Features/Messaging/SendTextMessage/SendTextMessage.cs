@@ -7,6 +7,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Notifications;
+using Sportner.Localization.Resources;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Messaging;
 
@@ -180,11 +181,24 @@ internal sealed class SendTextMessageCommandHandler
         foreach (var recipientId in recipients)
         {
             var language = languagesByRecipient.GetValueOrDefault(recipientId);
+            var displayName = NotificationActor.DisplayName(senderUsername, language);
+
+            // Etkinlik sohbetlerinde yalnızca gönderenin adı yetmiyor: birden
+            // fazla etkinliğin sohbetindeki biri, mesajın hangi etkinlikten
+            // geldiğini bildirime bakarak anlayamıyordu.
+            var title = conversation.Type == ConversationType.Event
+                && !string.IsNullOrWhiteSpace(conversation.Title)
+                    ? NotificationActor.Format(
+                        language,
+                        nameof(NotificationsResource.NewMessage_EventTitle),
+                        displayName,
+                        conversation.Title)
+                    : displayName;
 
             await _notificationPublisher.PublishAsync(
                 recipientId,
                 NotificationType.NewMessage,
-                NotificationActor.DisplayName(senderUsername, language),
+                title,
                 preview,
                 NotificationEntityType.Conversation,
                 conversation.Id,
