@@ -97,7 +97,7 @@ internal sealed class EventSeriesDispatcher : IEventSeriesDispatcher
 
         // Halka iptal edilmiş olabilir; seri yine de devam eder. Tek koşul
         // planlanan bitişin geçmiş olması.
-        if (utcNow < latest.EventDate.AddMinutes(latest.DurationMinutes))
+        if (utcNow < latest.EventDate.AddMinutes(latest.DurationMinutes ?? Sportner.Domain.Events.Event.DefaultDurationMinutes))
         {
             return null;
         }

@@ -7,7 +7,7 @@ public sealed record CreateEventCommand(
     string Title,
     string? Description,
     DateTimeOffset EventDate,
-    int DurationMinutes,
+    int? DurationMinutes,
     decimal Latitude,
     decimal Longitude,
     string Address,

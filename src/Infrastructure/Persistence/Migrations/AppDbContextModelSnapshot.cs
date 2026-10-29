@@ -163,7 +163,7 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int>("DurationMinutes")
+                    b.Property<int?>("DurationMinutes")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("EventDate")

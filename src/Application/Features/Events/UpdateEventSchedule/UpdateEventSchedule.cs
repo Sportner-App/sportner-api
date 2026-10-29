@@ -12,14 +12,14 @@ namespace Sportner.Application.Features.Events.UpdateEventSchedule;
 public sealed record UpdateEventScheduleCommand(
     Guid EventId,
     DateTimeOffset EventDate,
-    int DurationMinutes) : ICommand<EventResponse>;
+    int? DurationMinutes) : ICommand<EventResponse>;
 
 public sealed class UpdateEventScheduleCommandValidator : AbstractValidator<UpdateEventScheduleCommand>
 {
     public UpdateEventScheduleCommandValidator()
     {
         RuleFor(command => command.EventId).NotEmpty();
-        RuleFor(command => command.DurationMinutes).GreaterThan(0);
+        RuleFor(command => command.DurationMinutes).GreaterThan(0).When(command => command.DurationMinutes is not null);
     }
 }
 

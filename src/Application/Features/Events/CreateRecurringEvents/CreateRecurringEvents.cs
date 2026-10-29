@@ -13,7 +13,7 @@ public sealed record CreateRecurringEventsCommand(
     string Title,
     string? Description,
     DateTimeOffset EventDate,
-    int DurationMinutes,
+    int? DurationMinutes,
     decimal Latitude,
     decimal Longitude,
     string Address,
@@ -43,7 +43,7 @@ public sealed class CreateRecurringEventsCommandValidator
     {
         RuleFor(x => x.SportId).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().MaximumLength(150);
-        RuleFor(x => x.DurationMinutes).GreaterThan(0);
+        RuleFor(x => x.DurationMinutes).GreaterThan(0).When(x => x.DurationMinutes is not null);
         RuleFor(x => x.Latitude).InclusiveBetween(-90m, 90m);
         RuleFor(x => x.Longitude).InclusiveBetween(-180m, 180m);
         RuleFor(x => x.Address).NotEmpty();

@@ -25,7 +25,13 @@ public class Event : AggregateRoot
 
     public DateTimeOffset EventDate { get; private set; }
 
-    public int DurationMinutes { get; private set; }
+    /// <summary>
+    /// Süre opsiyonel. Girilmediğinde etkinlik kullanıcıya süresiz görünür; bitiş
+    /// hesapları (tamamlanma, yoklama, sohbet kilidi) <see cref="DefaultDurationMinutes"/> ile yapılır.
+    /// </summary>
+    public const int DefaultDurationMinutes = 60;
+
+    public int? DurationMinutes { get; private set; }
 
     public decimal Latitude { get; private set; }
 
@@ -80,7 +86,7 @@ public class Event : AggregateRoot
         Guid sportId,
         string title,
         DateTimeOffset eventDate,
-        int durationMinutes,
+        int? durationMinutes,
         decimal latitude,
         decimal longitude,
         string address,
@@ -182,7 +188,7 @@ public class Event : AggregateRoot
         Touch(utcNow);
     }
 
-    public void UpdateSchedule(DateTimeOffset eventDate, int durationMinutes, DateTimeOffset utcNow)
+    public void UpdateSchedule(DateTimeOffset eventDate, int? durationMinutes, DateTimeOffset utcNow)
     {
         EnsureEditable();
 
@@ -697,17 +703,17 @@ public class Event : AggregateRoot
     public static bool HasEnded(
         EventStatus status,
         DateTimeOffset eventDate,
-        int durationMinutes,
+        int? durationMinutes,
         DateTimeOffset utcNow) =>
         status is EventStatus.Cancelled or EventStatus.Completed
-        || utcNow >= eventDate.AddMinutes(durationMinutes);
+        || utcNow >= eventDate.AddMinutes(durationMinutes ?? DefaultDurationMinutes);
 
     public bool HasEnded(DateTimeOffset utcNow) =>
         HasEnded(Status, EventDate, DurationMinutes, utcNow);
 
     private DateTimeOffset GetScheduledEnd()
     {
-        return EventDate.AddMinutes(DurationMinutes);
+        return EventDate.AddMinutes(DurationMinutes ?? DefaultDurationMinutes);
     }
 
     private void RefreshCapacityStatus(DateTimeOffset utcNow)
@@ -945,8 +951,13 @@ public class Event : AggregateRoot
         return eventDate;
     }
 
-    private static int NormalizeDuration(int durationMinutes)
+    private static int? NormalizeDuration(int? durationMinutes)
     {
+        if (durationMinutes is null)
+        {
+            return null;
+        }
+
         if (durationMinutes <= 0)
         {
             throw new DomainException("Duration must be greater than zero.");

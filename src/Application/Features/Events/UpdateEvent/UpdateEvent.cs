@@ -14,7 +14,7 @@ public sealed record UpdateEventCommand(
     string Title,
     string? Description,
     DateTimeOffset EventDate,
-    int DurationMinutes,
+    int? DurationMinutes,
     decimal Latitude,
     decimal Longitude,
     string Address,
@@ -28,7 +28,7 @@ public sealed class UpdateEventCommandValidator : AbstractValidator<UpdateEventC
     {
         RuleFor(command => command.EventId).NotEmpty();
         RuleFor(command => command.Title).NotEmpty().MaximumLength(150);
-        RuleFor(command => command.DurationMinutes).GreaterThan(0);
+        RuleFor(command => command.DurationMinutes).GreaterThan(0).When(command => command.DurationMinutes is not null);
         RuleFor(command => command.Latitude).InclusiveBetween(-90m, 90m);
         RuleFor(command => command.Longitude).InclusiveBetween(-180m, 180m);
         RuleFor(command => command.Address).NotEmpty();

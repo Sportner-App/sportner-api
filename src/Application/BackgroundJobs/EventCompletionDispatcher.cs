@@ -55,7 +55,7 @@ internal sealed class EventCompletionDispatcher : IEventCompletionDispatcher
             .ToListAsync(cancellationToken);
 
         var dueIds = candidates
-            .Where(@event => utcNow >= @event.EventDate.AddMinutes(@event.DurationMinutes))
+            .Where(@event => utcNow >= @event.EventDate.AddMinutes(@event.DurationMinutes ?? Sportner.Domain.Events.Event.DefaultDurationMinutes))
             .Select(@event => @event.Id)
             .Take(batchSize)
             .ToList();

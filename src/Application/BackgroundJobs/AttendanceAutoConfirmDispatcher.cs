@@ -58,7 +58,7 @@ internal sealed class AttendanceAutoConfirmDispatcher : IAttendanceAutoConfirmDi
             .ToListAsync(cancellationToken);
 
         var dueEventIds = candidates
-            .Where(@event => utcNow >= @event.EventDate.AddMinutes(@event.DurationMinutes).AddDays(graceDays))
+            .Where(@event => utcNow >= @event.EventDate.AddMinutes(@event.DurationMinutes ?? Sportner.Domain.Events.Event.DefaultDurationMinutes).AddDays(graceDays))
             .Select(@event => @event.Id)
             .Take(batchSize)
             .ToList();

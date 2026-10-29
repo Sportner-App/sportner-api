@@ -562,7 +562,7 @@ public sealed class EventsController : ApiControllerBase
         string Title,
         string? Description,
         DateTimeOffset EventDate,
-        int DurationMinutes,
+        int? DurationMinutes,
         decimal Latitude,
         decimal Longitude,
         string Address,
@@ -577,21 +577,21 @@ public sealed class EventsController : ApiControllerBase
 
     public sealed record CreateRecurringEventsRequest(
         Guid SportId, string Title, string? Description, DateTimeOffset EventDate,
-        int DurationMinutes, decimal Latitude, decimal Longitude, string Address,
+        int? DurationMinutes, decimal Latitude, decimal Longitude, string Address,
         int? MaxParticipants, int? MinParticipantAge, int? MaxParticipantAge,
         int IntervalWeeks, int OccurrenceCount,
         bool IsPaid = false, decimal? FeeAmount = null, short? ParticipantGender = null);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 
-    public sealed record UpdateScheduleRequest(DateTimeOffset EventDate, int DurationMinutes);
+    public sealed record UpdateScheduleRequest(DateTimeOffset EventDate, int? DurationMinutes);
 
     public sealed record UpdateEventLocationRequest(decimal Latitude, decimal Longitude, string Address);
     public sealed record UpdateEventRequest(
         string Title,
         string? Description,
         DateTimeOffset EventDate,
-        int DurationMinutes,
+        int? DurationMinutes,
         decimal Latitude,
         decimal Longitude,
         string Address,

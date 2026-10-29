@@ -75,7 +75,7 @@ public sealed class EventSeriesTests
         first.StartSeries(intervalWeeks: 2, totalOccurrences: 3, Now);
         first.Publish(Now);
 
-        var afterFirstEnded = first.EventDate.AddMinutes(first.DurationMinutes).AddMinutes(1);
+        var afterFirstEnded = first.EventDate.AddMinutes(first.DurationMinutes!.Value).AddMinutes(1);
         var second = first.CreateNextSeriesOccurrence(afterFirstEnded);
 
         second.EventDate.Should().Be(first.EventDate.AddDays(14));
@@ -103,7 +103,7 @@ public sealed class EventSeriesTests
         var clock = Now;
         for (var expected = 2; expected <= 3; expected++)
         {
-            clock = occurrence.EventDate.AddMinutes(occurrence.DurationMinutes).AddMinutes(1);
+            clock = occurrence.EventDate.AddMinutes(occurrence.DurationMinutes!.Value).AddMinutes(1);
             occurrence.HasRemainingSeriesOccurrences.Should().BeTrue();
             occurrence = occurrence.CreateNextSeriesOccurrence(clock);
             occurrence.SeriesSequence.Should().Be(expected);
@@ -112,7 +112,7 @@ public sealed class EventSeriesTests
         occurrence.HasRemainingSeriesOccurrences.Should().BeFalse();
 
         var act = () => occurrence.CreateNextSeriesOccurrence(
-            occurrence.EventDate.AddMinutes(occurrence.DurationMinutes).AddMinutes(1));
+            occurrence.EventDate.AddMinutes(occurrence.DurationMinutes!.Value).AddMinutes(1));
 
         act.Should().Throw<DomainException>();
     }
@@ -126,7 +126,7 @@ public sealed class EventSeriesTests
         first.Cancel(Now);
 
         var second = first.CreateNextSeriesOccurrence(
-            first.EventDate.AddMinutes(first.DurationMinutes).AddMinutes(1));
+            first.EventDate.AddMinutes(first.DurationMinutes!.Value).AddMinutes(1));
 
         second.SeriesSequence.Should().Be(2);
         second.Status.Should().Be(EventStatus.Published);

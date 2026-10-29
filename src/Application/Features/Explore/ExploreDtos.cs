@@ -22,7 +22,7 @@ public sealed record ExploreEventItemResponse(
     string? OrganizerUsername,
     string Title,
     DateTimeOffset EventDate,
-    int DurationMinutes,
+    int? DurationMinutes,
     string Address,
     int? MaxParticipants,
     short? SkillLevel,
