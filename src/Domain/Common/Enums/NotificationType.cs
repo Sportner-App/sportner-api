@@ -38,5 +38,6 @@ public enum NotificationType : short
     ConversationMemberAdded = 33,
     EventUpdated = 34,
     EventAttendancePending = 35,
-    PostMentioned = 36
+    PostMentioned = 36,
+    EventJoinRequested = 37
 }

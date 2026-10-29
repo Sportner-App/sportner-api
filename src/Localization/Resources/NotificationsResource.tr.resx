@@ -194,4 +194,10 @@
   <data name="EventUpdated_Field_Location" xml:space="preserve"><value>konum</value></data>
   <data name="EventUpdated_Field_Capacity" xml:space="preserve"><value>kontenjan</value></data>
   <data name="EventUpdated_Field_Fee" xml:space="preserve"><value>ücret</value></data>
+  <data name="EventJoinRequested_Title" xml:space="preserve">
+    <value>{0} etkinliğine katılmak istiyor</value>
+  </data>
+  <data name="EventJoinRequested_Body" xml:space="preserve">
+    <value>"{0}" için başvuruyu onayla ya da reddet.</value>
+  </data>
 </root>

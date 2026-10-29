@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Notifications;
 using Sportner.Application.Features.Organizations;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
+using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.ApplyToEvent;
 
@@ -17,15 +20,18 @@ internal sealed class ApplyToEventCommandHandler
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly INotificationPublisher _notificationPublisher;
 
     public ApplyToEventCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        INotificationPublisher notificationPublisher)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _notificationPublisher = notificationPublisher;
     }
 
     public async Task<Result<ApplyToEventResponse>> Handle(
@@ -133,6 +139,32 @@ internal sealed class ApplyToEventCommandHandler
         if (waitlistEntry is not null)
         {
             _dbContext.MarkAsAdded(waitlistEntry);
+        }
+
+        // Onay bekleyen başvuru organizatörün aksiyonunu gerektiriyor; bildirim
+        // olmadan başvurular fark edilmeden bekliyordu. Bekleme listesine düşen
+        // kullanıcı için organizatörün yapacağı bir şey yok, ona bildirim yok.
+        if (participant is { Status: ParticipantStatus.Pending })
+        {
+            var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
+                _dbContext, @event.OrganizerUserId, cancellationToken);
+
+            await _notificationPublisher.PublishAsync(
+                @event.OrganizerUserId,
+                NotificationType.EventJoinRequested,
+                NotificationActor.Format(
+                    recipientLanguage,
+                    nameof(NotificationsResource.EventJoinRequested_Title),
+                    await NotificationActor.PrefixAsync(
+                        _dbContext, userId, recipientLanguage, cancellationToken)),
+                NotificationActor.Format(
+                    recipientLanguage,
+                    nameof(NotificationsResource.EventJoinRequested_Body),
+                    @event.Title),
+                NotificationEntityType.Event,
+                @event.Id,
+                userId,
+                cancellationToken);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

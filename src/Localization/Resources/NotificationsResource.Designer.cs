@@ -403,5 +403,17 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("ReviewReceived_Body", resourceCulture);
             }
         }
+
+        public static string EventJoinRequested_Title {
+            get {
+                return ResourceManager.GetString("EventJoinRequested_Title", resourceCulture);
+            }
+        }
+
+        public static string EventJoinRequested_Body {
+            get {
+                return ResourceManager.GetString("EventJoinRequested_Body", resourceCulture);
+            }
+        }
     }
 }

@@ -26,6 +26,7 @@ using Sportner.Application.Features.Events.ListParticipants;
 using Sportner.Application.Features.Events.ListWaitlist;
 using Sportner.Application.Features.Events.MarkNoShow;
 using Sportner.Application.Features.Events.PendingAttendance;
+using Sportner.Application.Features.Events.PendingJoinRequests;
 using Sportner.Application.Features.Events.PromoteFromWaitlist;
 using Sportner.Application.Features.Events.PublishEvent;
 using Sportner.Application.Features.Events.RejectParticipant;
@@ -109,6 +110,13 @@ public sealed class EventsController : ApiControllerBase
     public async Task<IActionResult> ListPendingAttendance(CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new ListPendingAttendanceEventsQuery(), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("mine/pending-requests")]
+    public async Task<IActionResult> ListPendingJoinRequests(CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new ListPendingJoinRequestEventsQuery(), cancellationToken);
         return result.ToActionResult();
     }
 

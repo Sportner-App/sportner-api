@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
+using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Features.Events.ApplyToEvent;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
@@ -20,6 +22,7 @@ public sealed class ApplyToEventCommandHandlerTests
 
         Guid eventId;
         Guid applicantId;
+        Guid organizerId;
 
         await using (var seed = InMemoryDb.Create(databaseName))
         {
@@ -49,19 +52,32 @@ public sealed class ApplyToEventCommandHandlerTests
 
             eventId = @event.Id;
             applicantId = applicant.Id;
+            organizerId = organizer.Id;
         }
 
         await using var db = InMemoryDb.Create(databaseName);
+        var publisher = new Mock<INotificationPublisher>();
         var handler = new ApplyToEventCommandHandler(
             db,
             new TestCurrentUser(applicantId),
-            time);
+            time,
+            publisher.Object);
 
         var result = await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.JoinedWaitlist.Should().BeFalse();
         result.Value.ParticipantStatus.Should().Be((short)ParticipantStatus.Pending);
+
+        publisher.Verify(candidate => candidate.PublishAsync(
+            organizerId,
+            NotificationType.EventJoinRequested,
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            NotificationEntityType.Event,
+            eventId,
+            applicantId,
+            It.IsAny<CancellationToken>()), Times.Once);
 
         var loadedEvent = await db.Events
             .Include(candidate => candidate.Participants)
@@ -113,7 +129,8 @@ public sealed class ApplyToEventCommandHandlerTests
         var handler = new ApplyToEventCommandHandler(
             db,
             new TestCurrentUser(applicantId),
-            time);
+            time,
+            Mock.Of<INotificationPublisher>());
 
         var result = await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
 
@@ -167,7 +184,8 @@ public sealed class ApplyToEventCommandHandlerTests
         var handler = new ApplyToEventCommandHandler(
             db,
             new TestCurrentUser(applicantId),
-            time);
+            time,
+            Mock.Of<INotificationPublisher>());
 
         var result = await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
 
@@ -208,7 +226,11 @@ public sealed class ApplyToEventCommandHandlerTests
         }
 
         await using var db = InMemoryDb.Create(databaseName);
-        var handler = new ApplyToEventCommandHandler(db, new TestCurrentUser(applicantId), time);
+        var handler = new ApplyToEventCommandHandler(
+            db,
+            new TestCurrentUser(applicantId),
+            time,
+            Mock.Of<INotificationPublisher>());
 
         var result = await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
 
@@ -278,7 +300,11 @@ public sealed class ApplyToEventCommandHandlerTests
         }
 
         await using var db = InMemoryDb.Create(databaseName);
-        var handler = new ApplyToEventCommandHandler(db, new TestCurrentUser(applicantId), time);
+        var handler = new ApplyToEventCommandHandler(
+            db,
+            new TestCurrentUser(applicantId),
+            time,
+            Mock.Of<INotificationPublisher>());
 
         return await handler.Handle(new ApplyToEventCommand(eventId), CancellationToken.None);
     }
