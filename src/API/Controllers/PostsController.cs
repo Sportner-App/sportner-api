@@ -29,6 +29,7 @@ public sealed class PostsController : ApiControllerBase
         // etiketlenen her kullanici icin ayri bir mentionedUserIds girdisi
         // gonderiyor.
         [FromForm] List<Guid>? mentionedUserIds,
+        [FromForm] Guid? eventId,
         CancellationToken cancellationToken)
     {
         var media = new List<CreatePostMediaInput>();
@@ -51,7 +52,8 @@ public sealed class PostsController : ApiControllerBase
                 new CreatePostCommand(
                     content,
                     media.Count == 0 ? null : media,
-                    mentionedUserIds is { Count: > 0 } ? mentionedUserIds : null),
+                    mentionedUserIds is { Count: > 0 } ? mentionedUserIds : null,
+                    eventId),
                 cancellationToken);
 
             return result.ToActionResult(StatusCodes.Status201Created);

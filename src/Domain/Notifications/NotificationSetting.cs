@@ -218,6 +218,7 @@ public class NotificationSetting : AggregateRoot
             NotificationType.EventAttendancePending => (true, true, false),
             NotificationType.PostMentioned => (true, true, false),
             NotificationType.EventJoinRequested => (true, true, false),
+            NotificationType.EventSharePrompt => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

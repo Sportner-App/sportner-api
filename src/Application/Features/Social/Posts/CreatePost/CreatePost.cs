@@ -26,7 +26,8 @@ public sealed record CreatePostMediaInput(
 public sealed record CreatePostCommand(
     string? Content,
     IReadOnlyList<CreatePostMediaInput>? Media,
-    IReadOnlyList<Guid>? MentionedUserIds = null) : ICommand<PostResponse>;
+    IReadOnlyList<Guid>? MentionedUserIds = null,
+    Guid? EventId = null) : ICommand<PostResponse>;
 
 public sealed class CreatePostCommandValidator : AbstractValidator<CreatePostCommand>
 {
@@ -107,6 +108,12 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
             }
         }
 
+        if (request.EventId is { } eventId
+            && !await PostEventLink.CanLinkAsync(_dbContext, userId, eventId, cancellationToken))
+        {
+            return Result<PostResponse>.Failure(PostErrors.EventNotLinkable);
+        }
+
         var mentions = await PostMentionResolver.ResolveAsync(
             _dbContext, userId, request.MentionedUserIds, cancellationToken);
 
@@ -116,7 +123,7 @@ internal sealed class CreatePostCommandHandler : ICommandHandler<CreatePostComma
         }
 
         var utcNow = _timeProvider.GetUtcNow();
-        var post = Post.Create(userId, request.Content, utcNow);
+        var post = Post.Create(userId, request.Content, utcNow, request.EventId);
         post.SetMentions(mentions.Value!, utcNow);
 
         if (request.Media is not null)

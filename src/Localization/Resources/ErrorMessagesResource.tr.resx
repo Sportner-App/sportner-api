@@ -261,6 +261,9 @@
   <data name="Post_InvalidCursor" xml:space="preserve">
     <value>Sayfalama imleci geçersiz.</value>
   </data>
+  <data name="Post_EventNotLinkable" xml:space="preserve">
+    <value>Yalnızca katıldığın bir etkinlik için paylaşım yapabilirsin.</value>
+  </data>
   <data name="Messaging_MentionNotAllowed" xml:space="preserve">
     <value>Yalnızca bu sohbetteki kişileri etiketleyebilirsin.</value>
   </data>

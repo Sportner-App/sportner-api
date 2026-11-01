@@ -71,7 +71,20 @@ public sealed record PostResponse(
     bool LikedByMe,
     DateTimeOffset CreatedAt,
     IReadOnlyList<PostMediaResponse> Media,
-    IReadOnlyList<PostMentionResponse> Mentions);
+    IReadOnlyList<PostMentionResponse> Mentions,
+    PostEventResponse? Event = null);
+
+/// <summary>
+/// Gönderinin bağlı olduğu etkinliğin kart üstünde gösterilen özeti.
+/// Bağlı etkinlik yoksa (eski ve bağımsız gönderiler) null.
+/// </summary>
+public sealed record PostEventResponse(
+    Guid Id,
+    string Title,
+    string SportName,
+    string SportSlug,
+    DateTimeOffset EventDate,
+    string Address);
 
 /// <summary>
 /// Gönderide etiketlenen kullanıcı. İstemci içerikteki "@kullanıcıadı"

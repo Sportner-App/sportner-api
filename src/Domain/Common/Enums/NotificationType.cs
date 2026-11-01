@@ -39,5 +39,6 @@ public enum NotificationType : short
     EventUpdated = 34,
     EventAttendancePending = 35,
     PostMentioned = 36,
-    EventJoinRequested = 37
+    EventJoinRequested = 37,
+    EventSharePrompt = 38
 }

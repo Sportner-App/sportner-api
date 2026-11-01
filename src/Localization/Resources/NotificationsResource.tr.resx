@@ -200,4 +200,10 @@
   <data name="EventJoinRequested_Body" xml:space="preserve">
     <value>"{0}" için başvuruyu onayla ya da reddet.</value>
   </data>
+  <data name="EventSharePrompt_Title" xml:space="preserve">
+    <value>Maçtan kareler 📸</value>
+  </data>
+  <data name="EventSharePrompt_Body" xml:space="preserve">
+    <value>"{0}" nasıldı? Maçtan bir fotoğraf paylaş.</value>
+  </data>
 </root>

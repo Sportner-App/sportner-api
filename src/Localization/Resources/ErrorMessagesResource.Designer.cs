@@ -553,6 +553,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Post_EventNotLinkable {
+            get {
+                return ResourceManager.GetString("Post_EventNotLinkable", resourceCulture);
+            }
+        }
+
         public static string Messaging_MentionNotAllowed {
             get {
                 return ResourceManager.GetString("Messaging_MentionNotAllowed", resourceCulture);

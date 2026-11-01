@@ -260,6 +260,24 @@ internal static class SocialQueries
                 .ToListAsync(cancellationToken);
         }
 
+        PostEventResponse? eventSnippet = null;
+        if (post.EventId is { } eventId)
+        {
+            eventSnippet = await (
+                    from @event in dbContext.Events.AsNoTracking()
+                    where @event.Id == eventId
+                    join sport in dbContext.Sports.AsNoTracking()
+                        on @event.SportId equals sport.Id
+                    select new PostEventResponse(
+                        @event.Id,
+                        @event.Title,
+                        sport.Name,
+                        sport.Slug,
+                        @event.EventDate,
+                        @event.Address))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         return new PostResponse(
             post.Id,
             post.UserId,
@@ -273,7 +291,8 @@ internal static class SocialQueries
             likedByMe,
             post.CreatedAt,
             media,
-            mentions);
+            mentions,
+            eventSnippet);
     }
 
     private static PostMediaResponse ToPostMediaResponse(IFileStorage fileStorage, PostMedia item) =>

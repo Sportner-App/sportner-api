@@ -415,5 +415,17 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("EventJoinRequested_Body", resourceCulture);
             }
         }
+
+        public static string EventSharePrompt_Title {
+            get {
+                return ResourceManager.GetString("EventSharePrompt_Title", resourceCulture);
+            }
+        }
+
+        public static string EventSharePrompt_Body {
+            get {
+                return ResourceManager.GetString("EventSharePrompt_Body", resourceCulture);
+            }
+        }
     }
 }

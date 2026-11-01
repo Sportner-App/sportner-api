@@ -19,6 +19,12 @@ public class Post : AggregateRoot
 
     public Guid UserId { get; private set; }
 
+    /// <summary>
+    /// Gönderinin paylaşıldığı etkinlik ("maçtan kareler"). Boş gönderiler
+    /// eskisi gibi bağımsız; kimin bağlayabileceğine uygulama katmanı karar verir.
+    /// </summary>
+    public Guid? EventId { get; private set; }
+
     public string? Content { get; private set; }
 
     public int LikeCount { get; private set; }
@@ -33,7 +39,11 @@ public class Post : AggregateRoot
 
     public IReadOnlyCollection<PostMention> Mentions => _mentions.AsReadOnly();
 
-    public static Post Create(Guid userId, string? content, DateTimeOffset utcNow)
+    public static Post Create(
+        Guid userId,
+        string? content,
+        DateTimeOffset utcNow,
+        Guid? eventId = null)
     {
         if (userId == Guid.Empty)
         {
@@ -44,6 +54,7 @@ public class Post : AggregateRoot
         {
             Id = Guid.NewGuid(),
             UserId = userId,
+            EventId = eventId,
             Content = NormalizeContent(content),
             LikeCount = 0,
             CommentCount = 0,

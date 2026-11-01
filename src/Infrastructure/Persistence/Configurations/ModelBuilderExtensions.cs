@@ -382,6 +382,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Post>()
             .HasIndex(entity => new { entity.UserId, entity.CreatedAt });
 
+        // Etkinlik detayındaki "maçtan kareler" listesi için.
+        modelBuilder.Entity<Post>()
+            .HasIndex(entity => new { entity.EventId, entity.CreatedAt });
+
         modelBuilder.Entity<PostMedia>().HasIndex(entity => entity.PostId);
 
         // "Etiketlendigim gonderiler" sorgusu icin.
@@ -1142,6 +1146,14 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Etkinlik silinirse gönderi kalır, yalnızca bağlantısı düşer.
+        modelBuilder.Entity<Post>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EventId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
 
         modelBuilder.Entity<PostMedia>()
             .HasOne<Post>()

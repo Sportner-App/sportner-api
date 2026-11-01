@@ -200,4 +200,10 @@
   <data name="EventJoinRequested_Body" xml:space="preserve">
     <value>Approve or decline their request for "{0}".</value>
   </data>
+  <data name="EventSharePrompt_Title" xml:space="preserve">
+    <value>Share the moment</value>
+  </data>
+  <data name="EventSharePrompt_Body" xml:space="preserve">
+    <value>How was "{0}"? Post a photo from the game.</value>
+  </data>
 </root>

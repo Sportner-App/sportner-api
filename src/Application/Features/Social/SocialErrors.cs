@@ -106,4 +106,8 @@ internal static class PostErrors
     internal static Error InvalidCursor => Error.Validation(
         "Post.InvalidCursor",
         ErrorMessagesResource.Post_InvalidCursor);
+
+    internal static Error EventNotLinkable => Error.Forbidden(
+        "Post.EventNotLinkable",
+        ErrorMessagesResource.Post_EventNotLinkable);
 }

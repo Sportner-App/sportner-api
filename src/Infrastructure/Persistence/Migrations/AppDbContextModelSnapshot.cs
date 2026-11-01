@@ -1649,6 +1649,9 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("EventId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsHidden")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1678,6 +1681,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "CreatedAt");
 
                     b.HasIndex("UserId", "CreatedAt");
 
@@ -2943,6 +2948,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Sportner.Domain.Social.Post", b =>
                 {
+                    b.HasOne("Sportner.Domain.Events.Event", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Sportner.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")

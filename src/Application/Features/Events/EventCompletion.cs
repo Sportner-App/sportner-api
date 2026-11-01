@@ -48,6 +48,74 @@ internal static class EventCompletion
         // açılması onun bir adımına bağlı, dolayısıyla istenen eylem bu.
         await SendAttendancePromptAsync(
             dbContext, @event, notificationPublisher, cancellationToken);
+        await SendSharePromptsAsync(
+            dbContext, @event, notificationPublisher, cancellationToken);
+    }
+
+    /// <summary>
+    /// Etkinlik bitince katılımcıları maçtan fotoğraf paylaşmaya davet eder.
+    /// Organizatör hariç: aynı anda ona yoklama bildirimi gidiyor, ikisi üst
+    /// üste gelince asıl istenen adım (yoklama) gözden kaçıyor.
+    ///
+    /// Tamamlama birden fazla yoldan tetiklenebildiği için daha önce
+    /// gönderilmiş alıcılar atlanıyor.
+    /// </summary>
+    internal static async Task SendSharePromptsAsync(
+        IApplicationDbContext dbContext,
+        Event @event,
+        INotificationPublisher notificationPublisher,
+        CancellationToken cancellationToken)
+    {
+        var recipientIds = await dbContext.EventParticipants.AsNoTracking()
+            .Where(participant =>
+                participant.EventId == @event.Id
+                && participant.UserId != null
+                && participant.UserId != @event.OrganizerUserId
+                && (participant.Status == ParticipantStatus.Approved
+                    || participant.Status == ParticipantStatus.Attended))
+            .Select(participant => participant.UserId!.Value)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (recipientIds.Count == 0)
+        {
+            return;
+        }
+
+        var alreadySent = await dbContext.Notifications.AsNoTracking()
+            .Where(notification =>
+                recipientIds.Contains(notification.RecipientUserId)
+                && notification.NotificationType == NotificationType.EventSharePrompt
+                && notification.EntityType == NotificationEntityType.Event
+                && notification.EntityId == @event.Id)
+            .Select(notification => notification.RecipientUserId)
+            .ToListAsync(cancellationToken);
+
+        var pending = recipientIds.Except(alreadySent).ToList();
+        if (pending.Count == 0)
+        {
+            return;
+        }
+
+        var languages = await NotificationActor.ResolveRecipientLanguagesAsync(
+            dbContext, pending, cancellationToken);
+
+        foreach (var recipientId in pending)
+        {
+            var language = languages.GetValueOrDefault(recipientId);
+
+            await notificationPublisher.PublishAsync(
+                recipientId,
+                NotificationType.EventSharePrompt,
+                NotificationActor.Format(
+                    language, nameof(NotificationsResource.EventSharePrompt_Title)),
+                NotificationActor.Format(
+                    language, nameof(NotificationsResource.EventSharePrompt_Body), @event.Title),
+                NotificationEntityType.Event,
+                @event.Id,
+                actorUserId: null,
+                cancellationToken);
+        }
     }
 
     /// <summary>

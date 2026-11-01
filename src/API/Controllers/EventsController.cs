@@ -20,6 +20,7 @@ using Sportner.Application.Features.Events.DiscoverEvents;
 using Sportner.Application.Features.Events.GetEventById;
 using Sportner.Application.Features.Albums.CreateEventAlbum;
 using Sportner.Application.Features.Albums.ListEventAlbums;
+using Sportner.Application.Features.Social.Posts.ListEventPosts;
 using Sportner.Application.Features.Events.ListMyOrganizedEvents;
 using Sportner.Application.Features.Events.ListMyParticipatingEvents;
 using Sportner.Application.Features.Events.ListParticipants;
@@ -147,6 +148,20 @@ public sealed class EventsController : ApiControllerBase
     public async Task<IActionResult> ListAlbums(Guid eventId, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new ListEventAlbumsQuery(eventId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{eventId:guid}/posts")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ListPosts(
+        Guid eventId,
+        [FromQuery] string? before,
+        [FromQuery] int limit = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(
+            new ListEventPostsQuery(eventId, before, limit),
+            cancellationToken);
         return result.ToActionResult();
     }
 
