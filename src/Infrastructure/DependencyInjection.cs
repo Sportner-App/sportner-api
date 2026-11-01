@@ -140,6 +140,13 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(AppleAuthOptions.SectionName))
             .ValidateDataAnnotations();
 
+        // Sosyal girişten gelen avatarı inceleyen istemci: Google'ın ürettiği
+        // baş harf görselini gerçek fotoğraftan ayırmak için görseli indiriyor.
+        services.AddHttpClient<IProfileImageScreener, GoogleProfileImageScreener>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+
         services.AddSingleton<ITokenHasher, TokenHasher>();
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();

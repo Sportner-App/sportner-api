@@ -19,6 +19,16 @@ public sealed class ExternalAuthCommandHandlerTests
 {
     private static readonly DateTimeOffset UtcNow = new(2026, 9, 4, 10, 0, 0, TimeSpan.Zero);
 
+    /// <summary>Testlerde avatar incelemesi devrede değil: gelen adres korunur.</summary>
+    private static IProfileImageScreener ImageScreener()
+    {
+        var screener = new Mock<IProfileImageScreener>();
+        screener
+            .Setup(s => s.KeepIfRealPhotoAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns<string?, CancellationToken>((url, _) => Task.FromResult(url));
+        return screener.Object;
+    }
+
     [Fact]
     public async Task FirstGoogleSignIn_ReturnsRegistrationTicket_WithoutCreatingUser()
     {
@@ -70,7 +80,7 @@ public sealed class ExternalAuthCommandHandlerTests
         await using var db = InMemoryDb.Create();
         var ticketService = TicketService();
         var handler = new CompleteExternalRegistrationCommandHandler(
-            db, ticketService.Object, Jwt().Object, TokenHasher().Object, Time());
+            db, ticketService.Object, Jwt().Object, TokenHasher().Object, Time(), ImageScreener());
 
         var result = await handler.Handle(new CompleteExternalRegistrationCommand(
             "registration-token", "yagizerdenler", "Yağız", "Erdenler",
@@ -93,7 +103,7 @@ public sealed class ExternalAuthCommandHandlerTests
         await using (var creationDb = InMemoryDb.Create(databaseName))
         {
             var complete = new CompleteExternalRegistrationCommandHandler(
-                creationDb, TicketService().Object, Jwt().Object, TokenHasher().Object, Time());
+                creationDb, TicketService().Object, Jwt().Object, TokenHasher().Object, Time(), ImageScreener());
             (await complete.Handle(new CompleteExternalRegistrationCommand(
                 "registration-token", "returninguser", "Returning", null,
                 new DateOnly(1990, 1, 1), 0, null, null), CancellationToken.None))
@@ -144,7 +154,7 @@ public sealed class ExternalAuthCommandHandlerTests
     {
         await using var db = InMemoryDb.Create();
         var complete = new CompleteExternalRegistrationCommandHandler(
-            db, TicketService().Object, Jwt().Object, TokenHasher().Object, Time());
+            db, TicketService().Object, Jwt().Object, TokenHasher().Object, Time(), ImageScreener());
         (await complete.Handle(new CompleteExternalRegistrationCommand(
             "registration-token", "refreshuser", "Refresh", null,
             new DateOnly(1990, 1, 1), 0, null, null), CancellationToken.None))

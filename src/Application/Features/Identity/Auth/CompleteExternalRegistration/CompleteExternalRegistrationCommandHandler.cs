@@ -19,19 +19,22 @@ internal sealed class CompleteExternalRegistrationCommandHandler
     private readonly IJwtService _jwtService;
     private readonly ITokenHasher _tokenHasher;
     private readonly TimeProvider _timeProvider;
+    private readonly IProfileImageScreener _profileImageScreener;
 
     public CompleteExternalRegistrationCommandHandler(
         IApplicationDbContext dbContext,
         IExternalRegistrationTokenService registrationTokenService,
         IJwtService jwtService,
         ITokenHasher tokenHasher,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IProfileImageScreener profileImageScreener)
     {
         _dbContext = dbContext;
         _registrationTokenService = registrationTokenService;
         _jwtService = jwtService;
         _tokenHasher = tokenHasher;
         _timeProvider = timeProvider;
+        _profileImageScreener = profileImageScreener;
     }
 
     public async Task<Result<AuthenticationResponse>> Handle(
@@ -89,9 +92,14 @@ internal sealed class CompleteExternalRegistrationCommandHandler
             utcNow,
             string.IsNullOrWhiteSpace(request.LastName) ? null : request.LastName.Trim());
         profile.UpdatePersonalDetails(request.Gender, request.BirthDate, utcNow);
-        if (!string.IsNullOrWhiteSpace(ticket.ProfileImageUrl))
+        // Google fotoğrafı olmayan hesaplara baş harfli düz bir görsel üretiyor;
+        // onu kaydetmek yerine kendi yedek avatarımız dursun.
+        var avatarUrl = await _profileImageScreener.KeepIfRealPhotoAsync(
+            ticket.ProfileImageUrl,
+            cancellationToken);
+        if (!string.IsNullOrWhiteSpace(avatarUrl))
         {
-            profile.UpdateAvatar(ticket.ProfileImageUrl, utcNow);
+            profile.UpdateAvatar(avatarUrl, utcNow);
         }
         user.AttachUserProfile(profile);
 
