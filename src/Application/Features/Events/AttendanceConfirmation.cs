@@ -60,6 +60,12 @@ internal static class AttendanceConfirmation
         // reviewed by) the rest of the event, per ReviewEligibility.
         await EventCompletion.SendReviewPromptAsync(
             dbContext, @event, userId, notificationPublisher, cancellationToken);
+
+        if (userId == @event.OrganizerUserId)
+        {
+            await EventCompletion.SendOrganizerSharePromptAsync(
+                dbContext, @event, notificationPublisher, cancellationToken);
+        }
     }
 
     internal static async Task MarkAbsentAsync(

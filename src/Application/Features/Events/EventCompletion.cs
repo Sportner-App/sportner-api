@@ -77,6 +77,33 @@ internal static class EventCompletion
             .Distinct()
             .ToListAsync(cancellationToken);
 
+        await PublishSharePromptsAsync(
+            dbContext, @event, recipientIds, notificationPublisher, cancellationToken);
+    }
+
+    /// <summary>
+    /// Organizatörün paylaşım daveti: bitişte yoklama bildirimiyle çakışmasın
+    /// diye atlanmıştı, yoklamasını aldığında gönderiliyor.
+    /// </summary>
+    internal static Task SendOrganizerSharePromptAsync(
+        IApplicationDbContext dbContext,
+        Event @event,
+        INotificationPublisher notificationPublisher,
+        CancellationToken cancellationToken) =>
+        PublishSharePromptsAsync(
+            dbContext,
+            @event,
+            [@event.OrganizerUserId],
+            notificationPublisher,
+            cancellationToken);
+
+    private static async Task PublishSharePromptsAsync(
+        IApplicationDbContext dbContext,
+        Event @event,
+        IReadOnlyCollection<Guid> recipientIds,
+        INotificationPublisher notificationPublisher,
+        CancellationToken cancellationToken)
+    {
         if (recipientIds.Count == 0)
         {
             return;
