@@ -71,34 +71,10 @@ internal static class ProfileQueries
             return Result<PublicProfileResponse>.Failure(ProfileErrors.NotFound);
         }
 
-        var isOwner = requesterId == profile.UserId;
-
-        var isReachable = await dbContext.Users.AsNoTracking()
-            .AnyAsync(
-                user => user.Id == profile.UserId
-                    && user.Status != UserStatus.Deleted
-                    && user.Status != UserStatus.Banned,
-                cancellationToken);
-
-        if (!isReachable)
+        if (await CheckViewAccessAsync(dbContext, profile, requesterId, cancellationToken)
+            is { } accessError)
         {
-            return Result<PublicProfileResponse>.Failure(ProfileErrors.NotFound);
-        }
-
-        if (requesterId is { } viewerId
-            && viewerId != profile.UserId
-            && await BlockQueries.BlockedPairExistsAsync(
-                dbContext,
-                viewerId,
-                profile.UserId,
-                cancellationToken))
-        {
-            return Result<PublicProfileResponse>.Failure(ProfileErrors.NotFound);
-        }
-
-        if (!profile.IsProfilePublic && !isOwner)
-        {
-            return Result<PublicProfileResponse>.Failure(ProfileErrors.NotPublic);
+            return Result<PublicProfileResponse>.Failure(accessError);
         }
 
         var sports = await GetSportsAsync(dbContext, profile.UserId, cancellationToken);
@@ -111,6 +87,50 @@ internal static class ProfileQueries
 
         return Result<PublicProfileResponse>.Success(
             ToPublicProfileResponse(profile, sports, statistics, friendship));
+    }
+
+    /// <summary>
+    /// Profilin bu izleyiciye gösterilip gösterilemeyeceği: silinmiş/yasaklı hesap,
+    /// engelleme ve gizli profil. Profilden türeyen her uç (ör. spor karnesi) aynı
+    /// kurala uysun diye ortak; erişim varsa null döner.
+    /// </summary>
+    internal static async Task<Error?> CheckViewAccessAsync(
+        IApplicationDbContext dbContext,
+        UserProfile profile,
+        Guid? requesterId,
+        CancellationToken cancellationToken)
+    {
+        var isOwner = requesterId == profile.UserId;
+
+        var isReachable = await dbContext.Users.AsNoTracking()
+            .AnyAsync(
+                user => user.Id == profile.UserId
+                    && user.Status != UserStatus.Deleted
+                    && user.Status != UserStatus.Banned,
+                cancellationToken);
+
+        if (!isReachable)
+        {
+            return ProfileErrors.NotFound;
+        }
+
+        if (requesterId is { } viewerId
+            && viewerId != profile.UserId
+            && await BlockQueries.BlockedPairExistsAsync(
+                dbContext,
+                viewerId,
+                profile.UserId,
+                cancellationToken))
+        {
+            return ProfileErrors.NotFound;
+        }
+
+        if (!profile.IsProfilePublic && !isOwner)
+        {
+            return ProfileErrors.NotPublic;
+        }
+
+        return null;
     }
 
     internal static MyProfileResponse ToMyProfileResponse(

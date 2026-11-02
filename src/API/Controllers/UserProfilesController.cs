@@ -5,6 +5,7 @@ using Sportner.Application.Features.Identity.UserProfiles.CreateProfile;
 using Sportner.Application.Features.Identity.UserProfiles.GetMyProfile;
 using Sportner.Application.Features.Identity.UserProfiles.GetProfileByUsername;
 using Sportner.Application.Features.Identity.UserProfiles.GetPublicProfile;
+using Sportner.Application.Features.Identity.UserProfiles.GetSportReportCard;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateAvatar;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateBio;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateDisplayName;
@@ -48,6 +49,19 @@ public sealed class UserProfilesController : ApiControllerBase
     public async Task<IActionResult> GetPublicProfile(Guid userId, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new GetPublicProfileQuery(userId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{userId:guid}/report-card")]
+    public async Task<IActionResult> GetSportReportCard(
+        Guid userId,
+        [FromQuery] int? year,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new GetSportReportCardQuery(userId, year),
+            cancellationToken);
         return result.ToActionResult();
     }
 
