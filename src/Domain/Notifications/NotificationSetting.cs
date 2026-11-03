@@ -228,6 +228,8 @@ public class NotificationSetting : AggregateRoot
             NotificationType.ChallengeEndingSoon => (true, true, false),
             NotificationType.DistrictLeaderTaken => (true, true, false),
             NotificationType.DistrictCrowned => (true, true, false),
+            NotificationType.MonthlyRecapReady => (true, true, false),
+            NotificationType.YearlyRecapReady => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

@@ -49,5 +49,7 @@ public enum NotificationType : short
     ChallengesLaunched = 44,
     ChallengeEndingSoon = 45,
     DistrictLeaderTaken = 46,
-    DistrictCrowned = 47
+    DistrictCrowned = 47,
+    MonthlyRecapReady = 48,
+    YearlyRecapReady = 49
 }

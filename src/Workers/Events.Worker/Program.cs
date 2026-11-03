@@ -73,6 +73,14 @@ try
         });
 
     builder.Services.AddCronJob(
+        "monthly-recaps",
+        options => options.MonthlyRecapCron,
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IMonthlyRecapDispatcher>().DispatchAsync(ct);
+        });
+
+    builder.Services.AddCronJob(
         "marathon-runner-badge",
         options => options.MarathonRunnerBadgeCron,
         async (provider, ct) =>

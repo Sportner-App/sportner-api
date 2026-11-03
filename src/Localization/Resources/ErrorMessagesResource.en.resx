@@ -615,4 +615,10 @@
   <data name="Challenge_NotAuthenticated" xml:space="preserve">
     <value>You need to be signed in for this request.</value>
   </data>
+  <data name="Recap_InvalidMonth" xml:space="preserve">
+    <value>Month must be in YYYY-MM format and cannot be in the future.</value>
+  </data>
+  <data name="Recap_InvalidYear" xml:space="preserve">
+    <value>Year is invalid or in the future.</value>
+  </data>
 </root>

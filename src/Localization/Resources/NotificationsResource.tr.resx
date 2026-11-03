@@ -201,25 +201,25 @@
     <value>"{0}" için başvuruyu onayla ya da reddet.</value>
   </data>
   <data name="EventSharePrompt_Title" xml:space="preserve">
-    <value>Maçtan kareler 📸</value>
+    <value>Etkinlikten kareler 📸</value>
   </data>
   <data name="EventSharePrompt_Body" xml:space="preserve">
-    <value>"{0}" nasıldı? Maçtan bir fotoğraf paylaş.</value>
+    <value>"{0}" nasıldı? Etkinlikten bir fotoğraf paylaş.</value>
   </data>
   <data name="StreakAtRisk_Title" xml:space="preserve">
     <value>🔥 {0} haftalık serin risk altında</value>
   </data>
   <data name="StreakAtRisk_Body" xml:space="preserve">
-    <value>Bu hafta henüz maç yapmadın. Pazar gecesine kadar bir maça katıl, serin bozulmasın.</value>
+    <value>Bu hafta henüz bir etkinliğe katılmadın. Pazar gecesine kadar bir etkinliğe katıl, serin bozulmasın.</value>
   </data>
   <data name="StreakAtRisk_BodyWithEvents" xml:space="preserve">
-    <value>Bu hafta henüz maç yapmadın. {0} şehrinde bu hafta {1} etkinlik var, birine katıl ve serini koru.</value>
+    <value>Bu hafta henüz bir etkinliğe katılmadın. {0} şehrinde bu hafta {1} etkinlik var, birine katıl ve serini koru.</value>
   </data>
   <data name="WeeklyGoalNudge_Title" xml:space="preserve">
-    <value>Haftalık hedefine {0} maç kaldı</value>
+    <value>Haftalık hedefine {0} etkinlik kaldı</value>
   </data>
   <data name="WeeklyGoalNudge_Body" xml:space="preserve">
-    <value>Yarın haftanın son günü. Bir maç daha yap, hedefini tamamla.</value>
+    <value>Yarın haftanın son günü. Bir etkinliğe daha katıl, hedefini tamamla.</value>
   </data>
   <data name="NewEventsNearby_Title" xml:space="preserve">
     <value>{0} şehrinde yeni etkinlikler</value>
@@ -258,12 +258,24 @@
     <value>👑 {0} semtinde 1. sıradasın!</value>
   </data>
   <data name="DistrictLeaderTaken_Body" xml:space="preserve">
-    <value>Bu ay {0} semtinde en çok maç yapan sensin. Ay sonuna kadar tacı koru.</value>
+    <value>Bu ay {0} semtinde en çok etkinliğe katılan sensin. Ay sonuna kadar tacı koru.</value>
   </data>
   <data name="DistrictCrowned_Title" xml:space="preserve">
     <value>👑 {0} ayının {1} lideri sensin</value>
   </data>
   <data name="DistrictCrowned_Body" xml:space="preserve">
-    <value>{0} maçla ayı zirvede bitirdin. Taç profilinde.</value>
+    <value>{0} etkinlikle ayı zirvede bitirdin. Taç profilinde.</value>
+  </data>
+  <data name="MonthlyRecapReady_Title" xml:space="preserve">
+    <value>{0} özetin hazır 📊</value>
+  </data>
+  <data name="MonthlyRecapReady_Body" xml:space="preserve">
+    <value>{0} etkinlik, {1} saat. Ayına bak, paylaş.</value>
+  </data>
+  <data name="YearlyRecapReady_Title" xml:space="preserve">
+    <value>{0} yılın Sportner’da nasıl geçti? 🎉</value>
+  </data>
+  <data name="YearlyRecapReady_Body" xml:space="preserve">
+    <value>{0} etkinlik, {1} saat. Yılına bak, hikâyende paylaş.</value>
   </data>
 </root>

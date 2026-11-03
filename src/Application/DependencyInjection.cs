@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IEngagementReminderDispatcher, EngagementReminderDispatcher>();
         services.AddScoped<IChallengeDispatcher, ChallengeDispatcher>();
         services.AddScoped<IDistrictLeaderDispatcher, DistrictLeaderDispatcher>();
+        services.AddScoped<IMonthlyRecapDispatcher, MonthlyRecapDispatcher>();
         services.AddScoped<IEventCompletionDispatcher, EventCompletionDispatcher>();
         services.AddScoped<IEventSeriesDispatcher, EventSeriesDispatcher>();
         services.AddScoped<IAttendanceAutoConfirmDispatcher, AttendanceAutoConfirmDispatcher>();

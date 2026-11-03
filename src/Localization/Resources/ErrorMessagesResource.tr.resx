@@ -615,4 +615,10 @@
   <data name="Challenge_NotAuthenticated" xml:space="preserve">
     <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
   </data>
+  <data name="Recap_InvalidMonth" xml:space="preserve">
+    <value>Ay YYYY-AA biçiminde olmalı ve ileri bir tarih olamaz.</value>
+  </data>
+  <data name="Recap_InvalidYear" xml:space="preserve">
+    <value>Yıl geçersiz ya da ileri bir tarih.</value>
+  </data>
 </root>

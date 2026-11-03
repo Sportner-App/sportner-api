@@ -40,6 +40,9 @@ public sealed class BackgroundJobsOptions
     /// <summary>Hourly — district leaders of the month and last month's crowns.</summary>
     public string DistrictLeaderCron { get; set; } = "20 * * * *";
 
+    /// <summary>Hourly — "your monthly recap is ready" on days 3–7.</summary>
+    public string MonthlyRecapCron { get; set; } = "35 * * * *";
+
     /// <summary>Reminder windows in minutes before event start (defaults: 24h + 1h).</summary>
     public int[] EventReminderWindowsMinutes { get; set; } = [1440, 60];
 

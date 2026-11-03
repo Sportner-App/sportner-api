@@ -204,22 +204,22 @@
     <value>Share the moment</value>
   </data>
   <data name="EventSharePrompt_Body" xml:space="preserve">
-    <value>How was "{0}"? Post a photo from the game.</value>
+    <value>How was "{0}"? Post a photo from the event.</value>
   </data>
   <data name="StreakAtRisk_Title" xml:space="preserve">
     <value>🔥 Your {0}-week streak is at risk</value>
   </data>
   <data name="StreakAtRisk_Body" xml:space="preserve">
-    <value>No game yet this week. Join one before Sunday night to keep your streak.</value>
+    <value>No event yet this week. Join one before Sunday night to keep your streak.</value>
   </data>
   <data name="StreakAtRisk_BodyWithEvents" xml:space="preserve">
-    <value>No game yet this week. There are {1} events in {0} this week. Join one to keep your streak.</value>
+    <value>No event yet this week. There are {1} events in {0} this week. Join one to keep your streak.</value>
   </data>
   <data name="WeeklyGoalNudge_Title" xml:space="preserve">
-    <value>{0} game(s) left for your weekly goal</value>
+    <value>{0} event(s) left for your weekly goal</value>
   </data>
   <data name="WeeklyGoalNudge_Body" xml:space="preserve">
-    <value>Tomorrow is the last day of the week. Play one more game to hit your goal.</value>
+    <value>Tomorrow is the last day of the week. Join one more event to hit your goal.</value>
   </data>
   <data name="NewEventsNearby_Title" xml:space="preserve">
     <value>New events in {0}</value>
@@ -258,12 +258,24 @@
     <value>👑 You're #1 in {0}!</value>
   </data>
   <data name="DistrictLeaderTaken_Body" xml:space="preserve">
-    <value>You've played the most games in {0} this month. Hold the crown until the month ends.</value>
+    <value>You've joined the most events in {0} this month. Hold the crown until the month ends.</value>
   </data>
   <data name="DistrictCrowned_Title" xml:space="preserve">
     <value>👑 You're the {1} leader of {0}</value>
   </data>
   <data name="DistrictCrowned_Body" xml:space="preserve">
-    <value>You finished the month on top with {0} games. The crown is on your profile.</value>
+    <value>You finished the month on top with {0} events. The crown is on your profile.</value>
+  </data>
+  <data name="MonthlyRecapReady_Title" xml:space="preserve">
+    <value>Your {0} recap is ready 📊</value>
+  </data>
+  <data name="MonthlyRecapReady_Body" xml:space="preserve">
+    <value>{0} events, {1} hours. See your month and share it.</value>
+  </data>
+  <data name="YearlyRecapReady_Title" xml:space="preserve">
+    <value>Your {0} on Sportner is wrapped 🎉</value>
+  </data>
+  <data name="YearlyRecapReady_Body" xml:space="preserve">
+    <value>{0} events, {1} hours. Open your year and share it.</value>
   </data>
 </root>

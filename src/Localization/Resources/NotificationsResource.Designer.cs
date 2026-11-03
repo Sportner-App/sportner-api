@@ -547,5 +547,29 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("DistrictCrowned_Body", resourceCulture);
             }
         }
+
+        public static string MonthlyRecapReady_Title {
+            get {
+                return ResourceManager.GetString("MonthlyRecapReady_Title", resourceCulture);
+            }
+        }
+
+        public static string MonthlyRecapReady_Body {
+            get {
+                return ResourceManager.GetString("MonthlyRecapReady_Body", resourceCulture);
+            }
+        }
+
+        public static string YearlyRecapReady_Title {
+            get {
+                return ResourceManager.GetString("YearlyRecapReady_Title", resourceCulture);
+            }
+        }
+
+        public static string YearlyRecapReady_Body {
+            get {
+                return ResourceManager.GetString("YearlyRecapReady_Body", resourceCulture);
+            }
+        }
     }
 }

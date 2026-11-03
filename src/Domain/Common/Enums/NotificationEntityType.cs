@@ -11,5 +11,7 @@ public enum NotificationEntityType : short
     Quest = 6,
     Organization = 7,
     Challenge = 8,
-    DistrictLeader = 9
+    DistrictLeader = 9,
+    MonthlyRecap = 10,
+    YearlyRecap = 11
 }

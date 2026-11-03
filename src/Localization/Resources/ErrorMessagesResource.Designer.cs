@@ -1260,5 +1260,17 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("Challenge_NotAuthenticated", resourceCulture);
             }
         }
+
+        public static string Recap_InvalidMonth {
+            get {
+                return ResourceManager.GetString("Recap_InvalidMonth", resourceCulture);
+            }
+        }
+
+        public static string Recap_InvalidYear {
+            get {
+                return ResourceManager.GetString("Recap_InvalidYear", resourceCulture);
+            }
+        }
     }
 }
