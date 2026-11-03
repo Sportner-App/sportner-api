@@ -206,4 +206,34 @@
   <data name="EventSharePrompt_Body" xml:space="preserve">
     <value>"{0}" nasıldı? Maçtan bir fotoğraf paylaş.</value>
   </data>
+  <data name="StreakAtRisk_Title" xml:space="preserve">
+    <value>🔥 {0} haftalık serin risk altında</value>
+  </data>
+  <data name="StreakAtRisk_Body" xml:space="preserve">
+    <value>Bu hafta henüz maç yapmadın. Pazar gecesine kadar bir maça katıl, serin bozulmasın.</value>
+  </data>
+  <data name="StreakAtRisk_BodyWithEvents" xml:space="preserve">
+    <value>Bu hafta henüz maç yapmadın. {0} şehrinde bu hafta {1} etkinlik var, birine katıl ve serini koru.</value>
+  </data>
+  <data name="WeeklyGoalNudge_Title" xml:space="preserve">
+    <value>Haftalık hedefine {0} maç kaldı</value>
+  </data>
+  <data name="WeeklyGoalNudge_Body" xml:space="preserve">
+    <value>Yarın haftanın son günü. Bir maç daha yap, hedefini tamamla.</value>
+  </data>
+  <data name="NewEventsNearby_Title" xml:space="preserve">
+    <value>{0} şehrinde yeni etkinlikler</value>
+  </data>
+  <data name="NewEventsNearby_Body" xml:space="preserve">
+    <value>Sevdiğin sporlardan {0} yeni etkinlik açıldı. Yerler dolmadan göz at.</value>
+  </data>
+  <data name="NewEventsNearby_BodySingle" xml:space="preserve">
+    <value>"{0}" açıldı. Yerler dolmadan katıl.</value>
+  </data>
+  <data name="ComeBack_Title" xml:space="preserve">
+    <value>Seni özledik 👋</value>
+  </data>
+  <data name="ComeBack_Body" xml:space="preserve">
+    <value>{0} şehrinde bu hafta {1} etkinlik var. Sahaya dönme zamanı.</value>
+  </data>
 </root>

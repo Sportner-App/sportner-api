@@ -206,4 +206,34 @@
   <data name="EventSharePrompt_Body" xml:space="preserve">
     <value>How was "{0}"? Post a photo from the game.</value>
   </data>
+  <data name="StreakAtRisk_Title" xml:space="preserve">
+    <value>🔥 Your {0}-week streak is at risk</value>
+  </data>
+  <data name="StreakAtRisk_Body" xml:space="preserve">
+    <value>No game yet this week. Join one before Sunday night to keep your streak.</value>
+  </data>
+  <data name="StreakAtRisk_BodyWithEvents" xml:space="preserve">
+    <value>No game yet this week. There are {1} events in {0} this week. Join one to keep your streak.</value>
+  </data>
+  <data name="WeeklyGoalNudge_Title" xml:space="preserve">
+    <value>{0} game(s) left for your weekly goal</value>
+  </data>
+  <data name="WeeklyGoalNudge_Body" xml:space="preserve">
+    <value>Tomorrow is the last day of the week. Play one more game to hit your goal.</value>
+  </data>
+  <data name="NewEventsNearby_Title" xml:space="preserve">
+    <value>New events in {0}</value>
+  </data>
+  <data name="NewEventsNearby_Body" xml:space="preserve">
+    <value>{0} new events opened in your sports. Take a look before spots fill up.</value>
+  </data>
+  <data name="NewEventsNearby_BodySingle" xml:space="preserve">
+    <value>"{0}" just opened. Join before spots fill up.</value>
+  </data>
+  <data name="ComeBack_Title" xml:space="preserve">
+    <value>We miss you 👋</value>
+  </data>
+  <data name="ComeBack_Body" xml:space="preserve">
+    <value>There are {1} events in {0} this week. Time to get back on the field.</value>
+  </data>
 </root>

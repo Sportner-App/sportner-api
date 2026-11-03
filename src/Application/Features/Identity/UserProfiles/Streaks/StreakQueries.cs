@@ -26,7 +26,7 @@ internal static class StreakQueries
     internal const int RecentWeeksCount = 8;
 
     /// <summary>Türkiye 2016'dan beri yaz saati uygulamıyor; sabit UTC+3.</summary>
-    private static readonly TimeSpan IstanbulOffset = TimeSpan.FromHours(3);
+    internal static readonly TimeSpan IstanbulOffset = TimeSpan.FromHours(3);
 
     internal static async Task<StreakResponse> BuildAsync(
         IApplicationDbContext dbContext,
@@ -105,7 +105,7 @@ internal static class StreakQueries
             recentWeeks);
     }
 
-    private static DateOnly WeekStartOf(DateTimeOffset moment)
+    internal static DateOnly WeekStartOf(DateTimeOffset moment)
     {
         var local = DateOnly.FromDateTime(moment.ToOffset(IstanbulOffset).DateTime);
         var daysSinceMonday = ((int)local.DayOfWeek + 6) % 7;

@@ -219,6 +219,10 @@ public class NotificationSetting : AggregateRoot
             NotificationType.PostMentioned => (true, true, false),
             NotificationType.EventJoinRequested => (true, true, false),
             NotificationType.EventSharePrompt => (true, true, false),
+            NotificationType.StreakAtRisk => (true, true, false),
+            NotificationType.WeeklyGoalNudge => (true, true, false),
+            NotificationType.NewEventsNearby => (true, true, false),
+            NotificationType.ComeBack => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

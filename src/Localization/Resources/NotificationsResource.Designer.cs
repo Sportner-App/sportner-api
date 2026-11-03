@@ -427,5 +427,65 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("EventSharePrompt_Body", resourceCulture);
             }
         }
+
+        public static string StreakAtRisk_Title {
+            get {
+                return ResourceManager.GetString("StreakAtRisk_Title", resourceCulture);
+            }
+        }
+
+        public static string StreakAtRisk_Body {
+            get {
+                return ResourceManager.GetString("StreakAtRisk_Body", resourceCulture);
+            }
+        }
+
+        public static string StreakAtRisk_BodyWithEvents {
+            get {
+                return ResourceManager.GetString("StreakAtRisk_BodyWithEvents", resourceCulture);
+            }
+        }
+
+        public static string WeeklyGoalNudge_Title {
+            get {
+                return ResourceManager.GetString("WeeklyGoalNudge_Title", resourceCulture);
+            }
+        }
+
+        public static string WeeklyGoalNudge_Body {
+            get {
+                return ResourceManager.GetString("WeeklyGoalNudge_Body", resourceCulture);
+            }
+        }
+
+        public static string NewEventsNearby_Title {
+            get {
+                return ResourceManager.GetString("NewEventsNearby_Title", resourceCulture);
+            }
+        }
+
+        public static string NewEventsNearby_Body {
+            get {
+                return ResourceManager.GetString("NewEventsNearby_Body", resourceCulture);
+            }
+        }
+
+        public static string NewEventsNearby_BodySingle {
+            get {
+                return ResourceManager.GetString("NewEventsNearby_BodySingle", resourceCulture);
+            }
+        }
+
+        public static string ComeBack_Title {
+            get {
+                return ResourceManager.GetString("ComeBack_Title", resourceCulture);
+            }
+        }
+
+        public static string ComeBack_Body {
+            get {
+                return ResourceManager.GetString("ComeBack_Body", resourceCulture);
+            }
+        }
     }
 }

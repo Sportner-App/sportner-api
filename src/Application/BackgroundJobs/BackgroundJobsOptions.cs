@@ -31,6 +31,9 @@ public sealed class BackgroundJobsOptions
     /// <summary>Every 15 minutes.</summary>
     public string EventReminderCron { get; set; } = "*/15 * * * *";
 
+    /// <summary>Daily 15:00 UTC (18:00 İstanbul) — streak, weekly goal, new events, come back.</summary>
+    public string EngagementReminderCron { get; set; } = "0 15 * * *";
+
     /// <summary>Reminder windows in minutes before event start (defaults: 24h + 1h).</summary>
     public int[] EventReminderWindowsMinutes { get; set; } = [1440, 60];
 

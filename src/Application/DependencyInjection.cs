@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IQuestProgressTracker, QuestProgressTracker>();
         services.AddScoped<IExpiredSessionCleaner, ExpiredSessionCleaner>();
         services.AddScoped<IEventReminderDispatcher, EventReminderDispatcher>();
+        services.AddScoped<IEngagementReminderDispatcher, EngagementReminderDispatcher>();
         services.AddScoped<IEventCompletionDispatcher, EventCompletionDispatcher>();
         services.AddScoped<IEventSeriesDispatcher, EventSeriesDispatcher>();
         services.AddScoped<IAttendanceAutoConfirmDispatcher, AttendanceAutoConfirmDispatcher>();

@@ -40,5 +40,9 @@ public enum NotificationType : short
     EventAttendancePending = 35,
     PostMentioned = 36,
     EventJoinRequested = 37,
-    EventSharePrompt = 38
+    EventSharePrompt = 38,
+    StreakAtRisk = 39,
+    WeeklyGoalNudge = 40,
+    NewEventsNearby = 41,
+    ComeBack = 42
 }
