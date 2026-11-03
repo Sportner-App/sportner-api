@@ -35,6 +35,13 @@ public class UserProfile : AuditableEntity
 
     public bool IsProfilePublic { get; private set; }
 
+    public const int MinWeeklyGoal = 1;
+
+    public const int MaxWeeklyGoal = 5;
+
+    /// <summary>Haftada kaç maç hedeflendiği. Seriyi etkilemez; yalnızca ilerleme halkası.</summary>
+    public int WeeklyGoal { get; private set; } = MinWeeklyGoal;
+
     public static UserProfile Create(
         Guid userId,
         string username,
@@ -141,6 +148,17 @@ public class UserProfile : AuditableEntity
     public void UpdateVisibility(bool isProfilePublic, DateTimeOffset utcNow)
     {
         IsProfilePublic = isProfilePublic;
+        Touch(utcNow);
+    }
+
+    public void UpdateWeeklyGoal(int weeklyGoal, DateTimeOffset utcNow)
+    {
+        if (weeklyGoal is < MinWeeklyGoal or > MaxWeeklyGoal)
+        {
+            throw new DomainException("Weekly goal must be between 1 and 5.");
+        }
+
+        WeeklyGoal = weeklyGoal;
         Touch(utcNow);
     }
 

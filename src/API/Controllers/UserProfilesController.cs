@@ -6,6 +6,7 @@ using Sportner.Application.Features.Identity.UserProfiles.GetMyProfile;
 using Sportner.Application.Features.Identity.UserProfiles.GetProfileByUsername;
 using Sportner.Application.Features.Identity.UserProfiles.GetPublicProfile;
 using Sportner.Application.Features.Identity.UserProfiles.GetSportReportCard;
+using Sportner.Application.Features.Identity.UserProfiles.Streaks;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateAvatar;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateBio;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateDisplayName;
@@ -61,6 +62,25 @@ public sealed class UserProfilesController : ApiControllerBase
     {
         var result = await Sender.Send(
             new GetSportReportCardQuery(userId, year),
+            cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{userId:guid}/streak")]
+    public async Task<IActionResult> GetStreak(Guid userId, CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new GetStreakQuery(userId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPut("me/weekly-goal")]
+    public async Task<IActionResult> UpdateWeeklyGoal(
+        [FromBody] UpdateWeeklyGoalRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UpdateWeeklyGoalCommand(request.WeeklyGoal),
             cancellationToken);
         return result.ToActionResult();
     }
@@ -174,4 +194,6 @@ public sealed class UserProfilesController : ApiControllerBase
     public sealed record UpdatePersonalDetailsRequest(short? Gender, DateOnly? BirthDate);
 
     public sealed record UpdateVisibilityRequest(bool IsProfilePublic);
+
+    public sealed record UpdateWeeklyGoalRequest(int WeeklyGoal);
 }

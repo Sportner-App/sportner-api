@@ -2302,6 +2302,9 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UsernameChangedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("WeeklyGoal")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AverageRating");
