@@ -30,6 +30,10 @@ public sealed class ChallengeTests
         november[0].Title.Should().Be("Kasım Oyuncusu");
         november[0].StartsAt.Should().Be(new DateTimeOffset(2026, 10, 31, 21, 0, 0, TimeSpan.Zero));
         november[0].EndsAt.Should().Be(new DateTimeOffset(2026, 11, 30, 21, 0, 0, TimeSpan.Zero));
+        // Npgsql timestamptz'ye yalnızca UTC offset'li değer yazıyor.
+        november.Should().OnlyContain(challenge =>
+            challenge.StartsAt.Offset == TimeSpan.Zero && challenge.EndsAt.Offset == TimeSpan.Zero);
+        LeaderboardCalculatorOffset().Should().Be(TimeSpan.Zero);
     }
 
     [Fact]
@@ -101,6 +105,10 @@ public sealed class ChallengeTests
             .Handle(new LeaveChallengeCommand(challenge.Id), CancellationToken.None);
         leave.IsFailure.Should().BeTrue();
     }
+
+    private static TimeSpan LeaderboardCalculatorOffset() =>
+        Sportner.Application.Features.Leaderboards.LeaderboardCalculator
+            .StartOf(new DateOnly(2026, 11, 1)).Offset;
 
     private sealed class RecordingPublisher : INotificationPublisher
     {

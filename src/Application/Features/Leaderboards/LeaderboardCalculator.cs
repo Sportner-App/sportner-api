@@ -26,8 +26,10 @@ internal static class LeaderboardCalculator
         return new DateOnly(local.Year, local.Month, 1);
     }
 
+    /// <remarks>UTC'ye çevrilir: Npgsql timestamptz'ye yalnızca sıfır offset yazar/karşılaştırır.</remarks>
     internal static DateTimeOffset StartOf(DateOnly month) =>
-        new(month.ToDateTime(TimeOnly.MinValue), StreakQueries.IstanbulOffset);
+        new DateTimeOffset(month.ToDateTime(TimeOnly.MinValue), StreakQueries.IstanbulOffset)
+            .ToUniversalTime();
 
     /// <summary>Semt/şehir filtreleri null ise tüm semtler gelir (iş için).</summary>
     internal static async Task<List<Row>> LoadRowsAsync(

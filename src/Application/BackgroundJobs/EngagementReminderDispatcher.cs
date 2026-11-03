@@ -53,10 +53,11 @@ internal sealed class EngagementReminderDispatcher : IEngagementReminderDispatch
     {
         var utcNow = _timeProvider.GetUtcNow();
         var localNow = utcNow.ToOffset(StreakQueries.IstanbulOffset);
-        var todayStart = new DateTimeOffset(localNow.Date, StreakQueries.IstanbulOffset);
+        // Sorgu parametreleri UTC olmalı: Npgsql sıfır olmayan offset'i reddediyor.
+        var todayStart = new DateTimeOffset(localNow.Date, StreakQueries.IstanbulOffset).ToUniversalTime();
         var weekEnd = new DateTimeOffset(
             StreakQueries.WeekStartOf(utcNow).AddDays(7).ToDateTime(TimeOnly.MinValue),
-            StreakQueries.IstanbulOffset);
+            StreakQueries.IstanbulOffset).ToUniversalTime();
 
         var users = await (
                 from user in _dbContext.Users.AsNoTracking()

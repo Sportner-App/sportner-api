@@ -75,12 +75,14 @@ internal sealed class ChallengeDispatcher : IChallengeDispatcher
     internal static IReadOnlyList<Challenge> BuildMonthlyChallenges(DateTimeOffset utcNow)
     {
         var local = utcNow.ToOffset(StreakQueries.IstanbulOffset);
-        var startsAt = new DateTimeOffset(local.Year, local.Month, 1, 0, 0, 0, StreakQueries.IstanbulOffset);
-        var endsAt = startsAt.AddMonths(1);
-        var key = startsAt.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        var localStart = new DateTimeOffset(local.Year, local.Month, 1, 0, 0, 0, StreakQueries.IstanbulOffset);
+        // Veritabanına UTC yazılmalı: Npgsql +03:00 offsetli değeri reddediyor.
+        var startsAt = localStart.ToUniversalTime();
+        var endsAt = localStart.AddMonths(1).ToUniversalTime();
+        var key = localStart.ToString("yyyy-MM", CultureInfo.InvariantCulture);
         var intro = key == IntroMonth;
-        var monthTr = startsAt.ToString("MMMM", CultureInfo.GetCultureInfo("tr-TR"));
-        var monthEn = startsAt.ToString("MMMM", CultureInfo.GetCultureInfo("en-US"));
+        var monthTr = localStart.ToString("MMMM", CultureInfo.GetCultureInfo("tr-TR"));
+        var monthEn = localStart.ToString("MMMM", CultureInfo.GetCultureInfo("en-US"));
         var play = intro ? 3 : 4;
         var explore = intro ? 2 : 3;
 
@@ -377,7 +379,7 @@ internal sealed class ChallengeDispatcher : IChallengeDispatcher
     private async Task<HashSet<Guid>> NotifiedTodayAsync(DateTimeOffset utcNow, CancellationToken cancellationToken)
     {
         var localNow = utcNow.ToOffset(StreakQueries.IstanbulOffset);
-        var todayStart = new DateTimeOffset(localNow.Date, StreakQueries.IstanbulOffset);
+        var todayStart = new DateTimeOffset(localNow.Date, StreakQueries.IstanbulOffset).ToUniversalTime();
         var capped = EngagementReminderDispatcher.ReminderTypes;
 
         return (await _dbContext.Notifications.AsNoTracking()
