@@ -42,6 +42,9 @@ public class UserProfile : AuditableEntity
     /// <summary>Haftada kaç maç hedeflendiği. Seriyi etkilemez; yalnızca ilerleme halkası.</summary>
     public int WeeklyGoal { get; private set; } = MinWeeklyGoal;
 
+    /// <summary>Semt sıralamalarında görünsün mü. Gizli profil zaten hiç görünmez.</summary>
+    public bool ShowOnLeaderboards { get; private set; } = true;
+
     public static UserProfile Create(
         Guid userId,
         string username,
@@ -148,6 +151,12 @@ public class UserProfile : AuditableEntity
     public void UpdateVisibility(bool isProfilePublic, DateTimeOffset utcNow)
     {
         IsProfilePublic = isProfilePublic;
+        Touch(utcNow);
+    }
+
+    public void UpdateLeaderboardVisibility(bool showOnLeaderboards, DateTimeOffset utcNow)
+    {
+        ShowOnLeaderboards = showOnLeaderboards;
         Touch(utcNow);
     }
 

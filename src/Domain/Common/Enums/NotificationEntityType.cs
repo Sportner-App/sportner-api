@@ -10,5 +10,6 @@ public enum NotificationEntityType : short
     Badge = 5,
     Quest = 6,
     Organization = 7,
-    Challenge = 8
+    Challenge = 8,
+    DistrictLeader = 9
 }

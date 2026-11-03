@@ -18,4 +18,5 @@ public sealed record MyProfileResponse(
     IReadOnlyList<ProfileSportResponse> Sports,
     ProfileStatisticsResponse? Statistics,
     string? Email = null,
-    bool IsEmailVerified = false);
+    bool IsEmailVerified = false,
+    bool ShowOnLeaderboards = true);

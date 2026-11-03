@@ -289,6 +289,10 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -297,6 +301,10 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<string>("District")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int?>("DurationMinutes")
                         .HasColumnType("integer");
@@ -392,6 +400,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("SeriesId", "SeriesSequence");
 
                     b.HasIndex("Status", "EventDate");
+
+                    b.HasIndex("City", "District", "EventDate");
 
                     b.ToTable("Events", t =>
                         {
@@ -740,6 +750,56 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "CreatedAt");
 
                     b.ToTable("AppFeedbacks");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Leaderboards.DistrictLeader", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CrownedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("EventCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("Month")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("City", "District", "Month")
+                        .IsUnique();
+
+                    b.ToTable("DistrictLeaders");
                 });
 
             modelBuilder.Entity("Sportner.Domain.Locations.City", b =>
@@ -2420,6 +2480,9 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<int>("ReviewCount")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("ShowOnLeaderboards")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2852,6 +2915,15 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Leaderboards.DistrictLeader", b =>
+                {
+                    b.HasOne("Sportner.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

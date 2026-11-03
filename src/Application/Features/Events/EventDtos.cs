@@ -36,7 +36,9 @@ public sealed record EventResponse(
     Guid? ConversationId,
     Guid? OrganizationId = null,
     string? OrganizationName = null,
-    bool CanCancel = false);
+    bool CanCancel = false,
+    string? District = null,
+    string? City = null);
 
 /// <summary>Lightweight preview for the small avatar stack shown on event list cards.</summary>
 public sealed record ParticipantAvatarResponse(

@@ -226,6 +226,8 @@ public class NotificationSetting : AggregateRoot
             NotificationType.ChallengeCompleted => (true, true, false),
             NotificationType.ChallengesLaunched => (true, true, false),
             NotificationType.ChallengeEndingSoon => (true, true, false),
+            NotificationType.DistrictLeaderTaken => (true, true, false),
+            NotificationType.DistrictCrowned => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

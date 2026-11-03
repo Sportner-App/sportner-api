@@ -254,4 +254,16 @@
   <data name="ChallengeEndingSoon_Body" xml:space="preserve">
     <value>Bitmesine {0} gün kaldı ve madalyaya {1} adım kaldı. Hadi bitir!</value>
   </data>
+  <data name="DistrictLeaderTaken_Title" xml:space="preserve">
+    <value>👑 {0} semtinde 1. sıradasın!</value>
+  </data>
+  <data name="DistrictLeaderTaken_Body" xml:space="preserve">
+    <value>Bu ay {0} semtinde en çok maç yapan sensin. Ay sonuna kadar tacı koru.</value>
+  </data>
+  <data name="DistrictCrowned_Title" xml:space="preserve">
+    <value>👑 {0} ayının {1} lideri sensin</value>
+  </data>
+  <data name="DistrictCrowned_Body" xml:space="preserve">
+    <value>{0} maçla ayı zirvede bitirdin. Taç profilinde.</value>
+  </data>
 </root>

@@ -157,7 +157,8 @@ internal static class ProfileQueries
             sports,
             statistics,
             email,
-            isEmailVerified);
+            isEmailVerified,
+            profile.ShowOnLeaderboards);
 
     /// <summary>Small helper so every self-service profile handler surfaces the same
     /// email/verification snapshot in its <see cref="MyProfileResponse"/> without duplicating

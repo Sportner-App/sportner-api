@@ -37,6 +37,9 @@ public sealed class BackgroundJobsOptions
     /// <summary>Hourly — open monthly challenges, mark completions, challenge notifications.</summary>
     public string ChallengeCron { get; set; } = "5 * * * *";
 
+    /// <summary>Hourly — district leaders of the month and last month's crowns.</summary>
+    public string DistrictLeaderCron { get; set; } = "20 * * * *";
+
     /// <summary>Reminder windows in minutes before event start (defaults: 24h + 1h).</summary>
     public int[] EventReminderWindowsMinutes { get; set; } = [1440, 60];
 

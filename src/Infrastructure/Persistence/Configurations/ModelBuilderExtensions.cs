@@ -3,6 +3,7 @@ using Sportner.Application.Common.Search;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Challenges;
 using Sportner.Domain.Events;
+using Sportner.Domain.Leaderboards;
 using Sportner.Domain.Feedback;
 using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
@@ -757,6 +758,21 @@ internal static class ModelBuilderExtensions
         challenge.Property(entity => entity.RewardTextEn).HasMaxLength(300);
         challenge.HasIndex(entity => new { entity.StartsAt, entity.EndsAt });
         modelBuilder.Entity<ChallengeParticipant>().HasIndex(entity => entity.UserId);
+
+        var leader = modelBuilder.Entity<DistrictLeader>();
+        leader.Property(entity => entity.City).HasMaxLength(100);
+        leader.Property(entity => entity.District).HasMaxLength(100);
+        leader.HasIndex(entity => new { entity.City, entity.District, entity.Month }).IsUnique();
+        leader.HasIndex(entity => entity.UserId);
+        leader.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        var @event = modelBuilder.Entity<Event>();
+        @event.Property(entity => entity.District).HasMaxLength(100);
+        @event.Property(entity => entity.City).HasMaxLength(100);
+        @event.HasIndex(entity => new { entity.City, entity.District, entity.EventDate });
     }
 
     private static void ConfigureDefaults(ModelBuilder modelBuilder)

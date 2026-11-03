@@ -254,4 +254,16 @@
   <data name="ChallengeEndingSoon_Body" xml:space="preserve">
     <value>{0} days left and {1} more to earn the medal. Finish it!</value>
   </data>
+  <data name="DistrictLeaderTaken_Title" xml:space="preserve">
+    <value>👑 You're #1 in {0}!</value>
+  </data>
+  <data name="DistrictLeaderTaken_Body" xml:space="preserve">
+    <value>You've played the most games in {0} this month. Hold the crown until the month ends.</value>
+  </data>
+  <data name="DistrictCrowned_Title" xml:space="preserve">
+    <value>👑 You're the {1} leader of {0}</value>
+  </data>
+  <data name="DistrictCrowned_Body" xml:space="preserve">
+    <value>You finished the month on top with {0} games. The crown is on your profile.</value>
+  </data>
 </root>

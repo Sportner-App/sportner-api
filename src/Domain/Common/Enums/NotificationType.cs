@@ -47,5 +47,7 @@ public enum NotificationType : short
     ComeBack = 42,
     ChallengeCompleted = 43,
     ChallengesLaunched = 44,
-    ChallengeEndingSoon = 45
+    ChallengeEndingSoon = 45,
+    DistrictLeaderTaken = 46,
+    DistrictCrowned = 47
 }

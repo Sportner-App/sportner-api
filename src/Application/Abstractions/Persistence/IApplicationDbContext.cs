@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Challenges;
 using Sportner.Domain.Events;
+using Sportner.Domain.Leaderboards;
 using Sportner.Domain.Feedback;
 using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
@@ -64,6 +65,7 @@ public interface IApplicationDbContext
     DbSet<UserQuest> UserQuests { get; }
     DbSet<Challenge> Challenges { get; }
     DbSet<ChallengeParticipant> ChallengeParticipants { get; }
+    DbSet<DistrictLeader> DistrictLeaders { get; }
     DbSet<Album> Albums { get; }
     DbSet<AlbumMedia> AlbumMedia { get; }
     DbSet<Report> Reports { get; }

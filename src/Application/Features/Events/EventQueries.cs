@@ -161,7 +161,9 @@ internal static class EventQueries
             conversationId,
             @event.OrganizationId,
             organizationName,
-            canCancel);
+            canCancel,
+            @event.District,
+            @event.City);
     }
 
     /// <summary>

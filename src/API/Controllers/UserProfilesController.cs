@@ -10,6 +10,7 @@ using Sportner.Application.Features.Identity.UserProfiles.Streaks;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateAvatar;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateBio;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateDisplayName;
+using Sportner.Application.Features.Identity.UserProfiles.UpdateLeaderboardVisibility;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateLocation;
 using Sportner.Application.Features.Identity.UserProfiles.UpdatePersonalDetails;
 using Sportner.Application.Features.Identity.UserProfiles.UpdateUsername;
@@ -71,6 +72,17 @@ public sealed class UserProfilesController : ApiControllerBase
     public async Task<IActionResult> GetStreak(Guid userId, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new GetStreakQuery(userId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpPut("me/leaderboard-visibility")]
+    public async Task<IActionResult> UpdateLeaderboardVisibility(
+        [FromBody] UpdateLeaderboardVisibilityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new UpdateLeaderboardVisibilityCommand(request.ShowOnLeaderboards),
+            cancellationToken);
         return result.ToActionResult();
     }
 
@@ -196,4 +208,6 @@ public sealed class UserProfilesController : ApiControllerBase
     public sealed record UpdateVisibilityRequest(bool IsProfilePublic);
 
     public sealed record UpdateWeeklyGoalRequest(int WeeklyGoal);
+
+    public sealed record UpdateLeaderboardVisibilityRequest(bool ShowOnLeaderboards);
 }

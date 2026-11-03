@@ -4,6 +4,7 @@ using Sportner.Domain.Badges;
 using Sportner.Domain.Challenges;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
+using Sportner.Domain.Leaderboards;
 using Sportner.Domain.Feedback;
 using Sportner.Domain.Locations;
 using Sportner.Domain.Messaging;
@@ -109,6 +110,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Challenge> Challenges => Set<Challenge>();
 
     public DbSet<ChallengeParticipant> ChallengeParticipants => Set<ChallengeParticipant>();
+
+    public DbSet<DistrictLeader> DistrictLeaders => Set<DistrictLeader>();
 
     public DbSet<Album> Albums => Set<Album>();
 

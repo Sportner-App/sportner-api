@@ -39,6 +39,12 @@ public class Event : AggregateRoot
 
     public string Address { get; private set; } = null!;
 
+    /// <summary>Adresten çıkarılan semt; semt sıralamalarının anahtarı.</summary>
+    public string? District { get; private set; }
+
+    /// <summary>Adresten çıkarılan şehir (semtle birlikte anahtar).</summary>
+    public string? City { get; private set; }
+
     public int? MaxParticipants { get; private set; }
 
     /// <summary>Null means no lower age bound.</summary>
@@ -129,6 +135,8 @@ public class Event : AggregateRoot
             Latitude = NormalizeLatitude(latitude),
             Longitude = NormalizeLongitude(longitude),
             Address = NormalizeAddress(address),
+            District = EventAddressParts.Parse(address).District,
+            City = EventAddressParts.Parse(address).City,
             MaxParticipants = NormalizeMaxParticipants(maxParticipants),
             MinParticipantAge = NormalizeParticipantAge(minParticipantAge, nameof(minParticipantAge)),
             MaxParticipantAge = NormalizeParticipantAge(maxParticipantAge, nameof(maxParticipantAge)),
@@ -208,6 +216,7 @@ public class Event : AggregateRoot
         Latitude = NormalizeLatitude(latitude);
         Longitude = NormalizeLongitude(longitude);
         Address = NormalizeAddress(address);
+        (District, City) = EventAddressParts.Parse(Address);
         Touch(utcNow);
     }
 

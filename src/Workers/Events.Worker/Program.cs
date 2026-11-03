@@ -65,6 +65,14 @@ try
         });
 
     builder.Services.AddCronJob(
+        "district-leaders",
+        options => options.DistrictLeaderCron,
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IDistrictLeaderDispatcher>().DispatchAsync(ct);
+        });
+
+    builder.Services.AddCronJob(
         "marathon-runner-badge",
         options => options.MarathonRunnerBadgeCron,
         async (provider, ct) =>
@@ -83,7 +91,7 @@ try
     var host = builder.Build();
 
     Log.Information(
-        "Sportner.Events.Worker starting (auto-complete + recurring series + reminders + engagement reminders + challenges + marathon badge sweep + attendance auto-confirm).");
+        "Sportner.Events.Worker starting (auto-complete + recurring series + reminders + engagement reminders + challenges + district leaders + marathon badge sweep + attendance auto-confirm).");
     await host.RunAsync();
 }
 catch (Exception ex)

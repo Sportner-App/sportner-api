@@ -523,5 +523,29 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("ChallengeEndingSoon_Body", resourceCulture);
             }
         }
+
+        public static string DistrictLeaderTaken_Title {
+            get {
+                return ResourceManager.GetString("DistrictLeaderTaken_Title", resourceCulture);
+            }
+        }
+
+        public static string DistrictLeaderTaken_Body {
+            get {
+                return ResourceManager.GetString("DistrictLeaderTaken_Body", resourceCulture);
+            }
+        }
+
+        public static string DistrictCrowned_Title {
+            get {
+                return ResourceManager.GetString("DistrictCrowned_Title", resourceCulture);
+            }
+        }
+
+        public static string DistrictCrowned_Body {
+            get {
+                return ResourceManager.GetString("DistrictCrowned_Body", resourceCulture);
+            }
+        }
     }
 }
