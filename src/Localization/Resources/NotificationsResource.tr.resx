@@ -236,4 +236,22 @@
   <data name="ComeBack_Body" xml:space="preserve">
     <value>{0} şehrinde bu hafta {1} etkinlik var. Sahaya dönme zamanı.</value>
   </data>
+  <data name="ChallengeCompleted_Title" xml:space="preserve">
+    <value>🏅 Challenge tamamlandı!</value>
+  </data>
+  <data name="ChallengeCompleted_Body" xml:space="preserve">
+    <value>"{0}" challenge'ını tamamladın, madalyan profilinde.</value>
+  </data>
+  <data name="ChallengesLaunched_Title" xml:space="preserve">
+    <value>{0} challenge'ları başladı 🏁</value>
+  </data>
+  <data name="ChallengesLaunched_Body" xml:space="preserve">
+    <value>Bu ayın challenge'larına katıl, tamamla ve madalyanı kap.</value>
+  </data>
+  <data name="ChallengeEndingSoon_Title" xml:space="preserve">
+    <value>"{0}" bitmek üzere</value>
+  </data>
+  <data name="ChallengeEndingSoon_Body" xml:space="preserve">
+    <value>Bitmesine {0} gün kaldı ve madalyaya {1} adım kaldı. Hadi bitir!</value>
+  </data>
 </root>

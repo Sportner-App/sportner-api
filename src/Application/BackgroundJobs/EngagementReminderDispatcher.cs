@@ -23,7 +23,9 @@ internal sealed class EngagementReminderDispatcher : IEngagementReminderDispatch
         NotificationType.StreakAtRisk,
         NotificationType.WeeklyGoalNudge,
         NotificationType.NewEventsNearby,
-        NotificationType.ComeBack
+        NotificationType.ComeBack,
+        NotificationType.ChallengesLaunched,
+        NotificationType.ChallengeEndingSoon
     ];
 
     private static readonly TimeSpan InactiveThreshold = TimeSpan.FromDays(14);

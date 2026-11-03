@@ -603,4 +603,16 @@
   <data name="Location_ReverseFailed" xml:space="preserve">
     <value>Seçilen nokta için adres bulunamadı.</value>
   </data>
+  <data name="Challenge_NotFound" xml:space="preserve">
+    <value>Challenge bulunamadı.</value>
+  </data>
+  <data name="Challenge_NotRunning" xml:space="preserve">
+    <value>Bu challenge şu an aktif değil.</value>
+  </data>
+  <data name="Challenge_AlreadyCompleted" xml:space="preserve">
+    <value>Tamamladığın bir challenge'dan ayrılamazsın.</value>
+  </data>
+  <data name="Challenge_NotAuthenticated" xml:space="preserve">
+    <value>Bu istek için giriş yapmış bir kullanıcı gerekiyor.</value>
+  </data>
 </root>

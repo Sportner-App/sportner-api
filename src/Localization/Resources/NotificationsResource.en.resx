@@ -236,4 +236,22 @@
   <data name="ComeBack_Body" xml:space="preserve">
     <value>There are {1} events in {0} this week. Time to get back on the field.</value>
   </data>
+  <data name="ChallengeCompleted_Title" xml:space="preserve">
+    <value>🏅 Challenge complete!</value>
+  </data>
+  <data name="ChallengeCompleted_Body" xml:space="preserve">
+    <value>You completed "{0}". Your medal is on your profile.</value>
+  </data>
+  <data name="ChallengesLaunched_Title" xml:space="preserve">
+    <value>{0} challenges are live 🏁</value>
+  </data>
+  <data name="ChallengesLaunched_Body" xml:space="preserve">
+    <value>Join this month's challenges, finish them and grab your medal.</value>
+  </data>
+  <data name="ChallengeEndingSoon_Title" xml:space="preserve">
+    <value>"{0}" is ending soon</value>
+  </data>
+  <data name="ChallengeEndingSoon_Body" xml:space="preserve">
+    <value>{0} days left and {1} more to earn the medal. Finish it!</value>
+  </data>
 </root>

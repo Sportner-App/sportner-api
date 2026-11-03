@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Domain.Badges;
+using Sportner.Domain.Challenges;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
@@ -104,6 +105,10 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Quest> Quests => Set<Quest>();
 
     public DbSet<UserQuest> UserQuests => Set<UserQuest>();
+
+    public DbSet<Challenge> Challenges => Set<Challenge>();
+
+    public DbSet<ChallengeParticipant> ChallengeParticipants => Set<ChallengeParticipant>();
 
     public DbSet<Album> Albums => Set<Album>();
 

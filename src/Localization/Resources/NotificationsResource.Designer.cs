@@ -487,5 +487,41 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("ComeBack_Body", resourceCulture);
             }
         }
+
+        public static string ChallengeCompleted_Title {
+            get {
+                return ResourceManager.GetString("ChallengeCompleted_Title", resourceCulture);
+            }
+        }
+
+        public static string ChallengeCompleted_Body {
+            get {
+                return ResourceManager.GetString("ChallengeCompleted_Body", resourceCulture);
+            }
+        }
+
+        public static string ChallengesLaunched_Title {
+            get {
+                return ResourceManager.GetString("ChallengesLaunched_Title", resourceCulture);
+            }
+        }
+
+        public static string ChallengesLaunched_Body {
+            get {
+                return ResourceManager.GetString("ChallengesLaunched_Body", resourceCulture);
+            }
+        }
+
+        public static string ChallengeEndingSoon_Title {
+            get {
+                return ResourceManager.GetString("ChallengeEndingSoon_Title", resourceCulture);
+            }
+        }
+
+        public static string ChallengeEndingSoon_Body {
+            get {
+                return ResourceManager.GetString("ChallengeEndingSoon_Body", resourceCulture);
+            }
+        }
     }
 }

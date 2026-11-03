@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Common.Search;
 using Sportner.Domain.Badges;
+using Sportner.Domain.Challenges;
 using Sportner.Domain.Events;
 using Sportner.Domain.Feedback;
 using Sportner.Domain.Locations;
@@ -20,6 +21,7 @@ internal static class ModelBuilderExtensions
 {
     public static void ApplyDocumentedConstraints(this ModelBuilder modelBuilder)
     {
+        ConfigureChallengeMappings(modelBuilder);
         ConfigureUniqueIndexes(modelBuilder);
         ConfigureQueryIndexes(modelBuilder);
         ConfigurePropertyMappings(modelBuilder);
@@ -253,6 +255,14 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<UserQuest>()
             .HasIndex(entity => new { entity.UserId, entity.QuestId })
+            .IsUnique();
+
+        modelBuilder.Entity<Challenge>()
+            .HasIndex(entity => entity.Code)
+            .IsUnique();
+
+        modelBuilder.Entity<ChallengeParticipant>()
+            .HasIndex(entity => new { entity.ChallengeId, entity.UserId })
             .IsUnique();
 
         modelBuilder.Entity<Report>()
@@ -730,6 +740,23 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Organization>()
             .Property(entity => entity.InviteCode)
             .HasMaxLength(Organization.InviteCodeLength);
+    }
+
+    private static void ConfigureChallengeMappings(ModelBuilder modelBuilder)
+    {
+        var challenge = modelBuilder.Entity<Challenge>();
+        challenge.Property(entity => entity.Code).HasMaxLength(100);
+        challenge.Property(entity => entity.Title).HasMaxLength(150);
+        challenge.Property(entity => entity.TitleEn).HasMaxLength(150);
+        challenge.Property(entity => entity.Description).HasMaxLength(1000);
+        challenge.Property(entity => entity.DescriptionEn).HasMaxLength(1000);
+        challenge.Property(entity => entity.Icon).HasMaxLength(50);
+        challenge.Property(entity => entity.SponsorName).HasMaxLength(100);
+        challenge.Property(entity => entity.SponsorLogoUrl).HasMaxLength(500);
+        challenge.Property(entity => entity.RewardText).HasMaxLength(300);
+        challenge.Property(entity => entity.RewardTextEn).HasMaxLength(300);
+        challenge.HasIndex(entity => new { entity.StartsAt, entity.EndsAt });
+        modelBuilder.Entity<ChallengeParticipant>().HasIndex(entity => entity.UserId);
     }
 
     private static void ConfigureDefaults(ModelBuilder modelBuilder)
@@ -1263,6 +1290,24 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.BadgeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Challenge>()
+            .HasOne<Sport>()
+            .WithMany()
+            .HasForeignKey(entity => entity.SportId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ChallengeParticipant>()
+            .HasOne<Challenge>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ChallengeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ChallengeParticipant>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Quest>()
             .HasOne<Badge>()

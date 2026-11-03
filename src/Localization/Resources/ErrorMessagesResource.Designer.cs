@@ -1237,5 +1237,28 @@ namespace Sportner.Localization.Resources {
             }
         }
 
-}
+        public static string Challenge_NotFound {
+            get {
+                return ResourceManager.GetString("Challenge_NotFound", resourceCulture);
+            }
+        }
+
+        public static string Challenge_NotRunning {
+            get {
+                return ResourceManager.GetString("Challenge_NotRunning", resourceCulture);
+            }
+        }
+
+        public static string Challenge_AlreadyCompleted {
+            get {
+                return ResourceManager.GetString("Challenge_AlreadyCompleted", resourceCulture);
+            }
+        }
+
+        public static string Challenge_NotAuthenticated {
+            get {
+                return ResourceManager.GetString("Challenge_NotAuthenticated", resourceCulture);
+            }
+        }
+    }
 }

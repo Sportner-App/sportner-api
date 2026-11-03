@@ -44,5 +44,8 @@ public enum NotificationType : short
     StreakAtRisk = 39,
     WeeklyGoalNudge = 40,
     NewEventsNearby = 41,
-    ComeBack = 42
+    ComeBack = 42,
+    ChallengeCompleted = 43,
+    ChallengesLaunched = 44,
+    ChallengeEndingSoon = 45
 }

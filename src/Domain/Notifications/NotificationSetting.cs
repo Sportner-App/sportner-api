@@ -223,6 +223,9 @@ public class NotificationSetting : AggregateRoot
             NotificationType.WeeklyGoalNudge => (true, true, false),
             NotificationType.NewEventsNearby => (true, true, false),
             NotificationType.ComeBack => (true, true, false),
+            NotificationType.ChallengeCompleted => (true, true, false),
+            NotificationType.ChallengesLaunched => (true, true, false),
+            NotificationType.ChallengeEndingSoon => (true, true, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

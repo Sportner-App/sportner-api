@@ -603,4 +603,16 @@
   <data name="Location_ReverseFailed" xml:space="preserve">
     <value>No address could be found for the selected point.</value>
   </data>
+  <data name="Challenge_NotFound" xml:space="preserve">
+    <value>Challenge not found.</value>
+  </data>
+  <data name="Challenge_NotRunning" xml:space="preserve">
+    <value>This challenge is not active right now.</value>
+  </data>
+  <data name="Challenge_AlreadyCompleted" xml:space="preserve">
+    <value>You can't leave a challenge you've completed.</value>
+  </data>
+  <data name="Challenge_NotAuthenticated" xml:space="preserve">
+    <value>You need to be signed in for this request.</value>
+  </data>
 </root>

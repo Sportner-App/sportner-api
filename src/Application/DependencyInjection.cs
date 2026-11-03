@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IExpiredSessionCleaner, ExpiredSessionCleaner>();
         services.AddScoped<IEventReminderDispatcher, EventReminderDispatcher>();
         services.AddScoped<IEngagementReminderDispatcher, EngagementReminderDispatcher>();
+        services.AddScoped<IChallengeDispatcher, ChallengeDispatcher>();
         services.AddScoped<IEventCompletionDispatcher, EventCompletionDispatcher>();
         services.AddScoped<IEventSeriesDispatcher, EventSeriesDispatcher>();
         services.AddScoped<IAttendanceAutoConfirmDispatcher, AttendanceAutoConfirmDispatcher>();
