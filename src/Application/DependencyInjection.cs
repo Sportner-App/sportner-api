@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.AddScoped<IEventSeriesDispatcher, EventSeriesDispatcher>();
         services.AddScoped<IAttendanceAutoConfirmDispatcher, AttendanceAutoConfirmDispatcher>();
         services.AddScoped<INotificationDeliveryDispatcher, NotificationDeliveryDispatcher>();
+        services.AddScoped<IPushReceiptChecker, PushReceiptChecker>();
         // API overrides with SignalRChatRealtimeNotifier; workers/tests keep the no-op.
         services.AddSingleton<IChatRealtimeNotifier, NullChatRealtimeNotifier>();
 

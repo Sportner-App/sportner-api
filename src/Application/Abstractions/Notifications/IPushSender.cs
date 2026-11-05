@@ -15,9 +15,13 @@ public sealed record PushMessage(
     Guid? EntityId,
     string? ActorAvatarUrl = null);
 
-public sealed record PushSendResult(bool Succeeded, bool InvalidToken, string? ErrorMessage)
+public sealed record PushSendResult(
+    bool Succeeded,
+    bool InvalidToken,
+    string? ErrorMessage,
+    string? TicketId = null)
 {
-    public static PushSendResult Ok() => new(true, false, null);
+    public static PushSendResult Ok(string? ticketId = null) => new(true, false, null, ticketId);
 
     public static PushSendResult Invalid(string? error = null) =>
         new(false, true, error ?? "Push token is invalid.");
@@ -25,7 +29,18 @@ public sealed record PushSendResult(bool Succeeded, bool InvalidToken, string? E
     public static PushSendResult Failed(string error) => new(false, false, error);
 }
 
+public sealed record PushReceipt(
+    bool Delivered,
+    bool InvalidToken,
+    string? ErrorCode,
+    string? ErrorMessage);
+
 public interface IPushSender
 {
     Task<PushSendResult> SendAsync(PushMessage message, CancellationToken cancellationToken = default);
+
+    /// <summary>Receipts by ticket id; a ticket with no receipt yet is simply absent.</summary>
+    Task<IReadOnlyDictionary<string, PushReceipt>> GetReceiptsAsync(
+        IReadOnlyCollection<string> ticketIds,
+        CancellationToken cancellationToken = default);
 }

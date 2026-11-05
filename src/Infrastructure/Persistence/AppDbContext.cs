@@ -98,6 +98,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<NotificationSetting> NotificationSettings => Set<NotificationSetting>();
 
     public DbSet<NotificationDeliveryOutbox> NotificationDeliveryOutbox => Set<NotificationDeliveryOutbox>();
+    public DbSet<PushDeliveryTicket> PushDeliveryTickets => Set<PushDeliveryTicket>();
 
     public DbSet<Badge> Badges => Set<Badge>();
 

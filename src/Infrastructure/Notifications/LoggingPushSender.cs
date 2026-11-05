@@ -34,6 +34,17 @@ public sealed class LoggingPushSender : IPushSender
         return Task.FromResult(PushSendResult.Ok());
     }
 
+    public Task<IReadOnlyDictionary<string, PushReceipt>> GetReceiptsAsync(
+        IReadOnlyCollection<string> ticketIds,
+        CancellationToken cancellationToken = default)
+    {
+        _ = ticketIds;
+        _ = cancellationToken;
+
+        return Task.FromResult<IReadOnlyDictionary<string, PushReceipt>>(
+            new Dictionary<string, PushReceipt>());
+    }
+
     private static string Mask(string token)
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length <= 8)

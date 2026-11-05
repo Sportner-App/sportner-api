@@ -9,6 +9,7 @@ namespace Sportner.Infrastructure.Notifications;
 public sealed class ExpoPushSender : IPushSender
 {
     private const string SendEndpoint = "https://exp.host/--/api/v2/push/send";
+    private const string ReceiptsEndpoint = "https://exp.host/--/api/v2/push/getReceipts";
     private const string DeviceNotRegistered = "DeviceNotRegistered";
 
     private readonly HttpClient _httpClient;
@@ -82,7 +83,7 @@ public sealed class ExpoPushSender : IPushSender
             var status = GetString(ticket, "status");
             if (string.Equals(status, "ok", StringComparison.OrdinalIgnoreCase))
             {
-                return PushSendResult.Ok();
+                return PushSendResult.Ok(GetString(ticket, "id"));
             }
 
             var errorCode = ticket.TryGetProperty("details", out var details)
@@ -108,6 +109,50 @@ public sealed class ExpoPushSender : IPushSender
             _logger.LogWarning(exception, "Expo push service returned invalid JSON.");
             return PushSendResult.Failed("Expo push service returned an invalid response.");
         }
+    }
+
+    /// <summary>Failures propagate: the tickets stay pending and the next run retries them.</summary>
+    public async Task<IReadOnlyDictionary<string, PushReceipt>> GetReceiptsAsync(
+        IReadOnlyCollection<string> ticketIds,
+        CancellationToken cancellationToken = default)
+    {
+        var receipts = new Dictionary<string, PushReceipt>();
+        if (ticketIds.Count == 0)
+        {
+            return receipts;
+        }
+
+        using var response = await _httpClient.PostAsJsonAsync(
+            ReceiptsEndpoint,
+            new { ids = ticketIds },
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var document = await JsonDocument.ParseAsync(
+            responseStream,
+            cancellationToken: cancellationToken);
+
+        if (!document.RootElement.TryGetProperty("data", out var data)
+            || data.ValueKind != JsonValueKind.Object)
+        {
+            return receipts;
+        }
+
+        foreach (var property in data.EnumerateObject())
+        {
+            var errorCode = property.Value.TryGetProperty("details", out var details)
+                ? GetString(details, "error")
+                : null;
+
+            receipts[property.Name] = new PushReceipt(
+                string.Equals(GetString(property.Value, "status"), "ok", StringComparison.OrdinalIgnoreCase),
+                string.Equals(errorCode, DeviceNotRegistered, StringComparison.Ordinal),
+                errorCode,
+                GetString(property.Value, "message"));
+        }
+
+        return receipts;
     }
 
     private static string? GetString(JsonElement element, string propertyName) =>

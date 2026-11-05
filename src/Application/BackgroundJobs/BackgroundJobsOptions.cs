@@ -54,6 +54,11 @@ public sealed class BackgroundJobsOptions
 
     public int NotificationDeliveryBatchSize { get; set; } = 100;
 
+    public int PushReceiptCheckIntervalSeconds { get; set; } = 300;
+
+    /// <summary>Expo accepts at most 1000 ids per receipts request.</summary>
+    public int PushReceiptBatchSize { get; set; } = 500;
+
     /// <summary>Daily 04:00 UTC — MARATHON_RUNNER streak sweep.</summary>
     public string MarathonRunnerBadgeCron { get; set; } = "0 4 * * *";
 

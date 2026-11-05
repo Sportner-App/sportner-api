@@ -1348,6 +1348,67 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.ToTable("NotificationSettings");
                 });
 
+            modelBuilder.Entity("Sportner.Domain.Notifications.PushDeliveryTicket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CheckAfter")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("CheckedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ErrorCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("OutboxId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PushToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserDeviceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutboxId");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique();
+
+                    b.HasIndex("UserDeviceId");
+
+                    b.HasIndex("Status", "CheckAfter");
+
+                    b.ToTable("PushDeliveryTickets");
+                });
+
             modelBuilder.Entity("Sportner.Domain.Organizations.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3043,6 +3104,21 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasOne("Sportner.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Notifications.PushDeliveryTicket", b =>
+                {
+                    b.HasOne("Sportner.Domain.Notifications.NotificationDeliveryOutbox", null)
+                        .WithMany()
+                        .HasForeignKey("OutboxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sportner.Domain.Users.UserDevice", null)
+                        .WithMany()
+                        .HasForeignKey("UserDeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -59,6 +59,7 @@ public interface IApplicationDbContext
     DbSet<Notification> Notifications { get; }
     DbSet<NotificationSetting> NotificationSettings { get; }
     DbSet<NotificationDeliveryOutbox> NotificationDeliveryOutbox { get; }
+    DbSet<PushDeliveryTicket> PushDeliveryTickets { get; }
     DbSet<Badge> Badges { get; }
     DbSet<UserBadge> UserBadges { get; }
     DbSet<Quest> Quests { get; }

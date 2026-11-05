@@ -18,6 +18,9 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
     /// </summary>
     private static readonly TimeSpan StaleClaimTimeout = TimeSpan.FromMinutes(2);
 
+    /// <summary>Expo recommends waiting about 15 minutes before asking for a receipt.</summary>
+    private static readonly TimeSpan ReceiptDelay = TimeSpan.FromMinutes(15);
+
     private readonly IApplicationDbContext _dbContext;
     private readonly IPushSender _pushSender;
     private readonly TimeProvider _timeProvider;
@@ -150,6 +153,18 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
             if (result.Succeeded)
             {
                 anySuccess = true;
+
+                if (result.TicketId is not null)
+                {
+                    _dbContext.PushDeliveryTickets.Add(PushDeliveryTicket.Create(
+                        item.Id,
+                        device.Id,
+                        result.TicketId,
+                        device.PushToken!,
+                        utcNow + ReceiptDelay,
+                        utcNow));
+                }
+
                 continue;
             }
 

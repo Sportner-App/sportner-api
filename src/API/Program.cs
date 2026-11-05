@@ -47,6 +47,7 @@ builder.Services.AddCustomCors(builder.Configuration, builder.Environment);
 builder.Services.AddCustomForwardedHeaders();
 builder.Services.AddCustomRateLimiting();
 builder.Services.AddHostedService<ApiNotificationDeliveryService>();
+builder.Services.AddHostedService<ApiPushReceiptService>();
 // Overrides Application's NullChatRealtimeNotifier — must register after AddApplication.
 builder.Services.AddSingleton<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
 

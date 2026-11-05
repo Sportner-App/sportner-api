@@ -432,6 +432,12 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<NotificationSetting>().HasIndex(entity => entity.UserId);
 
+        modelBuilder.Entity<PushDeliveryTicket>().HasIndex(entity => entity.OutboxId);
+        modelBuilder.Entity<PushDeliveryTicket>().HasIndex(entity => entity.UserDeviceId);
+        modelBuilder.Entity<PushDeliveryTicket>().HasIndex(entity => entity.TicketId).IsUnique();
+        modelBuilder.Entity<PushDeliveryTicket>()
+            .HasIndex(entity => new { entity.Status, entity.CheckAfter });
+
         modelBuilder.Entity<NotificationDeliveryOutbox>().HasIndex(entity => entity.RecipientUserId);
         modelBuilder.Entity<NotificationDeliveryOutbox>().HasIndex(entity => entity.NotificationId);
         modelBuilder.Entity<NotificationDeliveryOutbox>().HasIndex(entity => entity.CreatedAt);
@@ -811,6 +817,10 @@ internal static class ModelBuilderExtensions
 
     private static void ConfigureSmallIntColumns(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<PushDeliveryTicket>().Property(entity => entity.Status)
+            .HasConversion<short>()
+            .HasColumnType("smallint");
+
         modelBuilder.Entity<User>().Property(entity => entity.Status)
             .HasColumnType("smallint");
         modelBuilder.Entity<User>().Property(entity => entity.PreferredLanguage)
@@ -886,6 +896,18 @@ internal static class ModelBuilderExtensions
 
     private static void ConfigureRelationships(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<PushDeliveryTicket>()
+            .HasOne<NotificationDeliveryOutbox>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OutboxId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PushDeliveryTicket>()
+            .HasOne<UserDevice>()
+            .WithMany()
+            .HasForeignKey(entity => entity.UserDeviceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<UserProfile>()
             .HasOne<User>()
             .WithOne(user => user.UserProfile)

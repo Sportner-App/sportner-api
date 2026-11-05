@@ -32,6 +32,15 @@ try
                 .DispatchPendingAsync(ct);
         });
 
+    builder.Services.AddIntervalJob(
+        "push-receipts",
+        options => TimeSpan.FromSeconds(options.PushReceiptCheckIntervalSeconds),
+        async (provider, ct) =>
+        {
+            await provider.GetRequiredService<IPushReceiptChecker>()
+                .CheckDueAsync(ct);
+        });
+
     var host = builder.Build();
 
     Log.Information("Sportner.Notifications.Worker starting (push delivery outbox).");
