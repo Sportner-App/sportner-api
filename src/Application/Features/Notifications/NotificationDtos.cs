@@ -41,7 +41,8 @@ public sealed record NotificationResponse(
     bool IsRead,
     DateTimeOffset? ReadAt,
     DateTimeOffset CreatedAt,
-    int OccurrenceCount);
+    int OccurrenceCount,
+    string? ActorProfileImageUrl);
 
 public sealed record NotificationSettingResponse(
     short NotificationType,
