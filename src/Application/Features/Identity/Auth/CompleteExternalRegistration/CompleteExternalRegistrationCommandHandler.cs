@@ -8,6 +8,7 @@ using Sportner.Application.Features.Identity.UserProfiles;
 using Sportner.Domain.Notifications;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Users;
+using Sportner.Application.Features.Identity.ContentPolicy;
 
 namespace Sportner.Application.Features.Identity.Auth.CompleteExternalRegistration;
 
@@ -59,6 +60,18 @@ internal sealed class CompleteExternalRegistrationCommandHandler
         }
 
         var username = ProfileQueries.NormalizeUsername(request.Username);
+
+        if (!IdentityContentPolicy.IsUsernameAllowed(username))
+        {
+            return Result<AuthenticationResponse>.Failure(AuthErrors.UsernameNotAllowed);
+        }
+
+        if (!IdentityContentPolicy.IsNameAllowed(request.FirstName)
+            || !IdentityContentPolicy.IsNameAllowed(request.LastName))
+        {
+            return Result<AuthenticationResponse>.Failure(AuthErrors.NameNotAllowed);
+        }
+
         if (await _dbContext.UserProfiles.AsNoTracking()
             .AnyAsync(profile => profile.Username == username, cancellationToken))
         {

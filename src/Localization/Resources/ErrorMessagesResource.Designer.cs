@@ -769,6 +769,24 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Identity_UsernameNotAllowed {
+            get {
+                return ResourceManager.GetString("Identity_UsernameNotAllowed", resourceCulture);
+            }
+        }
+
+        public static string Identity_NameNotAllowed {
+            get {
+                return ResourceManager.GetString("Identity_NameNotAllowed", resourceCulture);
+            }
+        }
+
+        public static string Identity_DisposableEmail {
+            get {
+                return ResourceManager.GetString("Identity_DisposableEmail", resourceCulture);
+            }
+        }
+
         public static string Profile_UsernameTaken {
             get {
                 return ResourceManager.GetString("Profile_UsernameTaken", resourceCulture);

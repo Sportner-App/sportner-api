@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Identity.ContentPolicy;
 
 namespace Sportner.Application.Features.Identity.UserProfiles.UpdateUsername;
 
@@ -45,6 +46,11 @@ internal sealed class UpdateUsernameCommandHandler
 
         if (!string.Equals(profile.Username, username, StringComparison.Ordinal))
         {
+            if (!IdentityContentPolicy.IsUsernameAllowed(username))
+            {
+                return Result<MyProfileResponse>.Failure(ProfileErrors.UsernameNotAllowed);
+            }
+
             var cooldown = TimeSpan.FromDays(ProfileQueries.UsernameChangeCooldownDays);
 
             if (utcNow - profile.UsernameChangedAt < cooldown)

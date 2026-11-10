@@ -9,6 +9,7 @@ using Sportner.Application.Features.Identity.UserProfiles;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Notifications;
 using Sportner.Domain.Users;
+using Sportner.Application.Features.Identity.ContentPolicy;
 
 namespace Sportner.Application.Features.Identity.Auth.Register;
 
@@ -44,6 +45,22 @@ internal sealed class RegisterCommandHandler
     {
         var username = ProfileQueries.NormalizeUsername(request.Username);
         var email = request.Email.Trim().ToLowerInvariant();
+
+        if (!IdentityContentPolicy.IsUsernameAllowed(username))
+        {
+            return Result<AuthenticationResponse>.Failure(AuthErrors.UsernameNotAllowed);
+        }
+
+        if (!IdentityContentPolicy.IsNameAllowed(request.FirstName)
+            || !IdentityContentPolicy.IsNameAllowed(request.LastName))
+        {
+            return Result<AuthenticationResponse>.Failure(AuthErrors.NameNotAllowed);
+        }
+
+        if (!IdentityContentPolicy.IsEmailAllowed(email))
+        {
+            return Result<AuthenticationResponse>.Failure(AuthErrors.DisposableEmail);
+        }
 
         var usernameTaken = await _dbContext.UserProfiles
             .AsNoTracking()

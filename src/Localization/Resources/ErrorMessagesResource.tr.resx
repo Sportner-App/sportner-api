@@ -621,4 +621,13 @@
   <data name="Recap_InvalidYear" xml:space="preserve">
     <value>Yıl geçersiz ya da ileri bir tarih.</value>
   </data>
+  <data name="Identity_UsernameNotAllowed" xml:space="preserve">
+    <value>Bu kullanıcı adı kullanılamaz.</value>
+  </data>
+  <data name="Identity_NameNotAllowed" xml:space="preserve">
+    <value>Bu isim kullanılamaz.</value>
+  </data>
+  <data name="Identity_DisposableEmail" xml:space="preserve">
+    <value>Geçici e-posta adresleriyle kayıt olunamaz.</value>
+  </data>
 </root>

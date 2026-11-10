@@ -20,6 +20,14 @@ internal static class ProfileErrors
         "Profile.AlreadyExists",
         ErrorMessagesResource.Profile_AlreadyExists);
 
+    internal static Error UsernameNotAllowed => Error.Validation(
+        "Profile.UsernameNotAllowed",
+        ErrorMessagesResource.Identity_UsernameNotAllowed);
+
+    internal static Error NameNotAllowed => Error.Validation(
+        "Profile.NameNotAllowed",
+        ErrorMessagesResource.Identity_NameNotAllowed);
+
     internal static Error UsernameTaken => Error.Conflict(
         "Profile.UsernameTaken",
         ErrorMessagesResource.Profile_UsernameTaken);

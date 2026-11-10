@@ -12,6 +12,14 @@ internal static class AuthErrors
         "Auth.InvalidCredentials",
         ErrorMessagesResource.Auth_InvalidCredentials);
 
+    internal static Error UsernameNotAllowed => Error.Validation(
+        "Auth.UsernameNotAllowed",
+        ErrorMessagesResource.Identity_UsernameNotAllowed);
+
+    internal static Error NameNotAllowed => Error.Validation(
+        "Auth.NameNotAllowed",
+        ErrorMessagesResource.Identity_NameNotAllowed);
+
     internal static Error UsernameTaken => Error.Conflict(
         "Auth.UsernameTaken",
         ErrorMessagesResource.Auth_UsernameTaken);
@@ -35,6 +43,10 @@ internal static class AuthErrors
     internal static Error ExternalLoginAlreadyRegistered => Error.Conflict(
         "Auth.ExternalLoginAlreadyRegistered",
         ErrorMessagesResource.Auth_ExternalLoginAlreadyRegistered);
+
+    internal static Error DisposableEmail => Error.Validation(
+        "Auth.DisposableEmail",
+        ErrorMessagesResource.Identity_DisposableEmail);
 
     internal static Error EmailTaken => Error.Conflict(
         "Auth.EmailTaken",

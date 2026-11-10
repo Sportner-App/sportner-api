@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
 using Sportner.Domain.Users;
+using Sportner.Application.Features.Identity.ContentPolicy;
 
 namespace Sportner.Application.Features.Identity.UserProfiles.CreateProfile;
 
@@ -48,6 +49,18 @@ internal sealed class CreateProfileCommandHandler
         }
 
         var username = ProfileQueries.NormalizeUsername(request.Username);
+
+        if (!IdentityContentPolicy.IsUsernameAllowed(username))
+        {
+            return Result<MyProfileResponse>.Failure(ProfileErrors.UsernameNotAllowed);
+        }
+
+        if (!IdentityContentPolicy.IsNameAllowed(request.FirstName)
+            || !IdentityContentPolicy.IsNameAllowed(request.LastName))
+        {
+            return Result<MyProfileResponse>.Failure(ProfileErrors.NameNotAllowed);
+        }
+
 
         if (await _dbContext.UserProfiles.AnyAsync(
                 profile => profile.Username == username,

@@ -621,4 +621,13 @@
   <data name="Recap_InvalidYear" xml:space="preserve">
     <value>Year is invalid or in the future.</value>
   </data>
+  <data name="Identity_UsernameNotAllowed" xml:space="preserve">
+    <value>This username cannot be used.</value>
+  </data>
+  <data name="Identity_NameNotAllowed" xml:space="preserve">
+    <value>This name cannot be used.</value>
+  </data>
+  <data name="Identity_DisposableEmail" xml:space="preserve">
+    <value>Temporary email addresses cannot be used to sign up.</value>
+  </data>
 </root>
