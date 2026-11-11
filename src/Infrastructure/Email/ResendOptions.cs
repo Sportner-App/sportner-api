@@ -13,4 +13,10 @@ public sealed class ResendOptions
 
     /// <summary>Must be a domain verified in the Resend dashboard.</summary>
     public string FromAddress { get; set; } = "Sportner <no-reply@sportner.app>";
+
+    /// <summary>
+    /// Kullanıcının "yanıtla" dediğinde yazacağı adres. Gerçekten posta alan bir kutu
+    /// olmalı (ör. Cloudflare Email Routing ile yönlendirilen destek@). Boşsa gönderilmez.
+    /// </summary>
+    public string? ReplyToAddress { get; set; }
 }
