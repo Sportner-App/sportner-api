@@ -88,6 +88,41 @@ public sealed class AdminPanelHandlerTests
     }
 
     [Fact]
+    public async Task LoginCode_WorksForGoogleOnlyAccount_LoadedFromDatabase()
+    {
+        // Regresyon: kullanıcı yeni bir bağlamdan yüklendiğinde dış girişleri boş geliyordu
+        // ve şifresiz hesap "giriş yapamaz" sayılıp 400 dönüyordu.
+        var name = Guid.NewGuid().ToString("N");
+        var admin = ExternalUser("boss@example.com");
+        await using (var seed = InMemoryDb.Create(name))
+        {
+            seed.Users.Add(admin);
+            await seed.SaveChangesAsync();
+        }
+
+        var admins = new Admins(admin.Id);
+        string? sentCode = null;
+        var email = new Mock<IEmailSender>();
+        email.Setup(e => e.SendAdminLoginCodeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, string, CancellationToken>((_, code, _) => sentCode = code)
+            .ReturnsAsync(EmailSendResult.Ok());
+
+        await using (var db = InMemoryDb.Create(name))
+        {
+            await new RequestAdminLoginCodeCommandHandler(db, admins, new PlainHasher(), email.Object, _time,
+                NullLogger<RequestAdminLoginCodeCommandHandler>.Instance)
+                .Handle(new RequestAdminLoginCodeCommand("boss@example.com"), default);
+        }
+
+        await using (var db = InMemoryDb.Create(name))
+        {
+            var result = await new VerifyAdminLoginCodeCommandHandler(db, admins, new PlainHasher(), Jwt().Object, _time)
+                .Handle(new VerifyAdminLoginCodeCommand("boss@example.com", sentCode!, null, null), default);
+            result.IsSuccess.Should().BeTrue();
+        }
+    }
+
+    [Fact]
     public async Task LoginCode_Expires()
     {
         await using var db = InMemoryDb.Create();

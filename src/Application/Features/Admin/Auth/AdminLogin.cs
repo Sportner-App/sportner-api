@@ -113,10 +113,13 @@ internal sealed class VerifyAdminLoginCodeCommandHandler
         CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();
+        // Dış girişler yüklenmeli: şifresi olmayan (yalnızca Google/Apple) hesaplarda
+        // UpdateLastLogin bunlara bakarak hesabın giriş yapabildiğine karar veriyor.
         var user = await _dbContext.Users
+            .Include(candidate => candidate.ExternalLogins)
             .FirstOrDefaultAsync(candidate => candidate.Email == email, cancellationToken);
 
-        if (user is null || user.Status != UserStatus.Active || !_admins.IsAdmin(user.Id))
+        if (user is null || !user.CanAuthenticate() || !_admins.IsAdmin(user.Id))
         {
             return Result<AuthenticationResponse>.Failure(AdminErrors.InvalidCode);
         }
