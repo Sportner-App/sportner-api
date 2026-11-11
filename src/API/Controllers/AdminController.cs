@@ -85,6 +85,10 @@ public sealed class AdminController : ApiControllerBase
         (await Sender.Send(new ListAdminFeedbackQuery(status, page, pageSize), cancellationToken))
             .ToActionResult();
 
+    [HttpGet("feedback/{feedbackId:guid}")]
+    public async Task<IActionResult> GetFeedback(Guid feedbackId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new GetAdminFeedbackQuery(feedbackId), cancellationToken)).ToActionResult();
+
     [HttpPut("feedback/{feedbackId:guid}/status")]
     public async Task<IActionResult> SetFeedbackStatus(
         Guid feedbackId,
