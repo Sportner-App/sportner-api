@@ -33,6 +33,9 @@ public class User : AggregateRoot
 
     public DateTimeOffset? EmailVerificationCodeExpiresAt { get; private set; }
 
+    /// <summary>Yanlış girilen doğrulama kodu sayısı; sınıra ulaşınca kod geçersiz olur.</summary>
+    public int EmailVerificationFailedAttempts { get; private set; }
+
     /// <summary>When the last verification code was sent — drives the resend cooldown.</summary>
     public DateTimeOffset? EmailVerificationSentAt { get; private set; }
 
@@ -40,6 +43,15 @@ public class User : AggregateRoot
     public string? PasswordResetCodeHash { get; private set; }
 
     public DateTimeOffset? PasswordResetCodeExpiresAt { get; private set; }
+
+    /// <summary>Yanlış girilen şifre sıfırlama kodu sayısı; sınıra ulaşınca kod geçersiz olur.</summary>
+    public int PasswordResetFailedAttempts { get; private set; }
+
+    /// <summary>
+    /// 6 haneli bir kod için izin verilen yanlış deneme. IP bazlı hız sınırı tek başına yetmiyor:
+    /// farklı IP'lerden gelen denemeler milyonluk kod alanını tarayabilirdi.
+    /// </summary>
+    public const int MaxCodeAttempts = 5;
 
     /// <summary>When the last password reset code was sent — drives the resend cooldown.</summary>
     public DateTimeOffset? PasswordResetSentAt { get; private set; }
@@ -333,6 +345,7 @@ public class User : AggregateRoot
 
         EmailVerificationCodeHash = codeHash;
         EmailVerificationCodeExpiresAt = expiresAt;
+        EmailVerificationFailedAttempts = 0;
         EmailVerificationSentAt = utcNow;
         Touch(utcNow);
     }
@@ -377,7 +390,34 @@ public class User : AggregateRoot
 
         PasswordResetCodeHash = codeHash;
         PasswordResetCodeExpiresAt = expiresAt;
+        PasswordResetFailedAttempts = 0;
         PasswordResetSentAt = utcNow;
+        Touch(utcNow);
+    }
+
+    /// <summary>Yanlış doğrulama kodu: sayaç artar, sınıra ulaşılırsa kod silinir ve yenisi istenmelidir.</summary>
+    public void RegisterFailedEmailVerification(DateTimeOffset utcNow)
+    {
+        EmailVerificationFailedAttempts++;
+        if (EmailVerificationFailedAttempts >= MaxCodeAttempts)
+        {
+            EmailVerificationCodeHash = null;
+            EmailVerificationCodeExpiresAt = null;
+        }
+
+        Touch(utcNow);
+    }
+
+    /// <summary>Yanlış şifre sıfırlama kodu: sayaç artar, sınıra ulaşılırsa kod silinir ve yenisi istenmelidir.</summary>
+    public void RegisterFailedPasswordReset(DateTimeOffset utcNow)
+    {
+        PasswordResetFailedAttempts++;
+        if (PasswordResetFailedAttempts >= MaxCodeAttempts)
+        {
+            PasswordResetCodeHash = null;
+            PasswordResetCodeExpiresAt = null;
+        }
+
         Touch(utcNow);
     }
 

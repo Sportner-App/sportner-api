@@ -67,6 +67,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 (int)apiException.StatusCode,
                 GetTitle((int)apiException.StatusCode),
                 apiException.Message),
+            // Aynı etkinliğe aynı anda gelen katılım istekleri gibi yarışlar: biri kazanır,
+            // diğeri güncel veriyle tekrar denesin (ör. son boş yer iki kişiye verilmesin).
+            Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException => (
+                StatusCodes.Status409Conflict,
+                ValidationResource.Exception_Base_Conflict,
+                ValidationResource.Exception_Base_Conflict),
             UnauthorizedAccessException => (
                 StatusCodes.Status401Unauthorized,
                 ValidationResource.Exception_Base_Unauthorized,

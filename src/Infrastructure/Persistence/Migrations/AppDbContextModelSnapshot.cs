@@ -459,6 +459,12 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventDate");
@@ -2426,6 +2432,9 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<int>("EmailVerificationFailedAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset?>("EmailVerificationSentAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2448,6 +2457,9 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<string>("PasswordResetCodeHash")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
+
+                    b.Property<int>("PasswordResetFailedAttempts")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("PasswordResetSentAt")
                         .HasColumnType("timestamp with time zone");
@@ -2754,9 +2766,16 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
+                    b.Property<string>("PreviousRefreshTokenHash")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
                     b.Property<string>("RefreshTokenHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("RefreshTokenRotatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2778,6 +2797,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("DeviceId");
 
                     b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("PreviousRefreshTokenHash");
 
                     b.HasIndex("RevokedAt");
 

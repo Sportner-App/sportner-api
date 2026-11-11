@@ -51,6 +51,8 @@ internal sealed class ResetPasswordCommandHandler : ICommandHandler<ResetPasswor
 
         if (!_tokenHasher.Verify(request.Code, user.PasswordResetCodeHash))
         {
+            user.RegisterFailedPasswordReset(utcNow);
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Failure(AuthErrors.PasswordResetCodeInvalid);
         }
 

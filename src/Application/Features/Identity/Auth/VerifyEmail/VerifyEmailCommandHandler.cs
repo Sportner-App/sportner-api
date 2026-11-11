@@ -64,6 +64,8 @@ internal sealed class VerifyEmailCommandHandler : ICommandHandler<VerifyEmailCom
 
         if (!_tokenHasher.Verify(request.Code, user.EmailVerificationCodeHash))
         {
+            user.RegisterFailedEmailVerification(utcNow);
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Failure(AuthErrors.EmailVerificationCodeInvalid);
         }
 

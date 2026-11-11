@@ -9,6 +9,25 @@ namespace Sportner.Application.Features.Events;
 
 internal static class EventQueries
 {
+    /// <summary>
+    /// Etkinliğe bağlı içerik (gönderi, albüm) etkinliğin kendisinden daha görünür olmasın:
+    /// organizasyona özel etkinlikte yalnızca onaylı üyeler görür.
+    /// </summary>
+    internal static async Task<bool> CanViewOrganizationScopeAsync(
+        IApplicationDbContext dbContext,
+        Guid eventId,
+        Guid? viewerUserId,
+        CancellationToken cancellationToken)
+    {
+        var organizationId = await dbContext.Events.AsNoTracking()
+            .Where(candidate => candidate.Id == eventId)
+            .Select(candidate => candidate.OrganizationId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return organizationId is not { } orgId
+            || await OrganizationQueries.IsApprovedMemberAsync(dbContext, orgId, viewerUserId, cancellationToken);
+    }
+
     internal static async Task<EventResponse?> GetDetailAsync(
         IApplicationDbContext dbContext,
         Guid eventId,

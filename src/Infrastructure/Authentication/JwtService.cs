@@ -22,7 +22,7 @@ public sealed class JwtService : IJwtService
     public AccessToken CreateAccessToken(Guid userId, IEnumerable<Claim>? additionalClaims = null)
     {
         var now = _timeProvider.GetUtcNow();
-        var expiresAt = now.AddDays(_settings.ExpirationDays);
+        var expiresAt = now.AddMinutes(_settings.ExpirationMinutes);
 
         var claims = new List<Claim>
         {

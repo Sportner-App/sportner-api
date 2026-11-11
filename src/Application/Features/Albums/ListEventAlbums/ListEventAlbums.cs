@@ -1,3 +1,4 @@
+using Sportner.Application.Features.Events;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -29,6 +30,12 @@ internal sealed class ListEventAlbumsQueryHandler
             .AnyAsync(@event => @event.Id == request.EventId, cancellationToken);
 
         if (!eventExists)
+        {
+            return Result<IReadOnlyList<AlbumListItemResponse>>.Failure(AlbumErrors.EventNotFound);
+        }
+
+        if (!await EventQueries.CanViewOrganizationScopeAsync(
+                _dbContext, request.EventId, _currentUser.UserId, cancellationToken))
         {
             return Result<IReadOnlyList<AlbumListItemResponse>>.Failure(AlbumErrors.EventNotFound);
         }

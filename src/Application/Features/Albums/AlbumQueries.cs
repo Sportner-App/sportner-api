@@ -1,3 +1,4 @@
+using Sportner.Application.Features.Events;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Features.Social;
@@ -154,6 +155,11 @@ internal static class AlbumQueries
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (@event is null)
+            {
+                return false;
+            }
+
+            if (!await EventQueries.CanViewOrganizationScopeAsync(dbContext, eventId, viewerUserId, cancellationToken))
             {
                 return false;
             }

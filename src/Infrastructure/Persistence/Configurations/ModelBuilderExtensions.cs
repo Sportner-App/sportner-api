@@ -308,6 +308,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<UserSport>().HasIndex(entity => entity.SkillLevel);
 
         modelBuilder.Entity<UserSession>().HasIndex(entity => entity.UserId);
+        modelBuilder.Entity<UserSession>().HasIndex(entity => entity.PreviousRefreshTokenHash);
+        modelBuilder.Entity<UserSession>().Property(entity => entity.PreviousRefreshTokenHash).HasMaxLength(512);
         modelBuilder.Entity<UserSession>().HasIndex(entity => entity.DeviceId);
         modelBuilder.Entity<UserSession>().HasIndex(entity => entity.ExpiresAt);
         modelBuilder.Entity<UserSession>().HasIndex(entity => entity.RevokedAt);
@@ -320,6 +322,12 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<UserSavedLocation>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<UserSavedLocation>().HasIndex(entity => entity.City);
 
+        // Postgres'in xmin sistem sütunu iyimser kilit olarak: kontenjan kontrolü bellekte
+        // yapıldığı için eşzamanlı katılımlar son boş yeri birden fazla kişiye verebiliyordu.
+        // Çakışan ikinci kayıt DbUpdateConcurrencyException (409) alır.
+        modelBuilder.Entity<Event>()
+            .Property<uint>("Version")
+            .IsRowVersion();
         modelBuilder.Entity<Event>().HasIndex(entity => entity.OrganizerUserId);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.SportId);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.EventDate);

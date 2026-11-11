@@ -14,9 +14,11 @@ public sealed class JwtSettings
     public string Audience { get; set; } = string.Empty;
 
     /// <summary>
-    /// Access token lifetime in days. Refresh tokens (persisted on sessions) outlive this.
+    /// Erişim anahtarının ömrü (dakika). Kısa tutulur: çıkış ve oturum iptali erişim anahtarını
+    /// geçersiz kılmadığı için çalınan bir anahtar en fazla bu kadar işe yarar. İstemciler 401'de
+    /// yenileme anahtarıyla yenisini alır.
     /// </summary>
-    public int ExpirationDays { get; set; } = 7;
+    public int ExpirationMinutes { get; set; } = 60;
 
     /// <summary>
     /// Refresh token lifetime in days.

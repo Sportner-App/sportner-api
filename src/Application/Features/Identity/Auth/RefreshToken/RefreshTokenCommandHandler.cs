@@ -38,7 +38,25 @@ internal sealed class RefreshTokenCommandHandler
                 candidate => candidate.RefreshTokenHash == tokenHash,
                 cancellationToken);
 
-        if (session is null || !session.IsActive(utcNow))
+        if (session is null)
+        {
+            // Eski (döndürülmüş) bir anahtar tekrar geldiyse anahtar çalınmış olabilir:
+            // hem saldırgan hem gerçek kullanıcı için o oturumu kapat, yeniden giriş istensin.
+            var replayed = await _dbContext.UserSessions
+                .FirstOrDefaultAsync(
+                    candidate => candidate.PreviousRefreshTokenHash == tokenHash,
+                    cancellationToken);
+
+            if (replayed is not null && replayed.IsActive(utcNow) && replayed.IsPreviousTokenReplay(utcNow))
+            {
+                replayed.Revoke(utcNow);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+
+            return Result<AuthenticationResponse>.Failure(AuthErrors.InvalidRefreshToken);
+        }
+
+        if (!session.IsActive(utcNow))
         {
             return Result<AuthenticationResponse>.Failure(AuthErrors.InvalidRefreshToken);
         }

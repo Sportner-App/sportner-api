@@ -123,7 +123,8 @@ public sealed class ReportHandlerTests
             CancellationToken.None);
 
         created.IsSuccess.Should().BeTrue(because: string.Join("; ", created.Errors.Select(e => e.Code)));
-        review.IsReported.Should().BeTrue();
+        // Şikayet tek başına yorumu gizlemez (puan manipülasyonu); gizleme yönetici onayıyla olur.
+        review.IsReported.Should().BeFalse();
 
         var badgeAwarder = new Mock<IBadgeAwarder>();
         badgeAwarder
@@ -164,7 +165,7 @@ public sealed class ReportHandlerTests
             CancellationToken.None);
 
         secondReport.IsSuccess.Should().BeTrue();
-        otherReview.IsReported.Should().BeTrue();
+        otherReview.IsReported.Should().BeFalse();
 
         var rejectHandler = new RejectReportCommandHandler(
             db,

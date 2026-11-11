@@ -1,3 +1,4 @@
+using Sportner.Application.Features.Identity.UserProfiles;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -36,6 +37,13 @@ internal sealed class ListPostsByUserQueryHandler
         CancellationToken cancellationToken)
     {
         var viewerId = _currentUser.UserId;
+
+        // Gizli profilin gönderileri profil kadar gizli.
+        if (await ProfileQueries.CheckViewAccessAsync(_dbContext, request.UserId, viewerId, cancellationToken)
+            is { } accessError)
+        {
+            return Result<CursorPagedResult<PostResponse>>.Failure(accessError);
+        }
 
         if (viewerId is { } authenticatedViewerId)
         {

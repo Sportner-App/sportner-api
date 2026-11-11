@@ -96,6 +96,20 @@ internal static class ProfileQueries
     /// </summary>
     internal static async Task<Error?> CheckViewAccessAsync(
         IApplicationDbContext dbContext,
+        Guid userId,
+        Guid? requesterId,
+        CancellationToken cancellationToken)
+    {
+        var profile = await dbContext.UserProfiles.AsNoTracking()
+            .FirstOrDefaultAsync(candidate => candidate.UserId == userId, cancellationToken);
+
+        return profile is null
+            ? ProfileErrors.NotFound
+            : await CheckViewAccessAsync(dbContext, profile, requesterId, cancellationToken);
+    }
+
+    internal static async Task<Error?> CheckViewAccessAsync(
+        IApplicationDbContext dbContext,
         UserProfile profile,
         Guid? requesterId,
         CancellationToken cancellationToken)

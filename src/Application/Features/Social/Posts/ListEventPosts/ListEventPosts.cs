@@ -1,3 +1,4 @@
+using Sportner.Application.Features.Events;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -40,6 +41,12 @@ internal sealed class ListEventPostsQueryHandler
     {
         var limit = request.Limit is < 1 or > MaxLimit ? 20 : request.Limit;
         var viewerId = _currentUser.UserId;
+
+        if (!await EventQueries.CanViewOrganizationScopeAsync(_dbContext, request.EventId, viewerId, cancellationToken))
+        {
+            return Result<CursorPagedResult<PostResponse>>.Success(
+                CursorPagedResult<PostResponse>.Create([], null));
+        }
 
         var query = _dbContext.Posts.AsNoTracking()
             .Include(post => post.Media)

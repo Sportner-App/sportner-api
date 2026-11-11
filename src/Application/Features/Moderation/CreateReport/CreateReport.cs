@@ -111,13 +111,9 @@ internal sealed class CreateReportCommandHandler : ICommandHandler<CreateReportC
 
         _dbContext.Reports.Add(report);
 
-        await ReportQueries.ApplyReviewSideEffectsAsync(
-            _dbContext,
-            report,
-            markReported: true,
-            utcNow,
-            cancellationToken);
-
+        // Şikayet edilen yorum hemen gizlenmez: aksi halde kişi hakkındaki olumsuz
+        // yorumu tek istekle profilinden kaldırabiliyordu. Gizleme, yönetici şikayeti
+        // onayladığında (Resolve) ApplyTargetSideEffectsAsync ile yapılır.
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var response = new ReportResponse(

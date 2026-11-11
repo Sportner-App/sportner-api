@@ -1,3 +1,4 @@
+using Sportner.Application.Features.Identity.UserProfiles;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -27,6 +28,12 @@ internal sealed class ListReviewsForUserQueryHandler
         ListReviewsForUserQuery request,
         CancellationToken cancellationToken)
     {
+        if (await ProfileQueries.CheckViewAccessAsync(_dbContext, request.UserId, _currentUser.UserId, cancellationToken)
+            is { } accessError)
+        {
+            return Result<PagedResult<ReviewResponse>>.Failure(accessError);
+        }
+
         var pagination = new PaginationRequest(request.Page, request.PageSize);
 
         var query = ReviewQueries.Project(_dbContext, reviews =>

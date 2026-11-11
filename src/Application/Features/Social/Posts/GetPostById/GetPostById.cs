@@ -1,3 +1,4 @@
+using Sportner.Application.Features.Events;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -40,6 +41,12 @@ internal sealed class GetPostByIdQueryHandler : IQueryHandler<GetPostByIdQuery, 
         }
 
         if (post.IsHidden && _currentUser.UserId != post.UserId)
+        {
+            return Result<PostResponse>.Failure(PostErrors.NotFound);
+        }
+
+        if (post.EventId is { } eventId
+            && !await EventQueries.CanViewOrganizationScopeAsync(_dbContext, eventId, _currentUser.UserId, cancellationToken))
         {
             return Result<PostResponse>.Failure(PostErrors.NotFound);
         }

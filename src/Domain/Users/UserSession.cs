@@ -23,6 +23,24 @@ public class UserSession : AuditableEntity
 
     public DateTimeOffset? RevokedAt { get; private set; }
 
+    /// <summary>
+    /// Bir önceki (döndürülmüş) yenileme anahtarının özeti. Bu anahtar tekrar gelirse
+    /// çalınmış ve başka biri tarafından kullanılmış demektir; oturum kapatılır.
+    /// </summary>
+    public string? PreviousRefreshTokenHash { get; private set; }
+
+    public DateTimeOffset? RefreshTokenRotatedAt { get; private set; }
+
+    /// <summary>
+    /// Yanıtı ağda kaybolan bir yenilemenin istemci tarafından tekrar denenmesi kötüye kullanım
+    /// sayılmasın diye kısa bir tolerans.
+    /// </summary>
+    public static readonly TimeSpan ReuseGracePeriod = TimeSpan.FromSeconds(30);
+
+    /// <summary>Eski anahtarın tolerans süresinden sonra tekrar kullanılması: anahtar çalınmış.</summary>
+    public bool IsPreviousTokenReplay(DateTimeOffset utcNow) =>
+        RefreshTokenRotatedAt is { } rotatedAt && utcNow - rotatedAt > ReuseGracePeriod;
+
     public static UserSession Create(
         Guid userId,
         string refreshTokenHash,
@@ -82,6 +100,8 @@ public class UserSession : AuditableEntity
             throw new DomainException("Session expiration must be later than the current time.");
         }
 
+        PreviousRefreshTokenHash = RefreshTokenHash;
+        RefreshTokenRotatedAt = utcNow;
         RefreshTokenHash = NormalizeRefreshTokenHash(refreshTokenHash);
         ExpiresAt = expiresAt;
         Touch(utcNow);
