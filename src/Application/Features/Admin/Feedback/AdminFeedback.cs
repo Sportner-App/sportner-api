@@ -83,6 +83,43 @@ internal sealed class ListAdminFeedbackQueryHandler : IQueryHandler<ListAdminFee
     }
 }
 
+public sealed record GetAdminFeedbackQuery(Guid FeedbackId) : IQuery<AdminFeedbackItem>;
+
+/// <summary>İşlem kaydından tek bir geri bildirime gitmek için.</summary>
+internal sealed class GetAdminFeedbackQueryHandler : IQueryHandler<GetAdminFeedbackQuery, AdminFeedbackItem>
+{
+    private readonly IApplicationDbContext _dbContext;
+
+    public GetAdminFeedbackQueryHandler(IApplicationDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<AdminFeedbackItem>> Handle(GetAdminFeedbackQuery request, CancellationToken cancellationToken)
+    {
+        var item = await _dbContext.AppFeedbacks.AsNoTracking()
+            .Where(feedback => feedback.Id == request.FeedbackId)
+            .Join(
+                _dbContext.Users.AsNoTracking(),
+                feedback => feedback.UserId,
+                user => user.Id,
+                (feedback, user) => new AdminFeedbackItem(
+                    feedback.Id,
+                    feedback.Content,
+                    feedback.Status,
+                    feedback.CreatedAt,
+                    feedback.AdminReply,
+                    feedback.RepliedAt,
+                    user.Id,
+                    user.UserProfile != null ? user.UserProfile.Username : null,
+                    user.UserProfile != null ? user.UserProfile.FirstName : null,
+                    user.Email,
+                    user.UserProfile != null ? user.UserProfile.ProfileImageUrl : null))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return item is null
+            ? Result<AdminFeedbackItem>.Failure(AdminErrors.FeedbackNotFound)
+            : Result<AdminFeedbackItem>.Success(item);
+    }
+}
+
 public sealed record SetFeedbackStatusCommand(Guid FeedbackId, AppFeedbackStatus Status) : ICommand;
 
 internal sealed class SetFeedbackStatusCommandHandler : ICommandHandler<SetFeedbackStatusCommand>
