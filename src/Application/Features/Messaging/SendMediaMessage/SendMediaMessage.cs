@@ -1,3 +1,4 @@
+using Sportner.Application.Common.Media;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -128,7 +129,7 @@ internal sealed class SendMediaMessageCommandHandler
             }
         }
 
-        var extension = Path.GetExtension(request.FileName);
+        var extension = MediaFileExtension.FromContentType(request.ContentType);
         var objectPath = $"{conversation.Id}/{userId}/{Guid.NewGuid():N}{extension}";
         var mediaSize = request.Content.CanSeek ? request.Content.Length : 0;
 

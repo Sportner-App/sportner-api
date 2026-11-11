@@ -1,3 +1,4 @@
+using Sportner.Application.Common.Media;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
@@ -69,7 +70,7 @@ internal sealed class AddAlbumMediaCommandHandler : ICommandHandler<AddAlbumMedi
             return Result<AlbumResponse>.Failure(AlbumErrors.CannotUpload);
         }
 
-        var extension = Path.GetExtension(request.FileName);
+        var extension = MediaFileExtension.FromContentType(request.ContentType);
         var objectPath = $"{userId}/{album.Id}/{Guid.NewGuid():N}{extension}";
         var storedPath = await _fileStorage.UploadAsync(
             StorageBuckets.Albums,

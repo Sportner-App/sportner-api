@@ -1,0 +1,66 @@
+# Supabase free planında otomatik yedek yok. Her gece veritabanının tam dökümü
+# alınır, parolayla şifrelenir ve 30 gün saklanan bir GitHub artifact'i olarak
+# yüklenir. Depolama (fotoğraflar) bu yedeğe dahil değildir.
+#
+# Gerekli repository secret'ları (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL       Supabase → Connect → Session pooler bağlantı adresi
+#                         (postgresql://postgres.<ref>:<şifre>@...pooler.supabase.com:5432/postgres)
+#   BACKUP_PASSPHRASE     Yedeği şifreleyen uzun bir parola; bir şifre yöneticisinde sakla,
+#                         kaybolursa yedekler açılamaz.
+#
+# Geri yükleme:
+#   gpg --decrypt sportner-<tarih>.dump.gpg > sportner.dump
+#   pg_restore --clean --if-exists --no-owner -d "<hedef bağlantı adresi>" sportner.dump
+name: Database backup
+
+on:
+  schedule:
+    - cron: "30 0 * * *" # her gece 03:30 (TSİ)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::SUPABASE_DB_URL ve BACKUP_PASSPHRASE secret'ları tanımlı değil."
+            exit 1
+          fi
+          stamp=$(date -u +%Y-%m-%d)
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+          # public ve auth/storage meta verisi; Supabase'in yönettiği iç şemalar hariç.
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --format=custom --no-owner --no-privileges \
+            --schema=public --schema=storage \
+            --file=backup.dump
+          gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 \
+            --passphrase "$BACKUP_PASSPHRASE" \
+            --output "sportner-$stamp.dump.gpg" backup.dump
+          rm backup.dump
+          ls -lh "sportner-$stamp.dump.gpg"
+
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: sportner-db-${{ env.STAMP }}
+          path: sportner-*.dump.gpg
+          retention-days: 30
+          if-no-files-found: error

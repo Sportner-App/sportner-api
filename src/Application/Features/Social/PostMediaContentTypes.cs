@@ -58,16 +58,9 @@ internal static class PostMediaContentTypes
         return false;
     }
 
-    public static string ResolveExtension(string? fileName, string contentType)
-    {
-        var extension = Path.GetExtension(fileName);
-        if (!string.IsNullOrWhiteSpace(extension)
-            && ContentTypeByExtension.ContainsKey(extension))
-        {
-            return extension.ToLowerInvariant();
-        }
-
-        return contentType.ToLowerInvariant() switch
+    /// <summary>Uzantı dosya adından değil, doğrulanmış içerik türünden gelir.</summary>
+    public static string ResolveExtension(string? fileName, string contentType) =>
+        contentType.ToLowerInvariant() switch
         {
             "image/png" => ".png",
             "image/webp" => ".webp",
@@ -76,7 +69,6 @@ internal static class PostMediaContentTypes
             "video/webm" => ".webm",
             _ => ".jpg"
         };
-    }
 
     private static string StripParameters(string? contentType)
     {

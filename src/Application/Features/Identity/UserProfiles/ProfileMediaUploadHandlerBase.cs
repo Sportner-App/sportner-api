@@ -1,3 +1,4 @@
+using Sportner.Application.Common.Media;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
@@ -48,7 +49,7 @@ internal abstract class ProfileMediaUploadHandlerBase : ProfileUpdateHandlerBase
                 return Result<MyProfileResponse>.Failure(ProfileErrors.InvalidMedia);
             }
 
-            var extension = Path.GetExtension(fileName);
+            var extension = MediaFileExtension.FromContentType(contentType);
             var objectPath = $"{userId}/{Guid.NewGuid():N}{extension}";
 
             var uploadedPath = await _fileStorage.UploadAsync(

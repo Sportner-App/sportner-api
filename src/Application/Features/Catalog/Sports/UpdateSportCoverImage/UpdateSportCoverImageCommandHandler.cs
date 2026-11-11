@@ -1,3 +1,4 @@
+using Sportner.Application.Common.Media;
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
@@ -47,7 +48,7 @@ internal sealed class UpdateSportCoverImageCommandHandler
                 return Result<SportResponse>.Failure(SportErrors.InvalidMedia);
             }
 
-            var extension = Path.GetExtension(request.FileName);
+            var extension = MediaFileExtension.FromContentType(request.ContentType);
             var objectPath = $"{sport.Id}/{Guid.NewGuid():N}{extension}";
 
             var uploadedPath = await _fileStorage.UploadAsync(

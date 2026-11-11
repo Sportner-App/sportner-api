@@ -10,6 +10,11 @@ public static class StorageBuckets
 
     public const string PostMedia = "post-media";
 
+    /// <summary>
+    /// Özel mesaj eki: Supabase'de <b>private</b> bucket (11 Kas 2026). <see cref="IFileStorage.GetPublicUrl"/>
+    /// burada çalışmaz; uygulamada medya mesajı gösterilecekse API, sohbet üyeliğini kontrol edip
+    /// Supabase'in süreli imzalı bağlantısını (POST /storage/v1/object/sign/...) dönmeli.
+    /// </summary>
     public const string ChatMedia = "chat-media";
 
     public const string Albums = "albums";
