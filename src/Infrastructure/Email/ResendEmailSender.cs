@@ -167,7 +167,7 @@ internal static class EmailTemplate
         var body = $"""
             <p style="margin:0 0 24px;color:{Ink};">{Encode(intro)}</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td align="center" bgcolor="{Lime}" style="background:{Lime};border-radius:16px;padding:22px 0;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:36px;font-weight:800;letter-spacing:10px;color:{Bg};">{Encode(code)}</td>
+            <td align="center" bgcolor="{Lime}" style="background-color:{Lime};border-radius:16px;padding:22px 0;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:36px;font-weight:800;letter-spacing:10px;color:{Bg};">{Encode(code)}</td>
             </tr></table>
             <p style="margin:18px 0 0;color:{Muted};font-size:13px;">⏱ {Encode(validity)}</p>
             """;
@@ -181,7 +181,7 @@ internal static class EmailTemplate
         var body = $"""
             <p style="margin:0 0 24px;color:{Ink};">{Multiline(reply)}</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td bgcolor="{Surface2}" style="background:{Surface2};border-left:3px solid {Lime};border-radius:12px;padding:14px 16px;">
+            <td bgcolor="{Surface2}" style="background-color:{Surface2};border-left:3px solid {Lime};border-radius:12px;padding:14px 16px;">
             <p style="margin:0 0 6px;color:{Soft};font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Senin geri bildirimin</p>
             <p style="margin:0;color:{Muted};font-size:13px;">{Multiline(originalFeedback)}</p>
             </td></tr></table>
@@ -200,7 +200,7 @@ internal static class EmailTemplate
     private static EmailContent Build(string subject, string headline, string bodyHtml, string bodyText, string reason)
     {
         var stripe = string.Concat(SportColors.Select(color =>
-            $"<td height=\"4\" bgcolor=\"{color}\" style=\"background:{color};font-size:0;line-height:0;\">&nbsp;</td>"));
+            $"<td height=\"4\" bgcolor=\"{color}\" style=\"background-color:{color};font-size:0;line-height:0;\">&nbsp;</td>"));
 
         var html = $"""
             <!DOCTYPE html>
@@ -213,21 +213,24 @@ internal static class EmailTemplate
             <title>{Encode(subject)}</title>
             </head>
             <body style="margin:0;padding:0;background:{Bg};">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="{Bg}" style="background:{Bg};background-image:radial-gradient(ellipse at top,#1a2e0a 0%,{Bg} 60%);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="{Bg}" style="background-color:{Bg};background-image:radial-gradient(ellipse at top,#1a2e0a 0%,{Bg} 60%);">
             <tr><td align="center" style="padding:40px 16px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
             <tr><td align="center" style="padding:0 0 28px;">
             <a href="{SiteUrl}" style="text-decoration:none;font-family:{Font};font-size:16px;font-weight:800;letter-spacing:5px;color:{Ink};">
             <img src="{LogoUrl}" width="36" height="36" alt="Sportner" style="vertical-align:middle;border:0;margin-right:10px;border-radius:8px;">SPORTNER</a>
             </td></tr>
-            <tr><td bgcolor="{Surface}" style="background:{Surface};border:1px solid {Line};border-radius:24px;overflow:hidden;">
+            <tr><td>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="{Surface}" style="background-color:{Surface};border:1px solid {Line};border-radius:24px;">
+            <tr><td style="padding:0;border-radius:24px 24px 0 0;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>{stripe}</tr></table>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td style="padding:32px 32px 36px;font-family:{Font};font-size:15px;line-height:1.65;color:{Ink};">
+            </td></tr>
+            <tr><td bgcolor="{Surface}" style="background-color:{Surface};padding:32px 32px 36px;border-radius:0 0 24px 24px;font-family:{Font};font-size:15px;line-height:1.65;color:{Ink};">
             <p style="margin:0 0 6px;color:{Lime};font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;">Sportner</p>
             <h1 style="margin:0 0 20px;font-size:26px;line-height:1.2;font-weight:800;color:{Ink};">{Encode(headline)}</h1>
             {bodyHtml}
-            </td></tr></table>
+            </td></tr>
+            </table>
             </td></tr>
             <tr><td style="padding:24px 8px 0;font-family:{Font};font-size:12px;line-height:1.6;color:{Soft};text-align:center;">
             {Encode(reason)}<br><br>
