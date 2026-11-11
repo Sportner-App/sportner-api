@@ -194,7 +194,9 @@ internal static class SeedData
         new(ReportReasonCodes.FakeInformation, "Yanlış Bilgi", "Yanıltıcı veya asılsız bilgi.", 7),
         new(ReportReasonCodes.Impersonation, "Sahte Hesap", "Başkasının kimliğine bürünme.", 8),
         new(ReportReasonCodes.Scam, "Dolandırıcılık", "Hileli veya aldatıcı davranış.", 9),
-        new(ReportReasonCodes.Other, "Diğer", "Diğer nedenlerle kapsanmayan durumlar.", 10)
+        // Telif sahibinin içeriği bildirebilmesi (5846 FSEK ek m.4, 5651 m.5).
+        new(ReportReasonCodes.Copyright, "Telif Hakkı İhlali", "Başkasına ait fotoğraf, video veya metnin izinsiz kullanımı.", 10),
+        new(ReportReasonCodes.Other, "Diğer", "Diğer nedenlerle kapsanmayan durumlar.", 11)
     };
 
     internal static readonly IReadOnlyList<QuestSeed> Quests = new QuestSeed[]

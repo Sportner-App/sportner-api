@@ -11,5 +11,6 @@ public static class ReportReasonCodes
     public const string FakeInformation = "FAKE_INFORMATION";
     public const string Impersonation = "IMPERSONATION";
     public const string Scam = "SCAM";
+    public const string Copyright = "COPYRIGHT";
     public const string Other = "OTHER";
 }
