@@ -38,6 +38,19 @@ internal static class IdentityContentPolicy
 
     private static readonly Lazy<HashSet<string>> DisposableDomains = new(LoadDisposableDomains);
 
+    /// <summary>
+    /// LDNOOBW topluluk listesi (tr + en), <see cref="Collapse"/> biçiminde gömülü dosyadan.
+    /// Yalnızca tam kelime olarak eşleşir; kelime grupları boşlukla ayrılmış durur.
+    /// </summary>
+    private static readonly Lazy<HashSet<string>> CommunityList = new(
+        () => LoadResourceLines("blocked-words.txt"));
+
+    private static readonly Lazy<HashSet<string>> CommunityPhrasesJoined = new(
+        () => CommunityList.Value
+            .Where(entry => entry.Contains(' '))
+            .Select(entry => entry.Replace(" ", string.Empty))
+            .ToHashSet(StringComparer.Ordinal));
+
     public static bool IsUsernameAllowed(string username) =>
         IsTextAllowed(username)
         && !ReservedUsernames.Contains(Collapse(username))
@@ -83,7 +96,27 @@ internal static class IdentityContentPolicy
             [' ', '.', '_', '-', '\''],
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        return !parts.Select(Collapse).Any(BlockedWords.Contains);
+        var tokens = parts.Select(Collapse).Where(token => token.Length > 0).ToArray();
+        if (tokens.Any(token => BlockedWords.Contains(token) || CommunityList.Value.Contains(token)))
+        {
+            return false;
+        }
+
+        // Listedeki "big tits" gibi kelime grupları: ya ardışık parçalar olarak ("big_tits")
+        // ya da metnin tamamı olarak ("bigtits") geçerse yakalanır. Metin içinde serbestçe
+        // aranmıyor, yoksa iki masum kelimenin birleşimi de takılırdı.
+        for (var size = 2; size <= Math.Min(tokens.Length, 4); size++)
+        {
+            for (var start = 0; start + size <= tokens.Length; start++)
+            {
+                if (CommunityList.Value.Contains(string.Join(' ', tokens, start, size)))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return !CommunityPhrasesJoined.Value.Contains(collapsed);
     }
 
     /// <summary>
@@ -129,25 +162,28 @@ internal static class IdentityContentPolicy
         return builder.ToString();
     }
 
-    private static HashSet<string> LoadDisposableDomains()
+    private static HashSet<string> LoadDisposableDomains() =>
+        LoadResourceLines("disposable-email-domains.txt");
+
+    private static HashSet<string> LoadResourceLines(string fileName)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var resource = assembly.GetManifestResourceNames()
-            .Single(name => name.EndsWith("disposable-email-domains.txt", StringComparison.Ordinal));
+            .Single(name => name.EndsWith(fileName, StringComparison.Ordinal));
 
         using var stream = assembly.GetManifestResourceStream(resource)!;
         using var reader = new StreamReader(stream);
 
-        var domains = new HashSet<string>(StringComparer.Ordinal);
+        var lines = new HashSet<string>(StringComparer.Ordinal);
         while (reader.ReadLine() is { } line)
         {
-            var domain = line.Trim().ToLowerInvariant();
-            if (domain.Length > 0 && !domain.StartsWith('#'))
+            var entry = line.Trim().ToLowerInvariant();
+            if (entry.Length > 0 && !entry.StartsWith('#'))
             {
-                domains.Add(domain);
+                lines.Add(entry);
             }
         }
 
-        return domains;
+        return lines;
     }
 }

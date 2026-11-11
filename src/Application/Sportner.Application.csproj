@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Features\Identity\ContentPolicy\disposable-email-domains.txt" />
+    <EmbeddedResource Include="Features\Identity\ContentPolicy\blocked-words.txt" />
   </ItemGroup>
 
   <ItemGroup>
