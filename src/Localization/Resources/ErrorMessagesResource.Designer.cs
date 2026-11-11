@@ -781,6 +781,60 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Admin_InvalidCode {
+            get {
+                return ResourceManager.GetString("Admin_InvalidCode", resourceCulture);
+            }
+        }
+
+        public static string Admin_CodeTooFrequent {
+            get {
+                return ResourceManager.GetString("Admin_CodeTooFrequent", resourceCulture);
+            }
+        }
+
+        public static string Admin_UserNotFound {
+            get {
+                return ResourceManager.GetString("Admin_UserNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidUserState {
+            get {
+                return ResourceManager.GetString("Admin_InvalidUserState", resourceCulture);
+            }
+        }
+
+        public static string Admin_CannotModerateAdmin {
+            get {
+                return ResourceManager.GetString("Admin_CannotModerateAdmin", resourceCulture);
+            }
+        }
+
+        public static string Admin_FeedbackNotFound {
+            get {
+                return ResourceManager.GetString("Admin_FeedbackNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_NoEmail {
+            get {
+                return ResourceManager.GetString("Admin_NoEmail", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidReply {
+            get {
+                return ResourceManager.GetString("Admin_InvalidReply", resourceCulture);
+            }
+        }
+
+        public static string Admin_EmailFailed {
+            get {
+                return ResourceManager.GetString("Admin_EmailFailed", resourceCulture);
+            }
+        }
+
         public static string Identity_DisposableEmail {
             get {
                 return ResourceManager.GetString("Identity_DisposableEmail", resourceCulture);

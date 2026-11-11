@@ -22,6 +22,86 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Sportner.Domain.Admin.AdminAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("TargetType", "TargetId");
+
+                    b.ToTable("AdminAuditEntries");
+                });
+
+            modelBuilder.Entity("Sportner.Domain.Admin.AdminLoginCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("AdminLoginCodes");
+                });
+
             modelBuilder.Entity("Sportner.Domain.Badges.Badge", b =>
                 {
                     b.Property<Guid>("Id")
@@ -721,6 +801,10 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AdminReply")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(2000)
@@ -731,6 +815,15 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("RepliedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RepliedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -746,6 +839,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("Status", "CreatedAt");
 
                     b.HasIndex("UserId", "CreatedAt");
 

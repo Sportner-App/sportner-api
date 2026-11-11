@@ -124,6 +124,10 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     public DbSet<AppFeedback> AppFeedbacks => Set<AppFeedback>();
 
+    public DbSet<Sportner.Domain.Admin.AdminLoginCode> AdminLoginCodes => Set<Sportner.Domain.Admin.AdminLoginCode>();
+
+    public DbSet<Sportner.Domain.Admin.AdminAuditEntry> AdminAuditEntries => Set<Sportner.Domain.Admin.AdminAuditEntry>();
+
     public void MarkAsAdded<TEntity>(TEntity entity) where TEntity : class =>
         Entry(entity).State = EntityState.Added;
 

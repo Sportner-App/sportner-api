@@ -73,6 +73,10 @@ public interface IApplicationDbContext
     DbSet<ReportReason> ReportReasons { get; }
     DbSet<AppFeedback> AppFeedbacks { get; }
 
+    DbSet<Sportner.Domain.Admin.AdminLoginCode> AdminLoginCodes { get; }
+
+    DbSet<Sportner.Domain.Admin.AdminAuditEntry> AdminAuditEntries { get; }
+
     /// <summary>
     /// Forces EF to insert an entity that already has a client-generated key
     /// (otherwise some providers track it as <c>Modified</c>).

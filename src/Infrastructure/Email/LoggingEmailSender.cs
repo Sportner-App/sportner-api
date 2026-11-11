@@ -43,6 +43,32 @@ public sealed class LoggingEmailSender : IEmailSender
         return Task.FromResult(EmailSendResult.Ok());
     }
 
+    public Task<EmailSendResult> SendAdminLoginCodeAsync(
+        string toEmail,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Admin login code for {Email}: {Code} (Resend not configured — logging instead of sending).",
+            Mask(toEmail),
+            code);
+
+        return Task.FromResult(EmailSendResult.Ok());
+    }
+
+    public Task<EmailSendResult> SendFeedbackReplyAsync(
+        string toEmail,
+        string originalFeedback,
+        string reply,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Feedback reply for {Email} (Resend not configured — logging instead of sending).",
+            Mask(toEmail));
+
+        return Task.FromResult(EmailSendResult.Ok());
+    }
+
     private static string Mask(string email)
     {
         var at = email.IndexOf('@');

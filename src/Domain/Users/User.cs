@@ -219,6 +219,20 @@ public class User : AggregateRoot
         Touch(utcNow);
     }
 
+    /// <summary>Yönetici panelinden ban kaldırma; hesap yeniden aktif olur.</summary>
+    public void Unban(DateTimeOffset utcNow)
+    {
+        EnsureNotDeleted();
+
+        if (Status is not UserStatus.Banned)
+        {
+            throw new DomainException("Only banned users can be unbanned.");
+        }
+
+        Status = UserStatus.Active;
+        Touch(utcNow);
+    }
+
     /// <summary>
     /// Self-service account deletion. Soft delete (Status field, per project
     /// convention): the row, the profile and every piece of content stay in place.

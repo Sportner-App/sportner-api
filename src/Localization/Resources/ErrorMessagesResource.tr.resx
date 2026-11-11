@@ -630,4 +630,31 @@
   <data name="Identity_DisposableEmail" xml:space="preserve">
     <value>Geçici e-posta adresleriyle kayıt olunamaz.</value>
   </data>
+  <data name="Admin_InvalidCode" xml:space="preserve">
+    <value>Giriş kodu hatalı ya da süresi dolmuş.</value>
+  </data>
+  <data name="Admin_CodeTooFrequent" xml:space="preserve">
+    <value>Yeni kod istemeden önce biraz bekle.</value>
+  </data>
+  <data name="Admin_UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı.</value>
+  </data>
+  <data name="Admin_InvalidUserState" xml:space="preserve">
+    <value>Bu işlem kullanıcının şu anki durumunda yapılamaz.</value>
+  </data>
+  <data name="Admin_CannotModerateAdmin" xml:space="preserve">
+    <value>Yönetici hesapları panelden banlanamaz.</value>
+  </data>
+  <data name="Admin_FeedbackNotFound" xml:space="preserve">
+    <value>Geri bildirim bulunamadı.</value>
+  </data>
+  <data name="Admin_NoEmail" xml:space="preserve">
+    <value>Bu kullanıcının e-posta adresi yok.</value>
+  </data>
+  <data name="Admin_InvalidReply" xml:space="preserve">
+    <value>Yanıt 1 ile 4000 karakter arasında olmalı.</value>
+  </data>
+  <data name="Admin_EmailFailed" xml:space="preserve">
+    <value>E-posta gönderilemedi, tekrar dene.</value>
+  </data>
 </root>

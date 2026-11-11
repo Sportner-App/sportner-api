@@ -16,6 +16,43 @@ public class AppFeedback : AggregateRoot
 
     public string Content { get; private set; } = string.Empty;
 
+    public const int MaxReplyLength = 4000;
+
+    public AppFeedbackStatus Status { get; private set; }
+
+    public string? AdminReply { get; private set; }
+
+    public DateTimeOffset? RepliedAt { get; private set; }
+
+    public Guid? RepliedByUserId { get; private set; }
+
+    public void SetStatus(AppFeedbackStatus status, DateTimeOffset utcNow)
+    {
+        if (Status == status)
+        {
+            return;
+        }
+
+        Status = status;
+        UpdatedAt = utcNow;
+    }
+
+    /// <summary>Yanıt maille gönderildikten sonra kaydedilir; geri bildirim çözüldü sayılır.</summary>
+    public void RecordReply(Guid adminUserId, string reply, DateTimeOffset utcNow)
+    {
+        var normalized = reply?.Trim() ?? string.Empty;
+        if (normalized.Length == 0 || normalized.Length > MaxReplyLength)
+        {
+            throw new DomainException("Reply must be between 1 and 4000 characters.");
+        }
+
+        AdminReply = normalized;
+        RepliedAt = utcNow;
+        RepliedByUserId = adminUserId;
+        Status = AppFeedbackStatus.Resolved;
+        UpdatedAt = utcNow;
+    }
+
     public static AppFeedback Create(
         Guid userId,
         string content,

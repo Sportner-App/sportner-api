@@ -18,4 +18,16 @@ public interface IEmailSender
         string toEmail,
         string code,
         CancellationToken cancellationToken = default);
+
+    Task<EmailSendResult> SendAdminLoginCodeAsync(
+        string toEmail,
+        string code,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Uygulamadan gelen geri bildirime yöneticinin yanıtı.</summary>
+    Task<EmailSendResult> SendFeedbackReplyAsync(
+        string toEmail,
+        string originalFeedback,
+        string reply,
+        CancellationToken cancellationToken = default);
 }

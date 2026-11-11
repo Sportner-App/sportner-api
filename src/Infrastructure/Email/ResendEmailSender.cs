@@ -116,6 +116,80 @@ public sealed class ResendEmailSender : IEmailSender
         }
     }
 
+    public Task<EmailSendResult> SendAdminLoginCodeAsync(
+        string toEmail,
+        string code,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            new ResendEmailRequest(
+                _options.FromAddress,
+                [toEmail],
+                "Sportner yönetim paneli giriş kodu",
+                $"""
+                 <p>Yönetim paneline giriş kodun:</p>
+                 <p style="font-size:28px;font-weight:700;letter-spacing:4px;">{code}</p>
+                 <p>Bu kod 10 dakika geçerli. Giriş yapmaya çalışan sen değilsen bu e-postayı yok say.</p>
+                 """),
+            cancellationToken);
+
+    public Task<EmailSendResult> SendFeedbackReplyAsync(
+        string toEmail,
+        string originalFeedback,
+        string reply,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            new ResendEmailRequest(
+                _options.FromAddress,
+                [toEmail],
+                "Sportner geri bildirimine yanıt",
+                $"""
+                 <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.6;color:#111;">
+                 <p>{ToHtml(reply)}</p>
+                 <hr style="border:none;border-top:1px solid #ddd;margin:24px 0;">
+                 <p style="color:#666;font-size:13px;">Uygulamadan gönderdiğin geri bildirim:</p>
+                 <blockquote style="margin:0;padding-left:12px;border-left:3px solid #ccc;color:#555;font-size:13px;">{ToHtml(originalFeedback)}</blockquote>
+                 <p style="color:#666;font-size:13px;margin-top:24px;">Sportner ekibi</p>
+                 </div>
+                 """),
+            cancellationToken);
+
+    /// <summary>Kullanıcı ve yönetici metni HTML'e kaçışlanarak, satır sonları korunarak girer.</summary>
+    private static string ToHtml(string text) =>
+        System.Net.WebUtility.HtmlEncode(text.Trim()).Replace("\n", "<br>");
+
+    private async Task<EmailSendResult> SendAsync(
+        ResendEmailRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+                SendEndpoint,
+                request,
+                cancellationToken);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return EmailSendResult.Ok();
+            }
+
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            var error = $"Resend returned HTTP {(int)response.StatusCode}.";
+            _logger.LogWarning("{Error} Response: {Response}", error, Truncate(errorBody, 500));
+
+            return EmailSendResult.Failed(error);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return EmailSendResult.Failed("Resend request timed out.");
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogWarning(exception, "Resend request failed.");
+            return EmailSendResult.Failed("Resend could not be reached.");
+        }
+    }
+
     private static string Truncate(string value, int maxLength) =>
         value.Length <= maxLength ? value : value[..maxLength];
 

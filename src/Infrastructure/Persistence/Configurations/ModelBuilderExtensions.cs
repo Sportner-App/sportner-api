@@ -473,6 +473,10 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<AppFeedback>().HasIndex(entity => entity.CreatedAt);
         modelBuilder.Entity<AppFeedback>()
             .HasIndex(entity => new { entity.UserId, entity.CreatedAt });
+        modelBuilder.Entity<AppFeedback>().HasIndex(entity => new { entity.Status, entity.CreatedAt });
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminLoginCode>().HasIndex(entity => new { entity.UserId, entity.CreatedAt });
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminAuditEntry>().HasIndex(entity => entity.CreatedAt);
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminAuditEntry>().HasIndex(entity => new { entity.TargetType, entity.TargetId });
     }
 
     private static void ConfigurePropertyMappings(ModelBuilder modelBuilder)
@@ -737,6 +741,21 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<AppFeedback>()
             .Property(entity => entity.Content)
             .HasMaxLength(AppFeedback.MaxContentLength);
+        modelBuilder.Entity<AppFeedback>()
+            .Property(entity => entity.AdminReply)
+            .HasMaxLength(AppFeedback.MaxReplyLength);
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminLoginCode>()
+            .Property(entity => entity.CodeHash)
+            .HasMaxLength(64);
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminAuditEntry>()
+            .Property(entity => entity.Action)
+            .HasMaxLength(64);
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminAuditEntry>()
+            .Property(entity => entity.TargetType)
+            .HasMaxLength(32);
+        modelBuilder.Entity<Sportner.Domain.Admin.AdminAuditEntry>()
+            .Property(entity => entity.Details)
+            .HasMaxLength(Sportner.Domain.Admin.AdminAuditEntry.MaxDetailsLength);
 
         modelBuilder.Entity<Organization>()
             .Property(entity => entity.Name)

@@ -630,4 +630,31 @@
   <data name="Identity_DisposableEmail" xml:space="preserve">
     <value>Temporary email addresses cannot be used to sign up.</value>
   </data>
+  <data name="Admin_InvalidCode" xml:space="preserve">
+    <value>The login code is invalid or has expired.</value>
+  </data>
+  <data name="Admin_CodeTooFrequent" xml:space="preserve">
+    <value>Please wait before requesting a new code.</value>
+  </data>
+  <data name="Admin_UserNotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="Admin_InvalidUserState" xml:space="preserve">
+    <value>This action is not possible in the user's current state.</value>
+  </data>
+  <data name="Admin_CannotModerateAdmin" xml:space="preserve">
+    <value>Admin accounts cannot be banned from the panel.</value>
+  </data>
+  <data name="Admin_FeedbackNotFound" xml:space="preserve">
+    <value>Feedback not found.</value>
+  </data>
+  <data name="Admin_NoEmail" xml:space="preserve">
+    <value>This user has no email address.</value>
+  </data>
+  <data name="Admin_InvalidReply" xml:space="preserve">
+    <value>Reply must be between 1 and 4000 characters.</value>
+  </data>
+  <data name="Admin_EmailFailed" xml:space="preserve">
+    <value>The email could not be sent, please try again.</value>
+  </data>
 </root>

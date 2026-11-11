@@ -93,6 +93,7 @@ public static class AuthenticationExtension
 
         services.AddScoped<IAuthorizationHandler, ModeratorAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, AdminAuthorizationHandler>();
+        services.AddSingleton<Sportner.Application.Abstractions.Authentication.IAdminDirectory, AdminDirectory>();
         services.AddScoped<IAuthorizationHandler, ActiveUserAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, CanCreateContentAuthorizationHandler>();
 
