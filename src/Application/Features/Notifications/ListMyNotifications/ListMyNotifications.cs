@@ -49,7 +49,7 @@ internal sealed class ListMyNotificationsQueryHandler
             where notification.RecipientUserId == userId
             select new { notification, actor };
 
-        var blockedIds = BlockQueries.BlockedUserIds(_dbContext, userId);
+        var blockedIds = BlockQueries.HiddenUserIds(_dbContext, userId);
         query = query.Where(row =>
             row.notification.ActorUserId == null
             || !blockedIds.Contains(row.notification.ActorUserId.Value));

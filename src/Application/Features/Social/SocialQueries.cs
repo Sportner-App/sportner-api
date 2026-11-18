@@ -40,6 +40,11 @@ internal static class SocialQueries
         Guid userId) =>
         BlockQueries.BlockedUserIds(dbContext, userId);
 
+    internal static IQueryable<Guid> HiddenUserIds(
+        IApplicationDbContext dbContext,
+        Guid? viewerId) =>
+        BlockQueries.HiddenUserIds(dbContext, viewerId);
+
     internal static async Task<FriendshipResponse> ToFriendshipResponseAsync(
         IApplicationDbContext dbContext,
         Friendship friendship,

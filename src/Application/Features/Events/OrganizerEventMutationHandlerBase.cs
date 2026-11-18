@@ -61,7 +61,9 @@ internal abstract class OrganizerEventMutationHandlerBase
 
         var response = await EventQueries.GetDetailAsync(DbContext, eventId, userId, cancellationToken);
 
-        return Result<EventResponse>.Success(response!);
+        return response is null
+            ? Result<EventResponse>.Failure(EventErrors.NotFound)
+            : Result<EventResponse>.Success(response);
     }
 
     protected async Task<Result<EventResponse>> MutateAsync(

@@ -33,13 +33,10 @@ internal sealed class ListReviewsForEventQueryHandler
         {
             reviews = reviews.Where(review => review.EventId == request.EventId);
 
-            if (_currentUser.UserId is { } viewerId)
-            {
-                var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
-                reviews = reviews.Where(review =>
-                    !blockedIds.Contains(review.ReviewerUserId)
-                    && !blockedIds.Contains(review.ReviewedUserId));
-            }
+            var blockedIds = BlockQueries.HiddenUserIds(_dbContext, _currentUser.UserId);
+            reviews = reviews.Where(review =>
+                !blockedIds.Contains(review.ReviewerUserId)
+                && !blockedIds.Contains(review.ReviewedUserId));
 
             return reviews.OrderByDescending(review => review.CreatedAt);
         });

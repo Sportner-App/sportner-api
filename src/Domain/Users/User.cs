@@ -65,6 +65,15 @@ public class User : AggregateRoot
 
     public DateTimeOffset? OnboardingCompletedAt { get; private set; }
 
+    /// <summary>
+    /// App Review ve ekip test hesabı. İşaretleme SQL ile yapılır; bu hesapların içeriği
+    /// test hesabı olmayan kullanıcılara gösterilmez (bkz. BlockQueries.HiddenUserIds).
+    /// </summary>
+    public bool IsTestAccount { get; private set; }
+
+    /// <summary>Üretimde işaretleme SQL ile yapılır; bu metot yalnızca testler içindir.</summary>
+    public void MarkAsTestAccount() => IsTestAccount = true;
+
     public UserProfile? UserProfile { get; private set; }
 
     public UserStatistics? Statistics { get; private set; }

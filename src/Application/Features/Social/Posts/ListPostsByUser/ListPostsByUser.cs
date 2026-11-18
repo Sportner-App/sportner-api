@@ -45,12 +45,13 @@ internal sealed class ListPostsByUserQueryHandler
             return Result<CursorPagedResult<PostResponse>>.Failure(accessError);
         }
 
-        if (viewerId is { } authenticatedViewerId)
+        // Kendi gönderileri her zaman görünür; engel ve test hesabı gizlemesi başkalarına uygulanır.
+        if (viewerId != request.UserId)
         {
-            var blocked = await SocialQueries.BlockedUserIds(_dbContext, authenticatedViewerId)
+            var hidden = await SocialQueries.HiddenUserIds(_dbContext, viewerId)
                 .AnyAsync(userId => userId == request.UserId, cancellationToken);
 
-            if (blocked && authenticatedViewerId != request.UserId)
+            if (hidden)
             {
                 return Result<CursorPagedResult<PostResponse>>.Failure(PostErrors.NotFound);
             }

@@ -31,8 +31,12 @@ internal sealed class ListRepliesQueryHandler
         ListRepliesQuery request,
         CancellationToken cancellationToken)
     {
+        var hiddenIds = BlockQueries.HiddenUserIds(_dbContext, _currentUser.UserId);
+
         var postExists = await _dbContext.Posts.AsNoTracking()
-            .AnyAsync(post => post.Id == request.PostId, cancellationToken);
+            .AnyAsync(
+                post => post.Id == request.PostId && !hiddenIds.Contains(post.UserId),
+                cancellationToken);
 
         if (!postExists)
         {
@@ -64,11 +68,7 @@ internal sealed class ListRepliesQueryHandler
                   && !comment.IsHidden
             select new { comment, profile, replyToProfile };
 
-        if (_currentUser.UserId is { } viewerId)
-        {
-            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
-            query = query.Where(row => !blockedIds.Contains(row.comment.UserId));
-        }
+        query = query.Where(row => !hiddenIds.Contains(row.comment.UserId));
 
         if (!string.IsNullOrWhiteSpace(request.Before))
         {

@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Application.Features.Events;
 using Sportner.Domain.Common.Enums;
 
@@ -71,8 +72,14 @@ internal sealed class ListOrganizationEventsQueryHandler
         ListOrganizationEventsQuery request,
         CancellationToken cancellationToken)
     {
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, _currentUser.UserId);
+
         var exists = await _dbContext.Organizations.AsNoTracking()
-            .AnyAsync(organization => organization.Id == request.OrganizationId, cancellationToken);
+            .AnyAsync(
+                organization =>
+                    organization.Id == request.OrganizationId
+                    && !hiddenTestIds.Contains(organization.FounderUserId),
+                cancellationToken);
 
         if (!exists)
         {
@@ -92,7 +99,7 @@ internal sealed class ListOrganizationEventsQueryHandler
             && await EventAccess.IsClubManagerAsync(
                 _dbContext, request.OrganizationId, managerCandidate, cancellationToken);
 
-        var visible = _dbContext.Events.AsNoTracking()
+        var visible = EventQueries.ExcludeTestHosted(_dbContext, _dbContext.Events.AsNoTracking(), viewerId)
             .Where(@event =>
                 @event.OrganizationId == request.OrganizationId
                 && (isMember || !@event.IsOrganizationOnly)

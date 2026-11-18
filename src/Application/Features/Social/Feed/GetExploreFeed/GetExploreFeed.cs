@@ -38,12 +38,12 @@ internal sealed class GetExploreFeedQueryHandler
 
         var query = _dbContext.Posts.AsNoTracking().Include(post => post.Media).AsQueryable();
 
+        var hiddenIds = SocialQueries.HiddenUserIds(_dbContext, _currentUser.UserId);
+        query = query.Where(post => !hiddenIds.Contains(post.UserId));
+
         if (_currentUser.UserId is { } userId)
         {
-            var blockedIds = SocialQueries.BlockedUserIds(_dbContext, userId);
-            query = query.Where(post =>
-                !blockedIds.Contains(post.UserId)
-                && (!post.IsHidden || post.UserId == userId));
+            query = query.Where(post => !post.IsHidden || post.UserId == userId);
         }
         else
         {

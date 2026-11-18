@@ -55,11 +55,11 @@ internal sealed class ExplorePostsQueryHandler
             .Include(post => post.Media)
             .Where(post => !post.IsHidden);
 
+        var hiddenIds = SocialQueries.HiddenUserIds(_dbContext, viewerId);
+        query = query.Where(post => !hiddenIds.Contains(post.UserId));
+
         if (viewerId is { } id)
         {
-            var blockedIds = SocialQueries.BlockedUserIds(_dbContext, id);
-            query = query.Where(post => !blockedIds.Contains(post.UserId));
-
             if (request.FriendsOnly)
             {
                 var friendIds = SocialQueries.AcceptedFriendIds(_dbContext, id);

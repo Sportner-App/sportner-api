@@ -195,4 +195,6 @@ This table stores only notification metadata and history.
 
 Push notifications, email notifications and in-app notifications all originate from the same notification event.
 
+Test accounts (`users.is_test_account`): rows whose `actor_user_id` is a test account are hidden from the recipient's notification list unless the recipient is a test account too. The push delivery for such a notification is `MarkCancelled` in `NotificationDeliveryDispatcher` (single SQL check, shared by the API and the Notifications worker); the notification row itself is still written.
+
 The combination of `notification_type`, `entity_type` and `entity_id` allows a single notification infrastructure to support every module in the application without introducing additional notification tables.

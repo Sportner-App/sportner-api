@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Search;
 using Sportner.Application.Abstractions.Recommendations;
 using Sportner.Application.Common.Geo;
+using Sportner.Application.Features.Events;
 using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
@@ -81,7 +82,7 @@ internal sealed class RecommendationService : IRecommendationService
             }
         }
 
-        foreach (var blockedId in await BlockQueries.BlockedUserIds(_dbContext, viewerUserId)
+        foreach (var blockedId in await BlockQueries.HiddenUserIds(_dbContext, viewerUserId)
                      .ToListAsync(cancellationToken))
         {
             excluded.Add(blockedId);
@@ -336,7 +337,7 @@ internal sealed class RecommendationService : IRecommendationService
         var utcNow = _timeProvider.GetUtcNow();
         var weights = _options.Events;
 
-        var blockedIds = await SocialQueries.BlockedUserIds(_dbContext, viewerUserId)
+        var blockedIds = await SocialQueries.HiddenUserIds(_dbContext, viewerUserId)
             .ToListAsync(cancellationToken);
         var blockedSet = blockedIds.ToHashSet();
 
@@ -358,7 +359,10 @@ internal sealed class RecommendationService : IRecommendationService
         var originLat = request.Latitude ?? viewerLocation?.Latitude;
         var originLng = request.Longitude ?? viewerLocation?.Longitude;
 
-        var eventsQuery = _dbContext.Events.AsNoTracking()
+        var eventsQuery = EventQueries.ExcludeTestHosted(
+                _dbContext,
+                _dbContext.Events.AsNoTracking(),
+                viewerUserId)
             .Where(@event =>
                 (@event.OrganizationId == null || !@event.IsOrganizationOnly)
                 && (@event.Status == EventStatus.Published || @event.Status == EventStatus.Full)
@@ -568,7 +572,7 @@ internal sealed class RecommendationService : IRecommendationService
         var utcNow = _timeProvider.GetUtcNow();
         var weights = _options.Posts;
 
-        var blockedIds = await SocialQueries.BlockedUserIds(_dbContext, viewerUserId)
+        var blockedIds = await SocialQueries.HiddenUserIds(_dbContext, viewerUserId)
             .ToListAsync(cancellationToken);
         var blockedSet = blockedIds.ToHashSet();
 

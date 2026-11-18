@@ -32,12 +32,16 @@ internal sealed class ListPendingRequestsQueryHandler
                 FriendshipErrors.NotAuthenticated);
         }
 
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, userId);
+
         var friendships = await _dbContext.Friendships.AsNoTracking()
             .Where(friendship =>
                 friendship.Status == FriendshipStatus.Pending
                 && (request.Outgoing
                     ? friendship.RequesterUserId == userId
-                    : friendship.AddresseeUserId == userId))
+                        && !hiddenTestIds.Contains(friendship.AddresseeUserId)
+                    : friendship.AddresseeUserId == userId
+                        && !hiddenTestIds.Contains(friendship.RequesterUserId)))
             .OrderByDescending(friendship => friendship.CreatedAt)
             .ToListAsync(cancellationToken);
 

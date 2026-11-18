@@ -97,6 +97,26 @@ internal sealed class NotificationDeliveryDispatcher : INotificationDeliveryDisp
             return;
         }
 
+        // Test hesabının tetiklediği bildirim, alıcı da test hesabı değilse push olarak gitmez
+        // (bildirim satırı listede zaten süzülüyor). Tek sorgu, SQL tarafında.
+        if (item.ActorUserId is { } pushActorId)
+        {
+            var recipientId = item.RecipientUserId;
+            var suppressed = await _dbContext.Users.AsNoTracking()
+                .AnyAsync(
+                    actor => actor.Id == pushActorId
+                        && actor.IsTestAccount
+                        && !_dbContext.Users.Any(recipient =>
+                            recipient.Id == recipientId && recipient.IsTestAccount),
+                    cancellationToken);
+
+            if (suppressed)
+            {
+                item.MarkCancelled("Actor is a test account.", utcNow);
+                return;
+            }
+        }
+
         // A device re-registers with a fresh DeviceIdentifier whenever its local storage is
         // reset (reinstall, storage clear), leaving stale rows that still carry the same, still
         // valid push token as the current one. Sending to every row would double (or more) the

@@ -29,6 +29,70 @@ internal static class EventQueries
             || await OrganizationQueries.IsApprovedMemberAsync(dbContext, orgId, viewerUserId, cancellationToken);
     }
 
+    /// <summary>
+    /// Test hesabının düzenlediği ya da test hesabının kurduğu kulübün etkinliklerini, bakan
+    /// test hesabı değilse listeden düşürür. Engel kuralları etkinliğe özgü olduğu için
+    /// burada yalnızca test hesabı gizlemesi uygulanır.
+    /// </summary>
+    internal static IQueryable<Event> ExcludeTestHosted(
+        IApplicationDbContext dbContext,
+        IQueryable<Event> events,
+        Guid? viewerUserId)
+    {
+        var hiddenIds = BlockQueries.HiddenTestAccountIds(dbContext, viewerUserId);
+
+        return events.Where(@event =>
+            !hiddenIds.Contains(@event.OrganizerUserId)
+            && (@event.OrganizationId == null
+                || !dbContext.Organizations.Any(organization =>
+                    organization.Id == @event.OrganizationId
+                    && hiddenIds.Contains(organization.FounderUserId))));
+    }
+
+    /// <summary>
+    /// Etkinlik var, test hesabı içeriği ve bakan etkinliğe dahil değilse true. Dahil olanlar:
+    /// iptal edilmemiş katılımcı kaydı olan, bekleme listesindeki ve etkinliği yönetebilen.
+    /// </summary>
+    internal static async Task<bool> IsHiddenTestHostedAsync(
+        IApplicationDbContext dbContext,
+        Guid eventId,
+        Guid? viewerUserId,
+        CancellationToken cancellationToken)
+    {
+        var scope = await dbContext.Events.AsNoTracking()
+            .Where(@event => @event.Id == eventId)
+            .Select(@event => new { @event.OrganizerUserId, @event.OrganizationId })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (scope is null
+            || await ExcludeTestHosted(
+                    dbContext,
+                    dbContext.Events.AsNoTracking().Where(@event => @event.Id == eventId),
+                    viewerUserId)
+                .AnyAsync(cancellationToken))
+        {
+            return false;
+        }
+
+        if (viewerUserId is not { } viewer)
+        {
+            return true;
+        }
+
+        var involved = await dbContext.EventParticipants.AsNoTracking()
+                .AnyAsync(
+                    participant => participant.EventId == eventId
+                        && participant.UserId == viewer
+                        && participant.Status != ParticipantStatus.Cancelled,
+                    cancellationToken)
+            || await dbContext.EventWaitlists.AsNoTracking()
+                .AnyAsync(entry => entry.EventId == eventId && entry.UserId == viewer, cancellationToken)
+            || await EventAccess.CanManageAsync(
+                dbContext, scope.OrganizerUserId, scope.OrganizationId, viewer, cancellationToken);
+
+        return !involved;
+    }
+
     internal static async Task<EventResponse?> GetDetailAsync(
         IApplicationDbContext dbContext,
         Guid eventId,
@@ -39,6 +103,11 @@ internal static class EventQueries
             .FirstOrDefaultAsync(candidate => candidate.Id == eventId, cancellationToken);
 
         if (@event is null)
+        {
+            return null;
+        }
+
+        if (await IsHiddenTestHostedAsync(dbContext, eventId, viewerUserId, cancellationToken))
         {
             return null;
         }
@@ -276,6 +345,7 @@ internal static class EventQueries
     internal static async Task<IReadOnlyList<EventListItemResponse>> AttachParticipantAvatarsAsync(
         IApplicationDbContext dbContext,
         IReadOnlyList<EventListItemResponse> items,
+        Guid? viewerUserId,
         CancellationToken cancellationToken)
     {
         if (items.Count == 0)
@@ -284,6 +354,7 @@ internal static class EventQueries
         }
 
         var eventIds = items.Select(item => item.Id).ToList();
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(dbContext, viewerUserId);
 
         var rows = await (
                 from participant in dbContext.EventParticipants.AsNoTracking()
@@ -291,6 +362,7 @@ internal static class EventQueries
                     on participant.UserId equals profile.UserId into profiles
                 from profile in profiles.DefaultIfEmpty()
                 where eventIds.Contains(participant.EventId)
+                    && (participant.UserId == null || !hiddenTestIds.Contains(participant.UserId.Value))
                     && (participant.Status == ParticipantStatus.Approved
                         || participant.Status == ParticipantStatus.Attended
                         || participant.Status == ParticipantStatus.NoShow)

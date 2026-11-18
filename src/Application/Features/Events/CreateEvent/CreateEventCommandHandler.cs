@@ -114,6 +114,8 @@ internal sealed class CreateEventCommandHandler
 
         var response = await EventQueries.GetDetailAsync(_dbContext, @event.Id, userId, cancellationToken);
 
-        return Result<EventResponse>.Success(response!);
+        return response is null
+            ? Result<EventResponse>.Failure(EventErrors.NotFound)
+            : Result<EventResponse>.Success(response);
     }
 }

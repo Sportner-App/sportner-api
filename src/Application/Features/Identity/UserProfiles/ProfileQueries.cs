@@ -116,11 +116,15 @@ internal static class ProfileQueries
     {
         var isOwner = requesterId == profile.UserId;
 
+        // Test hesabının profili test hesabı olmayan bakana (girişsiz dahil) 404.
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(dbContext, requesterId);
+
         var isReachable = await dbContext.Users.AsNoTracking()
             .AnyAsync(
                 user => user.Id == profile.UserId
                     && user.Status != UserStatus.Deleted
-                    && user.Status != UserStatus.Banned,
+                    && user.Status != UserStatus.Banned
+                    && !hiddenTestIds.Contains(user.Id),
                 cancellationToken);
 
         if (!isReachable)

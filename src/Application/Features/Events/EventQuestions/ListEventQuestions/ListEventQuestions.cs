@@ -31,7 +31,10 @@ internal sealed class ListEventQuestionsQueryHandler
         ListEventQuestionsQuery request,
         CancellationToken cancellationToken)
     {
-        var @event = await _dbContext.Events.AsNoTracking()
+        var @event = await EventQueries.ExcludeTestHosted(
+                _dbContext,
+                _dbContext.Events.AsNoTracking(),
+                _currentUser.UserId)
             .Where(candidate => candidate.Id == request.EventId)
             .Select(candidate => new
             {
@@ -65,11 +68,8 @@ internal sealed class ListEventQuestionsQueryHandler
             .Include(question => question.Mentions)
             .Where(question => question.EventId == @event.Id && question.ParentId == null);
 
-        if (_currentUser.UserId is { } viewerId)
-        {
-            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
-            rootsQuery = rootsQuery.Where(question => !blockedIds.Contains(question.AuthorUserId));
-        }
+        var hiddenIds = BlockQueries.HiddenUserIds(_dbContext, _currentUser.UserId);
+        rootsQuery = rootsQuery.Where(question => !hiddenIds.Contains(question.AuthorUserId));
 
         var totalCount = await rootsQuery.CountAsync(cancellationToken);
 
@@ -93,14 +93,15 @@ internal sealed class ListEventQuestionsQueryHandler
                 .ThenBy(question => question.Id)
                 .ToListAsync(cancellationToken);
 
-        if (_currentUser.UserId is { } replyViewerId)
-        {
-            var blockedIds = await BlockQueries.BlockedUserIds(_dbContext, replyViewerId)
+        var replyAuthorIds = replies.Select(reply => reply.AuthorUserId).Distinct().ToList();
+        var hiddenReplyAuthors = replyAuthorIds.Count == 0
+            ? []
+            : await hiddenIds
+                .Where(id => replyAuthorIds.Contains(id))
                 .ToListAsync(cancellationToken);
-            replies = replies
-                .Where(reply => !blockedIds.Contains(reply.AuthorUserId))
-                .ToList();
-        }
+        replies = replies
+            .Where(reply => !hiddenReplyAuthors.Contains(reply.AuthorUserId))
+            .ToList();
 
         var participants = await EventQuestionAccess.ListParticipantUserIdsAsync(
             _dbContext,

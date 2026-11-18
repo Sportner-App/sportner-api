@@ -48,6 +48,7 @@ internal sealed class ListMyOrganizedEventsQueryHandler
         var withAvatars = await EventQueries.AttachParticipantAvatarsAsync(
             _dbContext,
             items,
+            _currentUser.UserId,
             cancellationToken);
 
         return Result<PagedResult<EventListItemResponse>>.Success(

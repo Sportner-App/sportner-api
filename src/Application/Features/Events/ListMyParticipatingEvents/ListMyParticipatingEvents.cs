@@ -87,6 +87,7 @@ internal sealed class ListMyParticipatingEventsQueryHandler
         var withAvatars = await EventQueries.AttachParticipantAvatarsAsync(
             _dbContext,
             items,
+            _currentUser.UserId,
             cancellationToken);
 
         var withMyStatus = await EventQueries.AttachMyParticipationStatusAsync(

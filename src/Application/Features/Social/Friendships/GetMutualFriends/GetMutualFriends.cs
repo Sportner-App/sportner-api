@@ -47,7 +47,9 @@ internal sealed class GetMutualFriendsQueryHandler
             .FirstOrDefaultAsync(cancellationToken);
 
         if (target is null
-            || target.Status is UserStatus.Deleted or UserStatus.Banned)
+            || target.Status is UserStatus.Deleted or UserStatus.Banned
+            || await BlockQueries.HiddenTestAccountIds(_dbContext, viewerId)
+                .AnyAsync(id => id == request.UserId, cancellationToken))
         {
             return Result<MutualFriendsResponse>.Failure(FriendshipErrors.UserNotFound);
         }
@@ -93,7 +95,13 @@ internal sealed class GetMutualFriendsQueryHandler
         var targetFriends = await SocialQueries.AcceptedFriendIds(_dbContext, request.UserId)
             .ToListAsync(cancellationToken);
 
-        var mutualIds = viewerFriends.Intersect(targetFriends).ToList();
+        var hiddenIds = (await BlockQueries.HiddenUserIds(_dbContext, viewerId)
+                .ToListAsync(cancellationToken))
+            .ToHashSet();
+        var mutualIds = viewerFriends
+            .Intersect(targetFriends)
+            .Where(id => !hiddenIds.Contains(id))
+            .ToList();
         var sampleIds = mutualIds.Take(request.Take).ToList();
 
         if (sampleIds.Count == 0)

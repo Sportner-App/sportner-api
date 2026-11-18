@@ -35,6 +35,8 @@ internal sealed class ListFriendsQueryHandler
 
         var pagination = new PaginationRequest(request.Page, request.PageSize);
 
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, userId);
+
         var query =
             from friendship in _dbContext.Friendships.AsNoTracking()
             where friendship.Status == FriendshipStatus.Accepted
@@ -44,7 +46,9 @@ internal sealed class ListFriendsQueryHandler
                 : friendship.RequesterUserId
             join friendUser in _dbContext.Users.AsNoTracking()
                 on friendUserId equals friendUser.Id
-            where friendUser.Status != UserStatus.Deleted && friendUser.Status != UserStatus.Banned
+            where friendUser.Status != UserStatus.Deleted
+                && friendUser.Status != UserStatus.Banned
+                && !hiddenTestIds.Contains(friendUserId)
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on friendUserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()

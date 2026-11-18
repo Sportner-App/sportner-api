@@ -133,10 +133,13 @@ internal sealed class DiscoverEventsQueryHandler
                 @event.OrganizationId == null || !@event.IsOrganizationOnly);
         }
 
+        // Test hesabının düzenlediği ya da test hesabının kurduğu kulübün etkinlikleri (girişsiz dahil).
+        events = EventQueries.ExcludeTestHosted(_dbContext, events, _currentUser.UserId);
+
         if (_currentUser.UserId is { } viewerId)
         {
-            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
-            events = events.Where(@event => !blockedIds.Contains(@event.OrganizerUserId));
+            var hiddenIds = BlockQueries.HiddenUserIds(_dbContext, viewerId);
+            events = events.Where(@event => !hiddenIds.Contains(@event.OrganizerUserId));
 
             if (request.FriendsOnly)
             {
@@ -282,6 +285,7 @@ internal sealed class DiscoverEventsQueryHandler
         var withAvatars = await EventQueries.AttachParticipantAvatarsAsync(
             _dbContext,
             items,
+            _currentUser.UserId,
             cancellationToken);
 
         var withMyStatus = await EventQueries.AttachMyParticipationStatusAsync(

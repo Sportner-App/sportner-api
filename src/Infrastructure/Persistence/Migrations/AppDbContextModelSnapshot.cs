@@ -2482,6 +2482,11 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("EmailVerifiedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsTestAccount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<DateTimeOffset?>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2529,6 +2534,9 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("\"Email\" IS NOT NULL");
+
+                    b.HasIndex("IsTestAccount")
+                        .HasFilter("\"IsTestAccount\"");
 
                     b.HasIndex("LastSeenAt");
 

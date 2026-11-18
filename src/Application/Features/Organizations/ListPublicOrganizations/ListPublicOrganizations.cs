@@ -5,6 +5,7 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Application.Common.Search;
 using Sportner.Domain.Common.Enums;
 
@@ -50,7 +51,10 @@ internal sealed class ListPublicOrganizationsQueryHandler
         var pagination = new PaginationRequest(request.Page, request.PageSize);
         var viewerId = _currentUser.UserId;
 
-        var organizations = _dbContext.Organizations.AsNoTracking();
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, viewerId);
+
+        var organizations = _dbContext.Organizations.AsNoTracking()
+            .Where(organization => !hiddenTestIds.Contains(organization.FounderUserId));
 
         if (request.CityId is { } cityId)
         {

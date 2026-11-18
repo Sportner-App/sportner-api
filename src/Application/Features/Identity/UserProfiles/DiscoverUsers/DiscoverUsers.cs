@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Search;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Identity.UserProfiles.DiscoverUsers;
@@ -62,12 +63,15 @@ internal sealed class DiscoverUsersQueryHandler
         var search = SearchText.Normalize(request.Search);
         var city = SearchText.Normalize(request.City);
 
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, viewerId);
+
         var query =
             from profile in _dbContext.UserProfiles.AsNoTracking()
             join user in _dbContext.Users.AsNoTracking() on profile.UserId equals user.Id
             where profile.UserId != viewerId
                 && profile.IsProfilePublic
                 && user.Status == UserStatus.Active
+                && !hiddenTestIds.Contains(profile.UserId)
                 && !_dbContext.UserBlocks.AsNoTracking().Any(block =>
                     (block.BlockerUserId == viewerId && block.BlockedUserId == profile.UserId)
                     || (block.BlockerUserId == profile.UserId && block.BlockedUserId == viewerId))

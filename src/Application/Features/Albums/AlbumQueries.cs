@@ -131,8 +131,8 @@ internal static class AlbumQueries
 
         if (album.Kind is AlbumKind.Profile && album.OwnerUserId is { } ownerId)
         {
-            if (viewerUserId is { } viewer
-                && await SocialQueries.BlockedUserIds(dbContext, viewer)
+            if (viewerUserId != ownerId
+                && await SocialQueries.HiddenUserIds(dbContext, viewerUserId)
                     .AnyAsync(id => id == ownerId, cancellationToken))
             {
                 return false;
@@ -172,6 +172,11 @@ internal static class AlbumQueries
             if (viewerUserId is { } viewer
                 && await SocialQueries.BlockedUserIds(dbContext, viewer)
                     .AnyAsync(id => id == @event.OrganizerUserId, cancellationToken))
+            {
+                return false;
+            }
+
+            if (await EventQueries.IsHiddenTestHostedAsync(dbContext, eventId, viewerUserId, cancellationToken))
             {
                 return false;
             }

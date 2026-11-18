@@ -294,6 +294,11 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<User>().HasIndex(entity => entity.Status);
         modelBuilder.Entity<User>().HasIndex(entity => entity.LastSeenAt);
 
+        // Test hesapları çok az; filtre sorguları bu kısmi indeksi kullanır.
+        modelBuilder.Entity<User>()
+            .HasIndex(entity => entity.IsTestAccount)
+            .HasFilter("\"IsTestAccount\"");
+
         modelBuilder.Entity<UserProfile>().HasIndex(entity => entity.City);
         modelBuilder.Entity<UserProfile>().HasIndex(entity => entity.AverageRating);
 
@@ -824,6 +829,10 @@ internal static class ModelBuilderExtensions
 
     private static void ConfigureDefaults(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+            .Property(entity => entity.IsTestAccount)
+            .HasDefaultValue(false);
+
         modelBuilder.Entity<Post>()
             .Property(entity => entity.LikeCount)
             .HasDefaultValue(0);

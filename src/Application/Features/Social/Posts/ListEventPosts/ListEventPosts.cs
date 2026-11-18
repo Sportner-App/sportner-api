@@ -52,12 +52,12 @@ internal sealed class ListEventPostsQueryHandler
             .Include(post => post.Media)
             .Where(post => post.EventId == request.EventId);
 
+        var hiddenIds = SocialQueries.HiddenUserIds(_dbContext, viewerId);
+        query = query.Where(post => !hiddenIds.Contains(post.UserId));
+
         if (viewerId is { } userId)
         {
-            var blockedIds = SocialQueries.BlockedUserIds(_dbContext, userId);
-            query = query.Where(post =>
-                !blockedIds.Contains(post.UserId)
-                && (!post.IsHidden || post.UserId == userId));
+            query = query.Where(post => !post.IsHidden || post.UserId == userId);
         }
         else
         {

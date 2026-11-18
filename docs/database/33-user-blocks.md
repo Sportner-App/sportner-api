@@ -87,6 +87,8 @@ Blocking is independent of friendship. A user may block a stranger. Each directi
 - Actions (friend request, DM, apply, like, comment) return forbidden when a pair is blocked.
 - Blocking does not create a report and does not kick existing event participants.
 - Blocking does not auto-remove conversation membership.
+- Read/list paths use `BlockQueries.HiddenUserIds(viewer)`: blocks (either direction) plus test accounts (`users.is_test_account`) for any viewer who is not a test account themselves (anonymous included). Test-account viewers see everything except their own blocks.
+- Write and authorization checks (`BlockedUserIds`, `BlockedPairExistsAsync`) apply the block check only; test accounts' interactions are never blocked.
 
 ---
 

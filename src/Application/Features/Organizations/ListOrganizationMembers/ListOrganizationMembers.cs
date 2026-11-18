@@ -3,6 +3,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Organizations.ListOrganizationMembers;
@@ -40,6 +41,9 @@ internal sealed class ListOrganizationMembersQueryHandler
             userId,
             cancellationToken);
 
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, userId);
+
+        // Kurucusu test hesabı olan kulüpte de üye (onaylı) listeyi görür; test üyeler aşağıda düşer.
         if (membership is null || !membership.IsApproved)
         {
             return Result<IReadOnlyList<OrganizationMemberResponse>>.Failure(OrganizationErrors.NotFound);
@@ -55,6 +59,7 @@ internal sealed class ListOrganizationMembersQueryHandler
             where member.OrganizationId == request.OrganizationId
                 && memberUser.Status != UserStatus.Deleted
                 && memberUser.Status != UserStatus.Banned
+                && !hiddenTestIds.Contains(member.UserId)
             select new { member, profile };
 
         if (!membership.CanManageMembers)

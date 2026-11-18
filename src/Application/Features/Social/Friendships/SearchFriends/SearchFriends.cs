@@ -46,6 +46,7 @@ internal sealed class SearchFriendsQueryHandler
         }
 
         var term = SearchText.Normalize(request.Q);
+        var hiddenTestIds = BlockQueries.HiddenTestAccountIds(_dbContext, userId);
 
         var query =
             from friendship in _dbContext.Friendships.AsNoTracking()
@@ -56,10 +57,11 @@ internal sealed class SearchFriendsQueryHandler
                 : friendship.RequesterUserId
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on friendUserId equals profile.UserId
-            where SearchText.Normalize(profile.Username).Contains(term)
-                || SearchText.Normalize(profile.FirstName).Contains(term)
-                || (profile.LastName != null
-                    && SearchText.Normalize(profile.LastName).Contains(term))
+            where !hiddenTestIds.Contains(friendUserId)
+                && (SearchText.Normalize(profile.Username).Contains(term)
+                    || SearchText.Normalize(profile.FirstName).Contains(term)
+                    || (profile.LastName != null
+                        && SearchText.Normalize(profile.LastName).Contains(term)))
             orderby profile.Username
             select new FriendListItemResponse(
                 friendship.Id,

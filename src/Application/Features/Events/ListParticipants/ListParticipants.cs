@@ -27,7 +27,10 @@ internal sealed class ListParticipantsQueryHandler
         ListParticipantsQuery request,
         CancellationToken cancellationToken)
     {
-        var @event = await _dbContext.Events.AsNoTracking()
+        var @event = await EventQueries.ExcludeTestHosted(
+                _dbContext,
+                _dbContext.Events.AsNoTracking(),
+                _currentUser.UserId)
             .FirstOrDefaultAsync(candidate => candidate.Id == request.EventId, cancellationToken);
 
         if (@event is null)
@@ -83,14 +86,12 @@ internal sealed class ListParticipantsQueryHandler
                 || row.participant.Status == ParticipantStatus.NoShow);
         }
 
-        if (_currentUser.UserId is { } viewerId)
-        {
-            var blockedIds = BlockQueries.BlockedUserIds(_dbContext, viewerId);
-            query = query.Where(row =>
-                row.participant.UserId == null
-                || row.participant.UserId == viewerId
-                || !blockedIds.Contains(row.participant.UserId.Value));
-        }
+        var viewerId = _currentUser.UserId;
+        var hiddenIds = BlockQueries.HiddenUserIds(_dbContext, viewerId);
+        query = query.Where(row =>
+            row.participant.UserId == null
+            || row.participant.UserId == viewerId
+            || !hiddenIds.Contains(row.participant.UserId.Value));
 
         var items = await query
             .OrderBy(row => row.participant.CreatedAt)

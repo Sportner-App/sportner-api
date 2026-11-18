@@ -41,7 +41,7 @@ internal sealed class GetHomeFeedQueryHandler
 
         var limit = request.Limit is < 1 or > MaxLimit ? 20 : request.Limit;
         var friendIds = SocialQueries.AcceptedFriendIds(_dbContext, userId);
-        var blockedIds = SocialQueries.BlockedUserIds(_dbContext, userId);
+        var blockedIds = SocialQueries.HiddenUserIds(_dbContext, userId);
 
         var query = _dbContext.Posts.AsNoTracking()
             .Include(post => post.Media)

@@ -51,15 +51,12 @@ internal sealed class GetPostByIdQueryHandler : IQueryHandler<GetPostByIdQuery, 
             return Result<PostResponse>.Failure(PostErrors.NotFound);
         }
 
-        if (_currentUser.UserId is { } viewerId)
-        {
-            var blocked = await SocialQueries.BlockedUserIds(_dbContext, viewerId)
-                .AnyAsync(userId => userId == post.UserId, cancellationToken);
+        var hidden = await SocialQueries.HiddenUserIds(_dbContext, _currentUser.UserId)
+            .AnyAsync(userId => userId == post.UserId, cancellationToken);
 
-            if (blocked)
-            {
-                return Result<PostResponse>.Failure(PostErrors.NotFound);
-            }
+        if (hidden)
+        {
+            return Result<PostResponse>.Failure(PostErrors.NotFound);
         }
 
         return Result<PostResponse>.Success(

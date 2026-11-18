@@ -64,10 +64,13 @@ internal sealed class ListPendingJoinRequestEventsQueryHandler
         var eventIds = events.Select(candidate => candidate.Id).ToList();
 
         // Flat queries + in-memory join, same as ListPendingAttendanceEvents (InMemory provider).
+        var hiddenTestIds = Social.BlockQueries.HiddenTestAccountIds(_dbContext, userId);
+
         var pendingParticipants = await _dbContext.EventParticipants.AsNoTracking()
             .Where(participant =>
                 eventIds.Contains(participant.EventId)
                 && participant.UserId != null
+                && !hiddenTestIds.Contains(participant.UserId.Value)
                 && participant.Status == ParticipantStatus.Pending)
             .Select(participant => new
             {

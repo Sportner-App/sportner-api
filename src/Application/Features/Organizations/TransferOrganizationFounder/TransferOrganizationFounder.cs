@@ -130,6 +130,8 @@ internal sealed class TransferOrganizationFounderCommandHandler
             actorId,
             cancellationToken);
 
-        return Result<OrganizationDetailResponse>.Success(response!);
+        return response is null
+            ? Result<OrganizationDetailResponse>.Failure(OrganizationErrors.NotFound)
+            : Result<OrganizationDetailResponse>.Success(response);
     }
 }

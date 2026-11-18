@@ -51,11 +51,11 @@ internal sealed class GetDistrictLeaderboardQueryHandler
             windowEnd: null,
             cancellationToken);
 
-        // Engellenenler isteyene görünmez; sıra numarası yine herkes için aynı kalır.
-        var hidden = _currentUser.UserId is { } viewerId
-            ? (await BlockQueries.BlockedUserIds(_dbContext, viewerId).ToListAsync(cancellationToken))
-                .ToHashSet()
-            : [];
+        // Engellenenler ve (bakan test hesabı değilse) test hesapları isteyene görünmez;
+        // sıra numarası yine herkes için aynı kalır.
+        var hidden = (await BlockQueries.HiddenUserIds(_dbContext, _currentUser.UserId)
+                .ToListAsync(cancellationToken))
+            .ToHashSet();
 
         var standings = LeaderboardCalculator.Rank(rows);
         var visible = standings.Where(standing => !hidden.Contains(standing.UserId)).ToList();

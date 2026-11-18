@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Features.Social;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Organizations;
 
@@ -87,6 +88,20 @@ internal static class OrganizationQueries
             .FirstOrDefaultAsync(candidate => candidate.Id == organizationId, cancellationToken);
 
         if (organization is null)
+        {
+            return null;
+        }
+
+        // Test kurucusu gizlemesi: kulübün onaylı/bekleyen (yönetici dahil) üyesi görmeye devam eder.
+        if (await BlockQueries.HiddenTestAccountIds(dbContext, viewerUserId)
+                .AnyAsync(id => id == organization.FounderUserId, cancellationToken)
+            && !(viewerUserId is { } memberCandidate
+                && await dbContext.OrganizationMembers.AsNoTracking().AnyAsync(
+                    member => member.OrganizationId == organizationId
+                        && member.UserId == memberCandidate
+                        && (member.Status == OrganizationMemberStatus.Approved
+                            || member.Status == OrganizationMemberStatus.Pending),
+                    cancellationToken)))
         {
             return null;
         }
