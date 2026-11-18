@@ -101,7 +101,8 @@ internal sealed class GetAdminStatsQueryHandler : IQueryHandler<GetAdminStatsQue
 
         var today = now.ToOffset(IstanbulOffset).Date;
         var firstDay = today.AddDays(-(SignupDays - 1));
-        var firstDayUtc = new DateTimeOffset(firstDay, IstanbulOffset);
+        // Npgsql timestamptz parametresinde yalnızca UTC offset'i kabul ediyor.
+        var firstDayUtc = new DateTimeOffset(firstDay, IstanbulOffset).ToUniversalTime();
         var signups = await users
             .Where(user => user.CreatedAt >= firstDayUtc)
             .Select(user => user.CreatedAt)
