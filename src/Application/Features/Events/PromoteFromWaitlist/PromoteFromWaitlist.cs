@@ -74,8 +74,8 @@ internal sealed class PromoteFromWaitlistCommandHandler
                     NotificationActor.Format(
                         recipientLanguage,
                         nameof(NotificationsResource.EventPromotedFromWaitlist_Title),
-                        await NotificationActor.PrefixAsync(
-                            DbContext, @event.OrganizerUserId, recipientLanguage, ct)),
+                        await NotificationActor.EventActorPrefixAsync(
+                            DbContext, @event, @event.OrganizerUserId, recipientLanguage, ct)),
                     NotificationActor.Format(
                         recipientLanguage,
                         nameof(NotificationsResource.EventRequestApproved_Body),

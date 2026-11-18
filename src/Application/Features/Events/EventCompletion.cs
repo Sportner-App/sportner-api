@@ -160,33 +160,44 @@ internal static class EventCompletion
         INotificationPublisher notificationPublisher,
         CancellationToken cancellationToken)
     {
-        var alreadySent = await dbContext.Notifications.AsNoTracking().AnyAsync(
-            notification =>
-                notification.RecipientUserId == @event.OrganizerUserId
+        // Yoklamayı oluşturan ve (kulüp etkinliğinde) kulüp yöneticileri alabilir; hepsine istenir.
+        var recipients = await EventAccess.ResolveManagerRecipientsAsync(
+            dbContext, @event, Guid.Empty, cancellationToken);
+
+        var alreadySent = await dbContext.Notifications.AsNoTracking()
+            .Where(notification =>
+                recipients.Contains(notification.RecipientUserId)
                 && notification.NotificationType == NotificationType.EventAttendancePending
                 && notification.EntityType == NotificationEntityType.Event
-                && notification.EntityId == @event.Id,
-            cancellationToken);
+                && notification.EntityId == @event.Id)
+            .Select(notification => notification.RecipientUserId)
+            .ToListAsync(cancellationToken);
 
-        if (alreadySent)
+        var pending = recipients.Except(alreadySent).ToList();
+        if (pending.Count == 0)
         {
             return;
         }
 
-        var language = await NotificationActor.ResolveRecipientLanguageAsync(
-            dbContext, @event.OrganizerUserId, cancellationToken);
+        var languages = await NotificationActor.ResolveRecipientLanguagesAsync(
+            dbContext, pending, cancellationToken);
 
-        await notificationPublisher.PublishAsync(
-            @event.OrganizerUserId,
-            NotificationType.EventAttendancePending,
-            NotificationActor.Format(
-                language, nameof(NotificationsResource.EventAttendancePending_Title)),
-            NotificationActor.Format(
-                language, nameof(NotificationsResource.EventAttendancePending_Body), @event.Title),
-            NotificationEntityType.Event,
-            @event.Id,
-            actorUserId: null,
-            cancellationToken);
+        foreach (var recipientId in pending)
+        {
+            var language = languages.GetValueOrDefault(recipientId);
+
+            await notificationPublisher.PublishAsync(
+                recipientId,
+                NotificationType.EventAttendancePending,
+                NotificationActor.Format(
+                    language, nameof(NotificationsResource.EventAttendancePending_Title)),
+                NotificationActor.Format(
+                    language, nameof(NotificationsResource.EventAttendancePending_Body), @event.Title),
+                NotificationEntityType.Event,
+                @event.Id,
+                actorUserId: null,
+                cancellationToken);
+        }
     }
 
     /// <summary>

@@ -23,15 +23,10 @@ internal sealed class GetOrganizationByIdQueryHandler
         GetOrganizationByIdQuery request,
         CancellationToken cancellationToken)
     {
-        if (_currentUser.UserId is not { } userId)
-        {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.NotAuthenticated);
-        }
-
         var response = await OrganizationQueries.GetDetailAsync(
             _dbContext,
             request.OrganizationId,
-            userId,
+            _currentUser.UserId,
             cancellationToken);
 
         return response is null

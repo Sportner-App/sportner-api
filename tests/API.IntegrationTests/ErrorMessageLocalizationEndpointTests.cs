@@ -11,11 +11,11 @@ namespace Sportner.API.IntegrationTests;
 /// Accept-Language header'ını doğru kültüre çevirip error.message'ı buna göre
 /// döndürdüğünü doğrular.
 /// </summary>
-public class ErrorMessageLocalizationEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public class ErrorMessageLocalizationEndpointTests : IClassFixture<SportnerApiFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly SportnerApiFactory _factory;
 
-    public ErrorMessageLocalizationEndpointTests(WebApplicationFactory<Program> factory)
+    public ErrorMessageLocalizationEndpointTests(SportnerApiFactory factory)
     {
         _factory = factory;
     }

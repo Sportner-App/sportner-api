@@ -25,7 +25,10 @@ public class OrganizationMember : AuditableEntity
     public bool CanManageMembers =>
         IsApproved && Role is OrganizationRole.Founder or OrganizationRole.Admin;
 
-    public bool CanCreateEvents => IsApproved;
+    public bool CanCreateEvents(OrganizationEventCreationPolicy policy) =>
+        IsApproved
+        && (policy is OrganizationEventCreationPolicy.AllMembers
+            || Role is OrganizationRole.Founder or OrganizationRole.Admin);
 
     public static OrganizationMember CreateFounder(
         Guid organizationId,
@@ -246,6 +249,30 @@ public class OrganizationMember : AuditableEntity
         }
 
         Role = role;
+        Touch(utcNow);
+    }
+
+    /// <summary>Kurucu devri: onaylı üye kurucu olur.</summary>
+    public void PromoteToFounder(DateTimeOffset utcNow)
+    {
+        if (Status is not OrganizationMemberStatus.Approved)
+        {
+            throw new DomainException("Only approved members can become founder.");
+        }
+
+        Role = OrganizationRole.Founder;
+        Touch(utcNow);
+    }
+
+    /// <summary>Kurucu devri: eski kurucu yönetici olur.</summary>
+    public void DemoteFounderToAdmin(DateTimeOffset utcNow)
+    {
+        if (Role is not OrganizationRole.Founder)
+        {
+            throw new DomainException("Only the founder can be demoted to admin.");
+        }
+
+        Role = OrganizationRole.Admin;
         Touch(utcNow);
     }
 

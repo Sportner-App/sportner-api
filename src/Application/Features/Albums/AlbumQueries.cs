@@ -65,10 +65,14 @@ internal static class AlbumQueries
             return false;
         }
 
-        return await dbContext.Events.AsNoTracking()
-            .AnyAsync(
-                @event => @event.Id == eventId && @event.OrganizerUserId == userId,
-                cancellationToken);
+        var scope = await dbContext.Events.AsNoTracking()
+            .Where(@event => @event.Id == eventId)
+            .Select(@event => new { @event.OrganizerUserId, @event.OrganizationId })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return scope is not null
+            && await EventAccess.CanManageAsync(
+                dbContext, scope.OrganizerUserId, scope.OrganizationId, userId, cancellationToken);
     }
 
     internal static async Task<bool> CanUploadMediaAsync(
@@ -89,7 +93,7 @@ internal static class AlbumQueries
 
         var @event = await dbContext.Events.AsNoTracking()
             .Where(candidate => candidate.Id == eventId)
-            .Select(candidate => new { candidate.OrganizerUserId })
+            .Select(candidate => new { candidate.OrganizerUserId, candidate.OrganizationId })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (@event is null)
@@ -97,7 +101,8 @@ internal static class AlbumQueries
             return false;
         }
 
-        if (@event.OrganizerUserId == userId)
+        if (await EventAccess.CanManageAsync(
+                dbContext, @event.OrganizerUserId, @event.OrganizationId, userId, cancellationToken))
         {
             return true;
         }
@@ -151,7 +156,7 @@ internal static class AlbumQueries
         {
             var @event = await dbContext.Events.AsNoTracking()
                 .Where(candidate => candidate.Id == eventId)
-                .Select(candidate => new { candidate.OrganizerUserId })
+                .Select(candidate => new { candidate.OrganizerUserId, candidate.OrganizationId })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (@event is null)
@@ -174,9 +179,11 @@ internal static class AlbumQueries
             return album.Visibility switch
             {
                 AlbumVisibility.Public => true,
-                AlbumVisibility.Private => viewerUserId == @event.OrganizerUserId,
+                AlbumVisibility.Private => await EventAccess.CanManageAsync(
+                    dbContext, @event.OrganizerUserId, @event.OrganizationId, viewerUserId, cancellationToken),
                 AlbumVisibility.EventParticipants => viewerUserId is { } participantViewer
-                    && (@event.OrganizerUserId == participantViewer
+                    && (await EventAccess.CanManageAsync(
+                            dbContext, @event.OrganizerUserId, @event.OrganizationId, participantViewer, cancellationToken)
                         || await dbContext.EventParticipants.AsNoTracking().AnyAsync(
                             participant =>
                                 participant.EventId == eventId

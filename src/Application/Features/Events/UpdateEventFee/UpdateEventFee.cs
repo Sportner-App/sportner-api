@@ -55,6 +55,7 @@ internal sealed class UpdateEventFeeCommandHandler
                     DbContext,
                     _notificationPublisher,
                     @event,
+                    CurrentUser.UserId!.Value,
                     NotificationType.EventFeeUpdated,
                     nameof(NotificationsResource.EventFeeUpdated_Title),
                     nameof(NotificationsResource.EventFeeUpdated_Body),

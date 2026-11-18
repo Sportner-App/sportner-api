@@ -50,7 +50,13 @@ internal sealed class ListMyOrganizationsQueryHandler
                     (short)member.Status,
                     _dbContext.OrganizationMembers.Count(other =>
                         other.OrganizationId == organization.Id
-                        && other.Status == OrganizationMemberStatus.Approved)))
+                        && other.Status == OrganizationMemberStatus.Approved),
+                    organization.ImageUrl,
+                    organization.IsPublic,
+                    member.Status == OrganizationMemberStatus.Approved
+                        && (organization.EventCreationPolicy == OrganizationEventCreationPolicy.AllMembers
+                            || member.Role == OrganizationRole.Founder
+                            || member.Role == OrganizationRole.Admin)))
             .ToListAsync(cancellationToken);
 
         return Result<IReadOnlyList<OrganizationListItemResponse>>.Success(items);

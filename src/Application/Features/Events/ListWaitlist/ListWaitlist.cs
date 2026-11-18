@@ -37,7 +37,7 @@ internal sealed class ListWaitlistQueryHandler
             return Result<IReadOnlyList<WaitlistEntryResponse>>.Failure(EventErrors.NotFound);
         }
 
-        if (@event.OrganizerUserId != userId)
+        if (!await EventAccess.CanManageAsync(_dbContext, @event, userId, cancellationToken))
         {
             return Result<IReadOnlyList<WaitlistEntryResponse>>.Failure(EventErrors.NotOrganizer);
         }

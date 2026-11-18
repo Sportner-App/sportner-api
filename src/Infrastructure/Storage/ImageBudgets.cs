@@ -29,6 +29,9 @@ internal static class ImageBudgets
 
         // Etkinlik kartlarinda kapak olarak tam genislik.
         [StorageBuckets.SportCovers] = new ImageBudget(1600, 85),
+
+        // Kulüp kartı ve detay başlığında tam genişlik.
+        [StorageBuckets.ClubImages] = new ImageBudget(1600, 85),
     };
 
     /// <summary>Tanimsiz kova = bilinmeyen kullanim; dokunmadan gecir.</summary>

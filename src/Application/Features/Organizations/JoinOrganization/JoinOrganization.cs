@@ -5,11 +5,8 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
-using Sportner.Application.Features.Notifications;
-using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 using Sportner.Domain.Organizations;
-using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Organizations.JoinOrganization;
 
@@ -52,17 +49,9 @@ internal sealed class JoinOrganizationCommandHandler
             return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.NotAuthenticated);
         }
 
-        var user = await _dbContext.Users
-            .FirstOrDefaultAsync(candidate => candidate.Id == userId, cancellationToken);
-
-        if (user is null)
+        if (await OrganizationJoin.ValidateUserAsync(_dbContext, userId, cancellationToken) is { } userError)
         {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.UserNotFound);
-        }
-
-        if (!user.CanCreateContent())
-        {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.CannotCreateContent);
+            return Result<OrganizationDetailResponse>.Failure(userError);
         }
 
         string inviteCode;
@@ -83,84 +72,12 @@ internal sealed class JoinOrganizationCommandHandler
             return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.InvalidInviteCode);
         }
 
-        var existing = await OrganizationQueries.FindMembershipAsync(
+        return await OrganizationJoin.JoinAsync(
             _dbContext,
-            organization.Id,
+            _notificationPublisher,
+            _timeProvider,
+            organization,
             userId,
             cancellationToken);
-
-        var utcNow = _timeProvider.GetUtcNow();
-
-        if (existing is null)
-        {
-            var approved = OrganizationMember.CreateApproved(organization.Id, userId, utcNow);
-            _dbContext.OrganizationMembers.Add(approved);
-        }
-        else if (existing.Status is OrganizationMemberStatus.Approved)
-        {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.AlreadyMember);
-        }
-        else if (existing.Status is OrganizationMemberStatus.Pending)
-        {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.AlreadyPending);
-        }
-        else if (existing.Status is OrganizationMemberStatus.Blocked)
-        {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.MemberBlocked);
-        }
-        else
-        {
-            try
-            {
-                existing.Rejoin(utcNow);
-            }
-            catch (DomainException)
-            {
-                return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.AlreadyPending);
-            }
-        }
-
-        var actorUsername = await NotificationActor.ResolveUsernameAsync(_dbContext, userId, cancellationToken);
-
-        var managerIds = await _dbContext.OrganizationMembers.AsNoTracking()
-            .Where(member =>
-                member.OrganizationId == organization.Id
-                && member.Status == OrganizationMemberStatus.Approved
-                && (member.Role == OrganizationRole.Founder || member.Role == OrganizationRole.Admin)
-                && member.UserId != userId)
-            .Select(member => member.UserId)
-            .ToListAsync(cancellationToken);
-
-        var languagesByManager = await NotificationActor.ResolveRecipientLanguagesAsync(
-            _dbContext, managerIds, cancellationToken);
-
-        foreach (var managerId in managerIds)
-        {
-            var language = languagesByManager.GetValueOrDefault(managerId);
-            var text = NotificationActor.Format(
-                language,
-                nameof(NotificationsResource.OrganizationMemberJoined_Text),
-                NotificationActor.FormatPrefix(actorUsername, language));
-
-            await _notificationPublisher.PublishAsync(
-                managerId,
-                NotificationType.OrganizationMemberJoined,
-                text,
-                text,
-                NotificationEntityType.Organization,
-                organization.Id,
-                userId,
-                cancellationToken);
-        }
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        var response = await OrganizationQueries.GetDetailAsync(
-            _dbContext,
-            organization.Id,
-            userId,
-            cancellationToken);
-
-        return Result<OrganizationDetailResponse>.Success(response!);
     }
 }

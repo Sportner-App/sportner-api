@@ -3,7 +3,6 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
-using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Organizations.RotateInviteCode;
 
@@ -41,9 +40,9 @@ internal sealed class RotateInviteCodeCommandHandler
             userId,
             cancellationToken);
 
-        if (membership is null || !membership.IsApproved || membership.Role is not OrganizationRole.Founder)
+        if (membership is null || !membership.CanManageMembers)
         {
-            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.NotFounder);
+            return Result<OrganizationDetailResponse>.Failure(OrganizationErrors.CannotManageMembers);
         }
 
         var organization = await _dbContext.Organizations

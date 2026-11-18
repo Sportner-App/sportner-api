@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Common.Search;
 using Sportner.Domain.Badges;
 using Sportner.Domain.Challenges;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Events;
 using Sportner.Domain.Leaderboards;
 using Sportner.Domain.Feedback;
@@ -328,6 +329,15 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>()
             .Property<uint>("Version")
             .IsRowVersion();
+
+        // Kurucu devri / silme yarışları: iki eşzamanlı devir ikisi de başarılı olup iki kurucu
+        // üretmesin; devir sırasında hedef üyeliğin eşzamanlı block/leave ile değişmesi de çakışır.
+        modelBuilder.Entity<Organization>()
+            .Property<uint>("Version")
+            .IsRowVersion();
+        modelBuilder.Entity<OrganizationMember>()
+            .Property<uint>("Version")
+            .IsRowVersion();
         modelBuilder.Entity<Event>().HasIndex(entity => entity.OrganizerUserId);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.SportId);
         modelBuilder.Entity<Event>().HasIndex(entity => entity.EventDate);
@@ -344,6 +354,7 @@ internal static class ModelBuilderExtensions
 
         modelBuilder.Entity<Organization>().HasIndex(entity => entity.FounderUserId);
         modelBuilder.Entity<Organization>().HasIndex(entity => entity.CityId);
+        modelBuilder.Entity<Organization>().HasIndex(entity => entity.IsPublic);
 
         modelBuilder.Entity<OrganizationMember>().HasIndex(entity => entity.UserId);
         modelBuilder.Entity<OrganizationMember>()
@@ -774,6 +785,9 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Organization>()
             .Property(entity => entity.InviteCode)
             .HasMaxLength(Organization.InviteCodeLength);
+        modelBuilder.Entity<Organization>()
+            .Property(entity => entity.ImageUrl)
+            .HasMaxLength(Organization.ImageUrlMaxLength);
     }
 
     private static void ConfigureChallengeMappings(ModelBuilder modelBuilder)
@@ -840,6 +854,26 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Event>()
             .Property(entity => entity.IsPaid)
             .HasDefaultValue(false);
+
+        modelBuilder.Entity<Event>()
+            .Property(entity => entity.IsOrganizationOnly)
+            .HasDefaultValue(false);
+
+        // Mevcut etkinlikler organizatörü oyuncu sayar; false yalnızca kulüp etkinliğinde yazılır.
+        // Sentinel true: EF varsayılan değerle aynı olan true'yu göndermez, false'u açıkça gönderir
+        // (varsayılan sentinel false olsaydı opt-out değeri yutulup DB varsayılanı true yazılırdı).
+        modelBuilder.Entity<Event>()
+            .Property(entity => entity.IsOrganizerParticipant)
+            .HasDefaultValue(true)
+            .HasSentinel(true);
+
+        modelBuilder.Entity<Organization>()
+            .Property(entity => entity.IsPublic)
+            .HasDefaultValue(false);
+
+        modelBuilder.Entity<Organization>()
+            .Property(entity => entity.EventCreationPolicy)
+            .HasDefaultValue(OrganizationEventCreationPolicy.AllMembers);
     }
 
     private static void ConfigureSmallIntColumns(ModelBuilder modelBuilder)
@@ -914,6 +948,8 @@ internal static class ModelBuilderExtensions
         modelBuilder.Entity<Report>().Property(entity => entity.Status)
             .HasColumnType("smallint");
         modelBuilder.Entity<ReportReason>().Property(entity => entity.DisplayOrder)
+            .HasColumnType("smallint");
+        modelBuilder.Entity<Organization>().Property(entity => entity.EventCreationPolicy)
             .HasColumnType("smallint");
         modelBuilder.Entity<OrganizationMember>().Property(entity => entity.Role)
             .HasColumnType("smallint");
@@ -1044,6 +1080,11 @@ internal static class ModelBuilderExtensions
             .WithMany()
             .HasForeignKey(entity => entity.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Soft delete: silinen kulüp tüm sorgulardan gizlenir. Üyelik ve etkinlik satırları
+        // korunur (eski etkinliklerin görünürlüğü üyelik satırlarına bağlı).
+        modelBuilder.Entity<Organization>()
+            .HasQueryFilter(entity => entity.DeletedAt == null);
 
         modelBuilder.Entity<OrganizationMember>()
             .HasOne<User>()

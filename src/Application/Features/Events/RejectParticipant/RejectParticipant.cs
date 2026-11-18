@@ -49,8 +49,8 @@ internal sealed class RejectParticipantCommandHandler
                     NotificationActor.Format(
                         recipientLanguage,
                         nameof(NotificationsResource.EventRequestRejected_Title),
-                        await NotificationActor.PrefixAsync(
-                            DbContext, @event.OrganizerUserId, recipientLanguage, ct)),
+                        await NotificationActor.EventActorPrefixAsync(
+                            DbContext, @event, @event.OrganizerUserId, recipientLanguage, ct)),
                     NotificationActor.Format(
                         recipientLanguage,
                         nameof(NotificationsResource.EventRequestRejected_Body),

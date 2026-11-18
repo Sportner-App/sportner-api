@@ -51,6 +51,7 @@ internal sealed class UpdateEventScheduleCommandHandler
                     DbContext,
                     _notificationPublisher,
                     @event,
+                    CurrentUser.UserId!.Value,
                     NotificationType.EventScheduleUpdated,
                     nameof(NotificationsResource.EventScheduleUpdated_Title),
                     nameof(NotificationsResource.EventScheduleUpdated_Body),

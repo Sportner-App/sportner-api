@@ -25,28 +25,34 @@
     <value>You completed the '{0}' quest.</value>
   </data>
   <data name="OrganizationJoinRequested_Text" xml:space="preserve">
-    <value>{0} wants to join the organization</value>
+    <value>{0} wants to join the club</value>
   </data>
   <data name="OrganizationMemberJoined_Text" xml:space="preserve">
-    <value>{0} joined the organization</value>
+    <value>{0} joined the club</value>
   </data>
   <data name="OrganizationJoinApproved_Text" xml:space="preserve">
-    <value>{0} approved your organization join request</value>
+    <value>{0} approved your club join request</value>
   </data>
   <data name="OrganizationMemberRemoved_Text" xml:space="preserve">
-    <value>{0} removed you from the organization</value>
+    <value>{0} removed you from the club</value>
   </data>
   <data name="OrganizationJoinRejected_Text" xml:space="preserve">
-    <value>{0} rejected your organization join request</value>
+    <value>{0} rejected your club join request</value>
   </data>
   <data name="OrganizationRoleChangedToAdmin_Text" xml:space="preserve">
-    <value>{0} made you an organization admin</value>
+    <value>{0} made you a club admin</value>
+  </data>
+  <data name="OrganizationFounderTransferred_Title" xml:space="preserve">
+    <value>Founder role is yours</value>
+  </data>
+  <data name="OrganizationFounderTransferred_Body" xml:space="preserve">
+    <value>{0} transferred the founder role of {1} to you.</value>
   </data>
   <data name="OrganizationRoleChangedFromAdmin_Text" xml:space="preserve">
-    <value>{0} removed your organization admin role</value>
+    <value>{0} removed your club admin role</value>
   </data>
   <data name="OrganizationMemberBlocked_Text" xml:space="preserve">
-    <value>{0} blocked you from the organization</value>
+    <value>{0} blocked you from the club</value>
   </data>
   <data name="PostCommented_Title" xml:space="preserve">
     <value>{0} commented on your photo</value>

@@ -20,4 +20,6 @@ public static class StorageBuckets
     public const string Albums = "albums";
 
     public const string SportCovers = "sport-covers";
+
+    public const string ClubImages = "club-images";
 }

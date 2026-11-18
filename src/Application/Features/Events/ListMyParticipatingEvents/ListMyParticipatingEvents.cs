@@ -56,6 +56,9 @@ internal sealed class ListMyParticipatingEventsQueryHandler
 
         // Classify by start time (EventDate), not duration — EF translates this
         // reliably, and "etkinlik saati geçti" matches the card clock.
+        // Taslak henüz yayınlanmadı; davetli bile olsa katılımcı listesine girmez.
+        events = events.Where(@event => @event.Status != EventStatus.Draft);
+
         events = scope switch
         {
             "upcoming" => events.Where(@event =>

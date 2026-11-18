@@ -110,6 +110,12 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Event_OrganizerParticipationClubOnly {
+            get {
+                return ResourceManager.GetString("Event_OrganizerParticipationClubOnly", resourceCulture);
+            }
+        }
+
         public static string Event_OrganizerCannotApply {
             get {
                 return ResourceManager.GetString("Event_OrganizerCannotApply", resourceCulture);
@@ -191,6 +197,12 @@ namespace Sportner.Localization.Resources {
         public static string Event_AssignmentEmpty {
             get {
                 return ResourceManager.GetString("Event_AssignmentEmpty", resourceCulture);
+            }
+        }
+
+        public static string Event_InviteeNotClubMember {
+            get {
+                return ResourceManager.GetString("Event_InviteeNotClubMember", resourceCulture);
             }
         }
 
@@ -307,6 +319,18 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Organization_CannotTransferToSelf {
+            get {
+                return ResourceManager.GetString("Organization_CannotTransferToSelf", resourceCulture);
+            }
+        }
+
+        public static string Organization_TransferTargetNotApproved {
+            get {
+                return ResourceManager.GetString("Organization_TransferTargetNotApproved", resourceCulture);
+            }
+        }
+
         public static string Organization_MemberNotFound {
             get {
                 return ResourceManager.GetString("Organization_MemberNotFound", resourceCulture);
@@ -316,6 +340,18 @@ namespace Sportner.Localization.Resources {
         public static string Organization_InviteCodeUnavailable {
             get {
                 return ResourceManager.GetString("Organization_InviteCodeUnavailable", resourceCulture);
+            }
+        }
+
+        public static string Organization_NotPublic {
+            get {
+                return ResourceManager.GetString("Organization_NotPublic", resourceCulture);
+            }
+        }
+
+        public static string Organization_InvalidMedia {
+            get {
+                return ResourceManager.GetString("Organization_InvalidMedia", resourceCulture);
             }
         }
 

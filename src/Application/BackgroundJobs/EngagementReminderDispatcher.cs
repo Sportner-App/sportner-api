@@ -98,7 +98,9 @@ internal sealed class EngagementReminderDispatcher : IEngagementReminderDispatch
                 select new { UserId = participant.UserId!.Value, @event.Id, @event.EventDate })
             .ToListAsync(cancellationToken);
         var organized = await _dbContext.Events.AsNoTracking()
-            .Where(@event => @event.Status == EventStatus.Completed && @event.EventDate >= streakSince)
+            .Where(@event => @event.Status == EventStatus.Completed
+                && @event.IsOrganizerParticipant
+                && @event.EventDate >= streakSince)
             .Select(@event => new { UserId = @event.OrganizerUserId, @event.Id, @event.EventDate })
             .ToListAsync(cancellationToken);
         var playedByUser = attended

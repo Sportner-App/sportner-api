@@ -85,7 +85,7 @@ internal sealed class RemoveAssignedParticipantCommandHandler
                 DbContext.EventParticipantRemovals.Add(EventParticipantRemoval.Create(
                     @event.Id,
                     participant.Id,
-                    @event.OrganizerUserId,
+                    CurrentUser.UserId!.Value,
                     userId,
                     request.ReportReasonId,
                     request.Note,
@@ -120,8 +120,8 @@ internal sealed class RemoveAssignedParticipantCommandHandler
                         NotificationActor.Format(
                             recipientLanguage,
                             nameof(NotificationsResource.EventParticipantRemoved_Title),
-                            await NotificationActor.PrefixAsync(
-                                DbContext, @event.OrganizerUserId, recipientLanguage, ct)),
+                            await NotificationActor.EventActorPrefixAsync(
+                                DbContext, @event, @event.OrganizerUserId, recipientLanguage, ct)),
                         NotificationActor.Format(
                             recipientLanguage,
                             nameof(NotificationsResource.EventParticipantRemoved_Body),

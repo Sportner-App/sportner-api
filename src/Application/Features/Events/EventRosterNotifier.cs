@@ -17,10 +17,33 @@ internal static class EventRosterNotifier
     /// katilimci etkinligi eski adiyla taniyor, yeni adi yazarsak hangi
     /// etkinlikten bahsedildigini anlamiyor.
     /// </param>
+    /// <summary>
+    /// Bekleyen/onaylı katılımcılar; eylemi yapan hariç. Eylemi yapan oluşturan değilse (kulüp yöneticisi)
+    /// oluşturan da, katılımcı olmasa bile bilgilendirilir.
+    /// </summary>
+    internal static List<Guid> ResolveRecipients(Domain.Events.Event @event, Guid actorUserId)
+    {
+        var recipients = @event.Participants
+            .Where(participant => participant.UserId is { } userId
+                && participant.Status is ParticipantStatus.Pending
+                    or ParticipantStatus.Approved)
+            .Select(participant => participant.UserId!.Value)
+            .ToHashSet();
+
+        if (actorUserId != @event.OrganizerUserId)
+        {
+            recipients.Add(@event.OrganizerUserId);
+        }
+
+        recipients.Remove(actorUserId);
+        return recipients.ToList();
+    }
+
     internal static async Task NotifyParticipantsOfUpdateAsync(
         IApplicationDbContext dbContext,
         INotificationPublisher notificationPublisher,
         Domain.Events.Event @event,
+        Guid actorUserId,
         IReadOnlyCollection<EventUpdateField> changes,
         string previousTitle,
         CancellationToken cancellationToken)
@@ -28,19 +51,12 @@ internal static class EventRosterNotifier
         // Bekleyenler de dahil: tekil guncelleme uclari (UpdateEventSchedule
         // vb.) zaten onlara da haber veriyordu, toplu uc vermeyince ayni
         // degisiklik hangi uctan yapildigina gore farkli kisilere ulasiyordu.
-        var recipients = @event.Participants
-            .Where(participant => participant.UserId is { } userId
-                && userId != @event.OrganizerUserId
-                && participant.Status is ParticipantStatus.Pending
-                    or ParticipantStatus.Approved)
-            .Select(participant => participant.UserId!.Value)
-            .Distinct()
-            .ToList();
+        var recipients = ResolveRecipients(@event, actorUserId);
 
         if (recipients.Count == 0 || changes.Count == 0) return;
 
-        var organizerUsername = await NotificationActor.ResolveUsernameAsync(
-            dbContext, @event.OrganizerUserId, cancellationToken);
+        var organizerActor = await NotificationActor.ResolveEventActorNameAsync(
+            dbContext, @event, actorUserId, cancellationToken);
         var languages = await NotificationActor.ResolveRecipientLanguagesAsync(
             dbContext, recipients, cancellationToken);
 
@@ -54,11 +70,11 @@ internal static class EventRosterNotifier
             await notificationPublisher.PublishAsync(
                 recipientId,
                 NotificationType.EventUpdated,
-                NotificationActor.Format(language, "EventUpdated_Title", NotificationActor.FormatPrefix(organizerUsername, language)),
+                NotificationActor.Format(language, "EventUpdated_Title", NotificationActor.FormatPrefix(organizerActor, language)),
                 NotificationActor.Format(language, "EventUpdated_Body", previousTitle, string.Join(", ", changedLabels)),
                 NotificationEntityType.Event,
                 @event.Id,
-                @event.OrganizerUserId,
+                actorUserId,
                 cancellationToken);
         }
     }
@@ -67,27 +83,21 @@ internal static class EventRosterNotifier
         IApplicationDbContext dbContext,
         INotificationPublisher notificationPublisher,
         Domain.Events.Event @event,
+        Guid actorUserId,
         NotificationType notificationType,
         string titleResourceKey,
         string bodyResourceKey,
         CancellationToken cancellationToken)
     {
-        var recipients = @event.Participants
-            .Where(participant =>
-                participant.UserId is { } userId
-                && userId != @event.OrganizerUserId
-                && participant.Status is ParticipantStatus.Pending or ParticipantStatus.Approved)
-            .Select(participant => participant.UserId!.Value)
-            .Distinct()
-            .ToList();
+        var recipients = ResolveRecipients(@event, actorUserId);
 
         if (recipients.Count == 0)
         {
             return;
         }
 
-        var organizerUsername = await NotificationActor.ResolveUsernameAsync(
-            dbContext, @event.OrganizerUserId, cancellationToken);
+        var organizerActor = await NotificationActor.ResolveEventActorNameAsync(
+            dbContext, @event, actorUserId, cancellationToken);
         var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
             dbContext, recipients, cancellationToken);
 
@@ -101,14 +111,14 @@ internal static class EventRosterNotifier
                 NotificationActor.Format(
                     language,
                     titleResourceKey,
-                    NotificationActor.FormatPrefix(organizerUsername, language)),
+                    NotificationActor.FormatPrefix(organizerActor, language)),
                 NotificationActor.Format(
                     language,
                     bodyResourceKey,
                     @event.Title),
                 NotificationEntityType.Event,
                 @event.Id,
-                @event.OrganizerUserId,
+                actorUserId,
                 cancellationToken);
         }
     }

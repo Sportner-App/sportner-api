@@ -18,7 +18,9 @@ internal static class ChallengeProgress
         Guid EventId,
         Guid SportId,
         DateTimeOffset EventDate,
-        bool Organized);
+        bool Organized,
+        // false: kulüp etkinliğini oynamadan yöneten oluşturan; yalnızca "organize edilen" ölçütüne sayılır.
+        bool Played = true);
 
     internal static async Task<ILookup<Guid, PlayedEvent>> LoadPlayedAsync(
         IApplicationDbContext dbContext,
@@ -53,7 +55,12 @@ internal static class ChallengeProgress
                 && @event.EventDate >= windowStart
                 && @event.EventDate < windowEnd)
             .Select(@event => new PlayedEvent(
-                @event.OrganizerUserId, @event.Id, @event.SportId, @event.EventDate, true))
+                @event.OrganizerUserId,
+                @event.Id,
+                @event.SportId,
+                @event.EventDate,
+                true,
+                @event.IsOrganizerParticipant))
             .ToListAsync(cancellationToken);
 
         return attended.Concat(organized).ToLookup(item => item.UserId);
@@ -67,15 +74,23 @@ internal static class ChallengeProgress
 
         return challenge.Metric switch
         {
-            ChallengeMetric.EventsPlayed => inWindow.Select(item => item.EventId).Distinct().Count(),
-            ChallengeMetric.DistinctSports => inWindow.Select(item => item.SportId).Distinct().Count(),
+            ChallengeMetric.EventsPlayed => inWindow
+                .Where(item => item.Played)
+                .Select(item => item.EventId)
+                .Distinct()
+                .Count(),
+            ChallengeMetric.DistinctSports => inWindow
+                .Where(item => item.Played)
+                .Select(item => item.SportId)
+                .Distinct()
+                .Count(),
             ChallengeMetric.EventsOrganized => inWindow
                 .Where(item => item.Organized)
                 .Select(item => item.EventId)
                 .Distinct()
                 .Count(),
             ChallengeMetric.SportEventsPlayed => inWindow
-                .Where(item => item.SportId == challenge.SportId)
+                .Where(item => item.Played && item.SportId == challenge.SportId)
                 .Select(item => item.EventId)
                 .Distinct()
                 .Count(),

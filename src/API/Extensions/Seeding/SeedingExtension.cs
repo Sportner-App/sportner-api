@@ -41,8 +41,10 @@ public static class SeedingExtension
     }
 
     /// <summary>
-    /// Seeds development-only demo data. Runs only in the Development environment and can be
-    /// disabled with <c>Seed:EnableDemoData=false</c>.
+    /// Seeds development-only demo data. Runs only in the Development environment and only when
+    /// explicitly enabled with <c>Seed:EnableDemoData=true</c>. Off by default: local Development
+    /// runs use the live Supabase connection from user-secrets, and an opt-out default wrote demo
+    /// users into the live database twice (17 and 18 Nov 2026).
     /// </summary>
     public static async Task SeedDemoDataAsync(this WebApplication app)
     {
@@ -51,7 +53,7 @@ public static class SeedingExtension
             return;
         }
 
-        if (!app.Configuration.GetValue("Seed:EnableDemoData", true))
+        if (!app.Configuration.GetValue("Seed:EnableDemoData", false))
         {
             return;
         }

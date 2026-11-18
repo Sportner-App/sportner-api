@@ -12,7 +12,8 @@ namespace Sportner.Application.Features.Organizations.CreateOrganization;
 public sealed record CreateOrganizationCommand(
     string Name,
     string? Description,
-    Guid? CityId) : ICommand<OrganizationDetailResponse>;
+    Guid? CityId,
+    bool IsPublic = false) : ICommand<OrganizationDetailResponse>;
 
 public sealed class CreateOrganizationCommandValidator : AbstractValidator<CreateOrganizationCommand>
 {
@@ -102,6 +103,7 @@ internal sealed class CreateOrganizationCommandHandler
                 request.Description,
                 request.CityId,
                 inviteCode,
+                request.IsPublic,
                 utcNow);
             founder = OrganizationMember.CreateFounder(organization.Id, userId, utcNow);
         }

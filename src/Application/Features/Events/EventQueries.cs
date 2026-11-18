@@ -19,12 +19,13 @@ internal static class EventQueries
         Guid? viewerUserId,
         CancellationToken cancellationToken)
     {
-        var organizationId = await dbContext.Events.AsNoTracking()
+        var scope = await dbContext.Events.AsNoTracking()
             .Where(candidate => candidate.Id == eventId)
-            .Select(candidate => candidate.OrganizationId)
+            .Select(candidate => new { candidate.OrganizationId, candidate.IsOrganizationOnly })
             .FirstOrDefaultAsync(cancellationToken);
 
-        return organizationId is not { } orgId
+        return scope?.OrganizationId is not { } orgId
+            || !scope.IsOrganizationOnly
             || await OrganizationQueries.IsApprovedMemberAsync(dbContext, orgId, viewerUserId, cancellationToken);
     }
 
@@ -42,7 +43,22 @@ internal static class EventQueries
             return null;
         }
 
+        // Taslak yalnızca yönetebilenlere (oluşturan / kulüp yöneticisi) ve taslağa eklenmiş
+        // katılımcılara görünür (yayınlama başarısız olursa arkadaş davetleri taslağa düşer).
+        if (@event.Status == EventStatus.Draft
+            && !(viewerUserId is { } draftViewerId
+                && await dbContext.EventParticipants.AsNoTracking().AnyAsync(
+                    participant => participant.EventId == @event.Id
+                        && participant.UserId == draftViewerId
+                        && participant.Status != ParticipantStatus.Cancelled,
+                    cancellationToken))
+            && !await EventAccess.CanManageAsync(dbContext, @event, viewerUserId, cancellationToken))
+        {
+            return null;
+        }
+
         if (@event.OrganizationId is { } organizationId
+            && @event.IsOrganizationOnly
             && !await OrganizationQueries.IsApprovedMemberAsync(
                 dbContext,
                 organizationId,
@@ -128,26 +144,26 @@ internal static class EventQueries
             .FirstOrDefaultAsync(cancellationToken);
 
         string? organizationName = null;
-        var canCancel = viewerUserId == @event.OrganizerUserId
-            && @event.Status is EventStatus.Draft or EventStatus.Published or EventStatus.Full;
+        string? organizationImageUrl = null;
+        var isCancellableStatus = @event.Status is EventStatus.Draft or EventStatus.Published or EventStatus.Full;
+        var canManage = viewerUserId is { } creatorCandidate && creatorCandidate == @event.OrganizerUserId;
+        var canCancel = canManage && isCancellableStatus;
 
         if (@event.OrganizationId is { } orgId)
         {
-            organizationName = await dbContext.Organizations.AsNoTracking()
-                .Where(organization => organization.Id == orgId)
-                .Select(organization => organization.Name)
+            var organization = await dbContext.Organizations.AsNoTracking()
+                .Where(candidate => candidate.Id == orgId)
+                .Select(candidate => new { candidate.Name, candidate.ImageUrl })
                 .FirstOrDefaultAsync(cancellationToken);
+            organizationName = organization?.Name;
+            organizationImageUrl = organization?.ImageUrl;
 
-            if (!canCancel
-                && viewerUserId is { } managerId
-                && @event.Status is EventStatus.Draft or EventStatus.Published or EventStatus.Full)
+            if (!canManage && viewerUserId is { } managerId)
             {
-                var membership = await OrganizationQueries.FindMembershipAsync(
-                    dbContext,
-                    orgId,
-                    managerId,
-                    cancellationToken);
-                canCancel = membership?.CanManageMembers == true;
+                // Silinmiş kulüpte organization null döndüğü için yönetici yetkisi de düşer.
+                canManage = organization is not null
+                    && await EventAccess.IsClubManagerAsync(dbContext, orgId, managerId, cancellationToken);
+                canCancel = canManage && isCancellableStatus;
             }
         }
 
@@ -182,7 +198,11 @@ internal static class EventQueries
             organizationName,
             canCancel,
             @event.District,
-            @event.City);
+            @event.City,
+            @event.IsOrganizationOnly,
+            organizationImageUrl,
+            canManage,
+            @event.IsOrganizerParticipant);
     }
 
     /// <summary>
@@ -200,6 +220,9 @@ internal static class EventQueries
         join profile in dbContext.UserProfiles.AsNoTracking()
             on @event.OrganizerUserId equals profile.UserId into profiles
         from profile in profiles.DefaultIfEmpty()
+        join organization in dbContext.Organizations.AsNoTracking()
+            on @event.OrganizationId equals organization.Id into organizations
+        from organization in organizations.DefaultIfEmpty()
         select new EventListItemResponse(
             @event.Id,
             @event.SportId,
@@ -226,7 +249,14 @@ internal static class EventQueries
                 participant.EventId == @event.Id
                 && (participant.Status == ParticipantStatus.Approved
                     || participant.Status == ParticipantStatus.Attended
-                    || participant.Status == ParticipantStatus.NoShow)));
+                    || participant.Status == ParticipantStatus.NoShow)),
+            null,
+            null,
+            @event.OrganizationId,
+            organization != null ? organization.Name : null,
+            @event.IsOrganizationOnly,
+            organization != null ? organization.ImageUrl : null,
+            @event.IsOrganizerParticipant);
     }
 
     /// <summary>

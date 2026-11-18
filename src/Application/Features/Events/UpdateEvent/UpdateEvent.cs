@@ -111,7 +111,7 @@ internal sealed class UpdateEventCommandHandler
                 if (changes.Count > 0)
                 {
                     await EventRosterNotifier.NotifyParticipantsOfUpdateAsync(
-                        DbContext, _notificationPublisher, @event, changes, previousTitle, ct);
+                        DbContext, _notificationPublisher, @event, CurrentUser.UserId!.Value, changes, previousTitle, ct);
                 }
 
                 return Result.Success();

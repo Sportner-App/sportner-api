@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Sportner.Domain.Common.Base;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 
 namespace Sportner.Domain.Organizations;
@@ -8,6 +9,7 @@ public class Organization : AggregateRoot
 {
     public const int NameMaxLength = 80;
     public const int DescriptionMaxLength = 1000;
+    public const int ImageUrlMaxLength = 2048;
     public const int InviteCodeLength = 8;
     private const string InviteAlphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
@@ -25,12 +27,26 @@ public class Organization : AggregateRoot
 
     public string InviteCode { get; private set; } = null!;
 
+    /// <summary>Herkese açık kulüp listelenir ve kodsuz katılıma açıktır.</summary>
+    public bool IsPublic { get; private set; }
+
+    public string? ImageUrl { get; private set; }
+
+    /// <summary>Soft delete: dolu ise kulüp silinmiştir ve global query filter ile gizlenir.</summary>
+    public DateTimeOffset? DeletedAt { get; private set; }
+
+    public bool IsDeleted => DeletedAt is not null;
+
+    public OrganizationEventCreationPolicy EventCreationPolicy { get; private set; } =
+        OrganizationEventCreationPolicy.AllMembers;
+
     public static Organization Create(
         Guid founderUserId,
         string name,
         string? description,
         Guid? cityId,
         string inviteCode,
+        bool isPublic,
         DateTimeOffset utcNow)
     {
         if (founderUserId == Guid.Empty)
@@ -51,6 +67,7 @@ public class Organization : AggregateRoot
             Description = NormalizeDescription(description),
             CityId = cityId,
             InviteCode = NormalizeInviteCode(inviteCode),
+            IsPublic = isPublic,
             CreatedAt = utcNow
         };
     }
@@ -59,6 +76,7 @@ public class Organization : AggregateRoot
         string name,
         string? description,
         Guid? cityId,
+        bool isPublic,
         DateTimeOffset utcNow)
     {
         if (cityId is { } id && id == Guid.Empty)
@@ -69,6 +87,61 @@ public class Organization : AggregateRoot
         Name = NormalizeName(name);
         Description = NormalizeDescription(description);
         CityId = cityId;
+        IsPublic = isPublic;
+        Touch(utcNow);
+    }
+
+    public void ChangeImage(string? imageUrl, DateTimeOffset utcNow)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            ImageUrl = null;
+        }
+        else
+        {
+            var normalized = imageUrl.Trim();
+            if (normalized.Length > ImageUrlMaxLength)
+            {
+                throw new DomainException(
+                    $"Organization image url cannot exceed {ImageUrlMaxLength} characters.");
+            }
+
+            ImageUrl = normalized;
+        }
+
+        Touch(utcNow);
+    }
+
+    public void ChangeEventCreationPolicy(OrganizationEventCreationPolicy policy, DateTimeOffset utcNow)
+    {
+        if (!Enum.IsDefined(policy))
+        {
+            throw new DomainException("Event creation policy is invalid.");
+        }
+
+        EventCreationPolicy = policy;
+        Touch(utcNow);
+    }
+
+    public void TransferFounder(Guid newFounderUserId, DateTimeOffset utcNow)
+    {
+        if (newFounderUserId == Guid.Empty)
+        {
+            throw new DomainException("Founder user id is required.");
+        }
+
+        FounderUserId = newFounderUserId;
+        Touch(utcNow);
+    }
+
+    public void MarkDeleted(DateTimeOffset utcNow)
+    {
+        if (DeletedAt is not null)
+        {
+            throw new DomainException("Organization is already deleted.");
+        }
+
+        DeletedAt = utcNow;
         Touch(utcNow);
     }
 

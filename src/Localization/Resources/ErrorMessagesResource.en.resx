@@ -42,6 +42,9 @@
   <data name="Event_OrganizerCannotApply" xml:space="preserve">
     <value>The organizer cannot apply to their own event.</value>
   </data>
+  <data name="Event_OrganizerParticipationClubOnly" xml:space="preserve">
+    <value>Only club events let the organizer choose whether to play.</value>
+  </data>
   <data name="Event_ParticipantNotFound" xml:space="preserve">
     <value>The participant was not found.</value>
   </data>
@@ -84,11 +87,14 @@
   <data name="Event_NotFriends" xml:space="preserve">
     <value>Only accepted friends can be added to the event.</value>
   </data>
+  <data name="Event_InviteeNotClubMember" xml:space="preserve">
+    <value>You can only invite approved members of the club.</value>
+  </data>
   <data name="Event_RelationshipBlocked" xml:space="preserve">
     <value>This relationship is blocked.</value>
   </data>
   <data name="Event_NotOrganizationMember" xml:space="preserve">
-    <value>Only approved organization members can join this event.</value>
+    <value>Only approved club members can join this event.</value>
   </data>
   <data name="Event_FriendAlreadyAssociated" xml:space="preserve">
     <value>One of the selected friends is already associated with this event.</value>
@@ -103,7 +109,7 @@
     <value>This account cannot create content.</value>
   </data>
   <data name="Organization_NotFound" xml:space="preserve">
-    <value>The organization was not found.</value>
+    <value>The club was not found.</value>
   </data>
   <data name="Organization_CityNotFound" xml:space="preserve">
     <value>The city was not found.</value>
@@ -112,7 +118,7 @@
     <value>The invite code was not found.</value>
   </data>
   <data name="Organization_AlreadyMember" xml:space="preserve">
-    <value>You are already a member of this organization.</value>
+    <value>You are already a member of this club.</value>
   </data>
   <data name="Organization_AlreadyPending" xml:space="preserve">
     <value>A membership request is already pending.</value>
@@ -124,25 +130,37 @@
     <value>Only the founder or an admin can manage members.</value>
   </data>
   <data name="Organization_CannotCreateEvents" xml:space="preserve">
-    <value>Only approved organization members can create organization events.</value>
+    <value>Only approved club members can create club events.</value>
   </data>
   <data name="Organization_CannotModerateMember" xml:space="preserve">
     <value>You cannot manage this member.</value>
   </data>
   <data name="Organization_MemberBlocked" xml:space="preserve">
-    <value>This user is blocked from the organization.</value>
+    <value>This user is blocked from the club.</value>
   </data>
   <data name="Organization_NotFounder" xml:space="preserve">
     <value>Only the founder can perform this action.</value>
   </data>
   <data name="Organization_FounderCannotLeave" xml:space="preserve">
-    <value>The founder cannot leave the organization.</value>
+    <value>The founder cannot leave the club. Transfer the founder role or delete the club first.</value>
+  </data>
+  <data name="Organization_CannotTransferToSelf" xml:space="preserve">
+    <value>You are already the founder.</value>
+  </data>
+  <data name="Organization_TransferTargetNotApproved" xml:space="preserve">
+    <value>The new founder must be an approved member of the club.</value>
   </data>
   <data name="Organization_MemberNotFound" xml:space="preserve">
     <value>The membership was not found.</value>
   </data>
   <data name="Organization_InviteCodeUnavailable" xml:space="preserve">
     <value>A unique invite code could not be allocated. Try again.</value>
+  </data>
+  <data name="Organization_NotPublic" xml:space="preserve">
+    <value>This club is private. You need an invite code to join.</value>
+  </data>
+  <data name="Organization_InvalidMedia" xml:space="preserve">
+    <value>Unsupported image type. Upload JPEG, PNG or WebP.</value>
   </data>
   <data name="Auth_InvalidCredentials" xml:space="preserve">
     <value>Username or password is incorrect.</value>

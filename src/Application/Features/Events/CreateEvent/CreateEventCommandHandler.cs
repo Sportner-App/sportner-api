@@ -63,10 +63,12 @@ internal sealed class CreateEventCommandHandler
 
         if (request.OrganizationId is { } organizationId)
         {
-            var organizationExists = await _dbContext.Organizations.AsNoTracking()
-                .AnyAsync(organization => organization.Id == organizationId, cancellationToken);
+            var eventCreationPolicy = await _dbContext.Organizations.AsNoTracking()
+                .Where(organization => organization.Id == organizationId)
+                .Select(organization => (OrganizationEventCreationPolicy?)organization.EventCreationPolicy)
+                .FirstOrDefaultAsync(cancellationToken);
 
-            if (!organizationExists)
+            if (eventCreationPolicy is null)
             {
                 return Result<EventResponse>.Failure(OrganizationErrors.NotFound);
             }
@@ -77,7 +79,7 @@ internal sealed class CreateEventCommandHandler
                 userId,
                 cancellationToken);
 
-            if (membership is null || !membership.CanCreateEvents)
+            if (membership is null || !membership.CanCreateEvents(eventCreationPolicy.Value))
             {
                 return Result<EventResponse>.Failure(OrganizationErrors.CannotCreateEvents);
             }
@@ -103,7 +105,9 @@ internal sealed class CreateEventCommandHandler
             request.IsPaid,
             request.FeeAmount,
             request.OrganizationId,
-            request.ParticipantGender);
+            request.ParticipantGender,
+            request.IsOrganizationOnly ?? request.OrganizationId is not null,
+            request.OrganizerParticipates ?? true);
 
         _dbContext.Events.Add(@event);
         await _dbContext.SaveChangesAsync(cancellationToken);

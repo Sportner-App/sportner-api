@@ -8,15 +8,20 @@ using Sportner.Application.Features.Organizations.ListBlockedOrganizationMembers
 using Sportner.Application.Features.Organizations.RemoveOrganizationMember;
 using Sportner.Application.Features.Organizations.UnblockOrganizationMember;
 using Sportner.Application.Features.Organizations.CreateOrganization;
+using Sportner.Application.Features.Organizations.DeleteOrganization;
 using Sportner.Application.Features.Organizations.GetOrganizationById;
 using Sportner.Application.Features.Organizations.JoinOrganization;
+using Sportner.Application.Features.Organizations.JoinPublicOrganization;
 using Sportner.Application.Features.Organizations.LeaveOrganization;
 using Sportner.Application.Features.Organizations.ListMyOrganizations;
 using Sportner.Application.Features.Organizations.ListOrganizationEvents;
 using Sportner.Application.Features.Organizations.ListOrganizationMembers;
+using Sportner.Application.Features.Organizations.ListPublicOrganizations;
 using Sportner.Application.Features.Organizations.RejectOrganizationMember;
 using Sportner.Application.Features.Organizations.RotateInviteCode;
+using Sportner.Application.Features.Organizations.TransferOrganizationFounder;
 using Sportner.Application.Features.Organizations.UpdateOrganization;
+using Sportner.Application.Features.Organizations.UpdateOrganizationImage;
 using Sportner.Application.Features.Organizations.UpdateOrganizationMemberRole;
 
 namespace Sportner.API.Controllers;
@@ -25,6 +30,22 @@ namespace Sportner.API.Controllers;
 [Route("api/organizations")]
 public sealed class OrganizationsController : ApiControllerBase
 {
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> ListPublic(
+        [FromQuery] string? search,
+        [FromQuery] Guid? cityId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(
+            new ListPublicOrganizationsQuery(search, cityId, page, pageSize),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
     [HttpGet("mine")]
     public async Task<IActionResult> ListMine(CancellationToken cancellationToken)
     {
@@ -32,6 +53,7 @@ public sealed class OrganizationsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [AllowAnonymous]
     [HttpGet("{organizationId:guid}")]
     public async Task<IActionResult> GetById(Guid organizationId, CancellationToken cancellationToken)
     {
@@ -39,11 +61,17 @@ public sealed class OrganizationsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [AllowAnonymous]
     [HttpGet("{organizationId:guid}/events")]
-    public async Task<IActionResult> ListEvents(Guid organizationId, CancellationToken cancellationToken)
+    public async Task<IActionResult> ListEvents(
+        Guid organizationId,
+        [FromQuery] string? scope = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = ListOrganizationEventsQuery.DefaultPageSize,
+        CancellationToken cancellationToken = default)
     {
         var result = await Sender.Send(
-            new ListOrganizationEventsQuery(organizationId),
+            new ListOrganizationEventsQuery(organizationId, scope, page, pageSize),
             cancellationToken);
 
         return result.ToActionResult();
@@ -78,7 +106,11 @@ public sealed class OrganizationsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Sender.Send(
-            new CreateOrganizationCommand(request.Name, request.Description, request.CityId),
+            new CreateOrganizationCommand(
+                request.Name,
+                request.Description,
+                request.CityId,
+                request.IsPublic),
             cancellationToken);
 
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -97,6 +129,14 @@ public sealed class OrganizationsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    [HttpPost("{organizationId:guid}/join")]
+    [Authorize(Policy = AuthorizationPolicies.CanCreateContent)]
+    public async Task<IActionResult> JoinPublic(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new JoinPublicOrganizationCommand(organizationId), cancellationToken);
+        return result.ToActionResult();
+    }
+
     [HttpPatch("{organizationId:guid}")]
     public async Task<IActionResult> Update(
         Guid organizationId,
@@ -108,7 +148,44 @@ public sealed class OrganizationsController : ApiControllerBase
                 organizationId,
                 request.Name,
                 request.Description,
-                request.CityId),
+                request.CityId,
+                request.IsPublic,
+                request.EventCreationPolicy),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("{organizationId:guid}")]
+    public async Task<IActionResult> Delete(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(new DeleteOrganizationCommand(organizationId), cancellationToken);
+        return result.ToActionResult(StatusCodes.Status204NoContent);
+    }
+
+    [HttpPost("{organizationId:guid}/transfer-founder")]
+    public async Task<IActionResult> TransferFounder(
+        Guid organizationId,
+        [FromBody] TransferFounderBody request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new TransferOrganizationFounderCommand(organizationId, request.UserId),
+            cancellationToken);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPut("{organizationId:guid}/image")]
+    public async Task<IActionResult> UpdateImage(
+        Guid organizationId,
+        IFormFile? file,
+        CancellationToken cancellationToken)
+    {
+        await using var content = file?.OpenReadStream();
+
+        var result = await Sender.Send(
+            new UpdateOrganizationImageCommand(organizationId, content, file?.ContentType, file?.FileName),
             cancellationToken);
 
         return result.ToActionResult();
@@ -209,11 +286,22 @@ public sealed class OrganizationsController : ApiControllerBase
         return result.ToActionResult(StatusCodes.Status204NoContent);
     }
 
-    public sealed record CreateOrganizationBody(string Name, string? Description, Guid? CityId);
+    public sealed record CreateOrganizationBody(
+        string Name,
+        string? Description,
+        Guid? CityId,
+        bool IsPublic = false);
 
     public sealed record JoinOrganizationBody(string InviteCode);
 
-    public sealed record UpdateOrganizationBody(string Name, string? Description, Guid? CityId);
+    public sealed record UpdateOrganizationBody(
+        string Name,
+        string? Description,
+        Guid? CityId,
+        bool IsPublic = false,
+        short? EventCreationPolicy = null);
+
+    public sealed record TransferFounderBody(Guid UserId);
 
     public sealed record UpdateMemberRoleBody(short Role);
 }

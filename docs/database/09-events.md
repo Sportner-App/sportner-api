@@ -52,14 +52,18 @@ modelled as a chain of such occurrences linked by `series_id`; see
 | id                 | UUID         |       No | Primary key                                    |
 | organizer_user_id  | UUID         |       No | References `users(id)`                         |
 | sport_id           | UUID         |       No | References `sports(id)`                        |
-| organization_id    | UUID         |      Yes | Private org event; `NULL` for public discovery |
+| organization_id    | UUID         |      Yes | Club the event belongs to; `NULL` for a personal event |
+| is_organization_only | BOOLEAN    |       No | Default false; true = visible/joinable by approved club members only. Forced false when `organization_id` is NULL |
+| is_organizer_participant | BOOLEAN |       No | Default true. Whether the creator also plays. `false` is only allowed on club events (`organization_id` set); no active organizer participant row exists then |
 | title              | VARCHAR(150) |       No | Event title                                    |
 | description        | TEXT         |      Yes | Optional event description                     |
 | event_date         | TIMESTAMPTZ  |       No | Event start date and time                      |
-| duration_minutes   | INTEGER      |       No | Estimated duration in minutes                  |
+| duration_minutes   | INTEGER      |      Yes | Estimated duration in minutes; when omitted (`NULL`) end-time logic (completion, attendance, chat lock) assumes 60 minutes (`Event.DefaultDurationMinutes`) |
 | latitude           | DECIMAL(9,6) |       No | Event latitude                                 |
 | longitude          | DECIMAL(9,6) |       No | Event longitude                                |
 | address            | TEXT         |       No | Full formatted address                         |
+| district           | VARCHAR(100) |      Yes | District parsed from `address` (`EventAddressParts`); key of district rankings |
+| city               | VARCHAR(100) |      Yes | City parsed from `address`; used together with `district` |
 | max_participants   | INTEGER      |      Yes | Maximum occupied slots; `NULL` means unlimited |
 | skill_level        | SMALLINT     |      Yes | Optional informational skill (0–4); not a join gate |
 | is_paid            | BOOLEAN      |       No | Whether attendance has an advertised fee; default `false` |
@@ -123,6 +127,7 @@ RFC 5545-style recurrence rule.
 - `INDEX(is_paid)`
 - `INDEX(organization_id)`
 - `INDEX(status, event_date)`
+- `INDEX(city, district, event_date)`
 
 The composite index supports common discovery queries for upcoming published events.
 
@@ -179,7 +184,7 @@ Enum values must match `database-reference.md`.
 
 # Capacity Definition
 
-The organizer is automatically added as an approved participant and occupies one capacity slot.
+The organizer is automatically added as an approved participant and occupies one capacity slot, unless the event is a club event whose creator opted out (`is_organizer_participant = false`, see Organizer participation); then the organizer occupies no slot.
 
 The following participant statuses occupy capacity:
 
@@ -197,7 +202,7 @@ This means pending applications temporarily reserve event capacity.
 
 Example for an event with `max_participants = 10`:
 
-- Organizer occupies one slot.
+- Organizer occupies one slot (unless a club event creator opted out; then 8 remain after the guests below).
 - Two organizer-assigned guests occupy two more slots (7 remain for the public).
 - The first seven user applications create pending participant records.
 - The next application enters the waiting list.
@@ -210,8 +215,8 @@ When `max_participants` is `NULL`, capacity is unlimited and applications never 
 
 # Business Rules
 
-- Every event has exactly one organizer.
-- The organizer is automatically added as an approved participant.
+- Every event has exactly one organizer (the creator). Wherever this document says the organizer manages something (approve/reject, assign/remove, waitlist promotion, edit, cancel, attendance), club founder/admins may do it too on club events (see [Club co-management](#club-co-management)).
+- The organizer is automatically added as an approved participant, except on club events created with `OrganizerParticipates = false` (see Organizer participation).
 - Only active users may create events.
 - Only active sports may be selected.
 - An event cannot be created in the past.
@@ -224,13 +229,41 @@ When `max_participants` is `NULL`, capacity is unlimited and applications never 
 - Waiting-list users are not participants.
 - Waiting-list promotion is always initiated manually by the organizer.
 - Completing an event enables attendance confirmation.
-- Only users marked as attended become eligible to review other attendees.
+- Only users marked as attended become eligible to review other attendees. Exception: the creator is always eligible (reviews and is reviewed) only while `is_organizer_participant` is true; a non-participating club-event creator neither reviews nor is reviewed.
 - Cancelling an event stops applications and participant management.
 - Completed and cancelled events cannot return to an earlier lifecycle state.
 - `is_paid` is informational only. The platform does not collect, hold, or transfer money.
 - When `is_paid` is `false`, `fee_amount` must be `NULL`.
 - When `is_paid` is `true`, `fee_amount` is required, must be greater than zero, and is stored as TRY with two decimal places (maximum `99999.99`).
 - Existing events without a fee default to free.
+
+---
+
+# Organizer participation (club events)
+
+A club event is the club's event: responses always carry `organizationId/organizationName/organizationImageUrl`, and the app shows the club as host whether or not the creator plays. The creator chooses whether they also take a player slot.
+
+- `is_organizer_participant` (default `true`, so every pre-existing event keeps its behavior). `false` is only valid when `organization_id` is set (`Event.Create` throws otherwise; the create validator rejects it).
+- `CreateEvent` accepts optional `organizerParticipates` (null means true). When `false` no organizer participant row is created and no capacity is consumed.
+- `POST /api/events/{eventId}/organizer-participation` with `{ "participates": bool }` toggles it. Only the creator may call it (club managers cannot, it is personal). Allowed on club events only (`Event.OrganizerParticipationClubOnly`), before the event ends and while it is not Cancelled/Completed (`Event.ParticipationLocked`). Draft is allowed.
+- Joining needs a free slot (`Event.CapacityFull`); an existing cancelled organizer row is reopened as Approved, otherwise a new Approved row is added. Leaving cancels the organizer row and frees the slot exactly like a normal cancellation: the capacity status is refreshed (Full becomes Published) and nobody is promoted from the waiting list automatically. Requesting the current state is a no-op.
+- Counters: `EventsJoined` is never bumped for the organizer (neither at creation nor on toggle); hosted/cancelled event counters stay attached to the creator. The creator stays a member of the event conversation either way.
+- Reviews: when `is_organizer_participant = false` the creator neither reviews nor is reviewed for that event (`ReviewEligibility`, `ListReviewablePeers`). Streaks, recaps, leaderboards, challenge "played" metrics and engagement reminders do not credit a non-playing creator with having played; challenge/`EventsOrganized` hosting credit is kept. The attendance prompt and share prompt still go to the creator.
+- `EventParticipantRemoval.OrganizerUserId` (a legacy name) stores the user who performed the removal: the creator, or the club manager who removed the participant.
+- Recurring series occurrences copy the creator's choice.
+
+# Club co-management
+
+Events with `organization_id` can be managed by the creator **and** by approved Founder/Admin members of a non-deleted club (`EventAccess.CanManageAsync` / `LoadOrganizerEventAsync`). This covers edit/update, publish, cancel, complete, approve/reject, assign/remove participants, waitlist list/promote, participant list (pending applicants), pending join-request list, attendance confirmation, event albums and Q&A replies. A deleted club grants no manager rights. Personal checks stay creator-only: applying to own event, organizer participation toggle, attendance/share prompts, `EventsOrganized`-style statistics.
+
+- Drafts are visible only to people who can manage the event: event detail returns `Event.NotFound` to everyone else and the club event list omits drafts for non-managers; discovery, recommendations and my-participating lists never include drafts.
+- Cancelling or updating as a manager notifies everyone except the actor and also the creator (even when not a participant); `EventsCancelled` is charged to the creator only when the creator cancelled (not a club manager, not a club deletion). Attendance prompts go to the creator and approved club managers, and the pending-attendance list includes club events the caller manages.
+- Event detail has `canManage` (creator or club manager) next to `canCancel`; list items and detail carry `organizationImageUrl` and `isOrganizerParticipant`.
+- Q&A answers written by the creator or a club manager on a club event carry `answeredByClub = true` plus `clubName/clubImageUrl`; the app shows the club as the answerer.
+- Join requests (and new questions) notify the creator plus the club's approved Founder/Admin members, deduplicated and excluding the actor.
+- Notifications sent in the organizer's name (cancel, update, approve/reject, assign/invite, remove, waitlist promotion, Q&A reply by a manager) use the club name as actor when the club still exists.
+- Managers who are not participants are not added to the event conversation.
+- Inviting people (`friendUserIds` of assign-participants): for a club event each invitee must be an **approved member** of a non-deleted club (`Event.InviteeNotClubMember`, 403 otherwise); friendship is not required. For non-club events invitees must still be accepted friends of the acting user (`Event.NotFriends`). Block, deleted/banned user, age/gender, already-associated and capacity checks apply in both cases.
 
 ---
 
@@ -373,7 +406,7 @@ conversations.event_id → events.id
 The conversation:
 
 Is created when the event is published
-Includes the organizer as Owner
+Includes the organizer as Owner (also when a club-event creator opted out of playing; club managers who are not participants are not added)
 Includes approved participants as Members
 Excludes pending and waiting-list users
 Becomes read-only when the event is completed or cancelled

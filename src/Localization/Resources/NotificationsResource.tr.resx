@@ -25,28 +25,34 @@
     <value>'{0}' görevini tamamladın.</value>
   </data>
   <data name="OrganizationJoinRequested_Text" xml:space="preserve">
-    <value>{0} organizasyona katılmak istiyor</value>
+    <value>{0} kulübe katılmak istiyor</value>
   </data>
   <data name="OrganizationMemberJoined_Text" xml:space="preserve">
-    <value>{0} organizasyona katıldı</value>
+    <value>{0} kulübe katıldı</value>
   </data>
   <data name="OrganizationJoinApproved_Text" xml:space="preserve">
-    <value>{0} organizasyon katılımını onayladı</value>
+    <value>{0} kulüp katılımını onayladı</value>
   </data>
   <data name="OrganizationMemberRemoved_Text" xml:space="preserve">
-    <value>{0} seni organizasyondan çıkardı</value>
+    <value>{0} seni kulüpten çıkardı</value>
   </data>
   <data name="OrganizationJoinRejected_Text" xml:space="preserve">
-    <value>{0} organizasyon katılımını reddetti</value>
+    <value>{0} kulüp katılımını reddetti</value>
   </data>
   <data name="OrganizationRoleChangedToAdmin_Text" xml:space="preserve">
-    <value>{0} seni organizasyon yöneticisi yaptı</value>
+    <value>{0} seni kulüp yöneticisi yaptı</value>
+  </data>
+  <data name="OrganizationFounderTransferred_Title" xml:space="preserve">
+    <value>Kulüp kurucusu oldun</value>
+  </data>
+  <data name="OrganizationFounderTransferred_Body" xml:space="preserve">
+    <value>{0} {1} kulübünün kurucu rolünü sana devretti.</value>
   </data>
   <data name="OrganizationRoleChangedFromAdmin_Text" xml:space="preserve">
-    <value>{0} organizasyon yöneticiliğini kaldırdı</value>
+    <value>{0} kulüp yöneticiliğini kaldırdı</value>
   </data>
   <data name="OrganizationMemberBlocked_Text" xml:space="preserve">
-    <value>{0} seni organizasyondan engelledi</value>
+    <value>{0} seni kulüpten engelledi</value>
   </data>
   <data name="PostCommented_Title" xml:space="preserve">
     <value>{0} fotoğrafına yorum yaptı</value>

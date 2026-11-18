@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 using Sportner.Domain.Organizations;
 
@@ -13,7 +14,9 @@ public sealed record UpdateOrganizationCommand(
     Guid OrganizationId,
     string Name,
     string? Description,
-    Guid? CityId) : ICommand<OrganizationDetailResponse>;
+    Guid? CityId,
+    bool IsPublic = false,
+    short? EventCreationPolicy = null) : ICommand<OrganizationDetailResponse>;
 
 public sealed class UpdateOrganizationCommandValidator : AbstractValidator<UpdateOrganizationCommand>
 {
@@ -28,6 +31,11 @@ public sealed class UpdateOrganizationCommandValidator : AbstractValidator<Updat
         RuleFor(command => command.CityId)
             .NotEmpty()
             .When(command => command.CityId is not null);
+        RuleFor(command => command.EventCreationPolicy)
+            .Must(policy => policy is (short)OrganizationEventCreationPolicy.AllMembers
+                or (short)OrganizationEventCreationPolicy.ManagersOnly)
+            .When(command => command.EventCreationPolicy is not null)
+            .WithMessage("Event creation policy must be 0 (all members) or 1 (managers only).");
     }
 }
 
@@ -93,7 +101,15 @@ internal sealed class UpdateOrganizationCommandHandler
                 request.Name,
                 request.Description,
                 request.CityId,
+                request.IsPublic,
                 _timeProvider.GetUtcNow());
+
+            if (request.EventCreationPolicy is { } policy)
+            {
+                organization.ChangeEventCreationPolicy(
+                    (OrganizationEventCreationPolicy)policy,
+                    _timeProvider.GetUtcNow());
+            }
         }
         catch (DomainException)
         {

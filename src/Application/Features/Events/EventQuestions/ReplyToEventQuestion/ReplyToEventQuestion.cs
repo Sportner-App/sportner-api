@@ -178,7 +178,12 @@ internal sealed class ReplyToEventQuestionCommandHandler
         var recipients = new HashSet<Guid> { root.AuthorUserId, @event.OrganizerUserId, target.AuthorUserId };
         recipients.Remove(userId);
 
-        var actorUsername = await NotificationActor.ResolveUsernameAsync(_dbContext, userId, cancellationToken);
+        // Kulüp etkinliğinde oluşturan ya da kulüp yöneticisi yanıtlıyorsa bildirimde kulüp adı görünür.
+        var actor = await EventAccess.CanManageAsync(_dbContext, @event, userId, cancellationToken)
+            ? await NotificationActor.ResolveEventActorNameAsync(_dbContext, @event, userId, cancellationToken)
+            : new EventActorName(
+                await NotificationActor.ResolveUsernameAsync(_dbContext, userId, cancellationToken),
+                false);
         var preview = EventQuestionAccess.Preview(reply.Content);
         var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
             _dbContext, recipients, cancellationToken);
@@ -189,7 +194,7 @@ internal sealed class ReplyToEventQuestionCommandHandler
             var title = NotificationActor.Format(
                 language,
                 nameof(NotificationsResource.EventQuestionReplied_Title),
-                NotificationActor.FormatPrefix(actorUsername, language));
+                NotificationActor.FormatPrefix(actor, language));
 
             await _notificationPublisher.PublishAsync(
                 recipientId,
@@ -257,7 +262,11 @@ internal sealed class ReplyToEventQuestionCommandHandler
             await EventQuestionAccess.ToResponseAsync(
                 _dbContext,
                 reply,
-                @event.OrganizerUserId,
+                await EventQuestionAccess.LoadHostContextAsync(
+                    _dbContext,
+                    @event.OrganizerUserId,
+                    @event.OrganizationId,
+                    cancellationToken),
                 participants,
                 [],
                 cancellationToken));

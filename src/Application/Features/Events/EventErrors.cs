@@ -52,6 +52,10 @@ internal static class EventErrors
         "Event.OrganizerCannotApply",
         ErrorMessagesResource.Event_OrganizerCannotApply);
 
+    internal static Error OrganizerParticipationClubOnly => Error.Validation(
+        "Event.OrganizerParticipationClubOnly",
+        ErrorMessagesResource.Event_OrganizerParticipationClubOnly);
+
     internal static Error ParticipantNotFound => Error.NotFound(
         "Event.ParticipantNotFound",
         ErrorMessagesResource.Event_ParticipantNotFound);
@@ -103,6 +107,10 @@ internal static class EventErrors
     internal static Error NotFriends => Error.Forbidden(
         "Event.NotFriends",
         ErrorMessagesResource.Event_NotFriends);
+
+    internal static Error InviteeNotClubMember => Error.Forbidden(
+        "Event.InviteeNotClubMember",
+        ErrorMessagesResource.Event_InviteeNotClubMember);
 
     internal static Error RelationshipBlocked => Error.Forbidden(
         "Event.RelationshipBlocked",

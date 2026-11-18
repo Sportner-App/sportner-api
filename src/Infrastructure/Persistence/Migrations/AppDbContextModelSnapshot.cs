@@ -396,6 +396,16 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<bool>("IsOrganizationOnly")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsOrganizerParticipant")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsPaid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1525,17 +1535,34 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<short>("EventCreationPolicy")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0);
+
                     b.Property<Guid>("FounderUserId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<string>("InviteCode")
                         .IsRequired()
                         .HasMaxLength(8)
                         .HasColumnType("character varying(8)");
+
+                    b.Property<bool>("IsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1548,6 +1575,12 @@ namespace Sportner.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
@@ -1556,6 +1589,8 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("InviteCode")
                         .IsUnique();
+
+                    b.HasIndex("IsPublic");
 
                     b.ToTable("Organizations");
                 });
@@ -1592,6 +1627,12 @@ namespace Sportner.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 

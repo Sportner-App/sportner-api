@@ -38,7 +38,11 @@ public sealed record EventResponse(
     string? OrganizationName = null,
     bool CanCancel = false,
     string? District = null,
-    string? City = null);
+    string? City = null,
+    bool IsOrganizationOnly = false,
+    string? OrganizationImageUrl = null,
+    bool CanManage = false,
+    bool IsOrganizerParticipant = true);
 
 /// <summary>Lightweight preview for the small avatar stack shown on event list cards.</summary>
 public sealed record ParticipantAvatarResponse(
@@ -71,7 +75,12 @@ public sealed record EventListItemResponse(
     short Status,
     int OccupiedParticipantCount,
     IReadOnlyList<ParticipantAvatarResponse>? ParticipantAvatars = null,
-    short? MyParticipationStatus = null);
+    short? MyParticipationStatus = null,
+    Guid? OrganizationId = null,
+    string? OrganizationName = null,
+    bool IsOrganizationOnly = false,
+    string? OrganizationImageUrl = null,
+    bool IsOrganizerParticipant = true);
 
 public sealed record ParticipantResponse(
     Guid Id,

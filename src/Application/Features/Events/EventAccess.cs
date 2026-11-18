@@ -11,6 +11,104 @@ namespace Sportner.Application.Features.Events;
 
 internal static class EventAccess
 {
+    /// <summary>
+    /// Etkinliği yönetme yetkisi: oluşturan kişi ya da etkinlik bir kulübe bağlıysa kulübün (silinmemiş)
+    /// onaylı Kurucu/Yönetici üyeleri. Kişisel işler (kendi etkinliğine başvuramama, yoklama/paylaşım
+    /// daveti, EventsOrganized gibi istatistikler) bu kontrolü değil <c>OrganizerUserId</c>'yi kullanır.
+    /// </summary>
+    internal static async Task<bool> CanManageAsync(
+        IApplicationDbContext dbContext,
+        Domain.Events.Event @event,
+        Guid? userId,
+        CancellationToken cancellationToken) =>
+        await CanManageAsync(dbContext, @event.OrganizerUserId, @event.OrganizationId, userId, cancellationToken);
+
+    internal static async Task<bool> CanManageAsync(
+        IApplicationDbContext dbContext,
+        Guid organizerUserId,
+        Guid? organizationId,
+        Guid? userId,
+        CancellationToken cancellationToken)
+    {
+        if (userId is not { } id)
+        {
+            return false;
+        }
+
+        if (organizerUserId == id)
+        {
+            return true;
+        }
+
+        if (organizationId is not { } orgId)
+        {
+            return false;
+        }
+
+        return await IsClubManagerAsync(dbContext, orgId, id, cancellationToken);
+    }
+
+    /// <summary>Kulüp silinmemiş ve kullanıcı onaylı Kurucu/Yönetici ise true (silinmiş kulüpte hep false).</summary>
+    internal static Task<bool> IsClubManagerAsync(
+        IApplicationDbContext dbContext,
+        Guid organizationId,
+        Guid userId,
+        CancellationToken cancellationToken) =>
+        dbContext.OrganizationMembers.AsNoTracking()
+            .AnyAsync(
+                member =>
+                    member.OrganizationId == organizationId
+                    && member.UserId == userId
+                    && member.Status == OrganizationMemberStatus.Approved
+                    && (member.Role == OrganizationRole.Founder || member.Role == OrganizationRole.Admin)
+                    && dbContext.Organizations.Any(organization => organization.Id == member.OrganizationId),
+                cancellationToken);
+
+    /// <summary>Kullanıcının onaylı Kurucu/Yönetici olduğu (silinmemiş) kulüplerin kimlikleri.</summary>
+    internal static Task<List<Guid>> ListManagedOrganizationIdsAsync(
+        IApplicationDbContext dbContext,
+        Guid userId,
+        CancellationToken cancellationToken) =>
+        dbContext.OrganizationMembers.AsNoTracking()
+            .Where(member =>
+                member.UserId == userId
+                && member.Status == OrganizationMemberStatus.Approved
+                && (member.Role == OrganizationRole.Founder || member.Role == OrganizationRole.Admin)
+                && dbContext.Organizations.Any(organization => organization.Id == member.OrganizationId))
+            .Select(member => member.OrganizationId)
+            .ToListAsync(cancellationToken);
+
+    /// <summary>
+    /// Etkinlik yönetim bildirimlerinin (başvuru vb.) alıcıları: oluşturan + kulüp etkinliğinde kulübün
+    /// onaylı Kurucu/Yönetici üyeleri; tekilleştirilmiş, <paramref name="excludeUserId"/> hariç.
+    /// </summary>
+    internal static async Task<IReadOnlyList<Guid>> ResolveManagerRecipientsAsync(
+        IApplicationDbContext dbContext,
+        Domain.Events.Event @event,
+        Guid excludeUserId,
+        CancellationToken cancellationToken)
+    {
+        var recipients = new HashSet<Guid> { @event.OrganizerUserId };
+
+        if (@event.OrganizationId is { } organizationId)
+        {
+            var managerIds = await dbContext.OrganizationMembers.AsNoTracking()
+                .Where(member =>
+                    member.OrganizationId == organizationId
+                    && member.Status == OrganizationMemberStatus.Approved
+                    && (member.Role == OrganizationRole.Founder || member.Role == OrganizationRole.Admin)
+                    && dbContext.Organizations.Any(organization => organization.Id == member.OrganizationId))
+                .Select(member => member.UserId)
+                .ToListAsync(cancellationToken);
+
+            recipients.UnionWith(managerIds);
+        }
+
+        recipients.Remove(excludeUserId);
+
+        return recipients.ToList();
+    }
+
     internal static async Task<Result<(User User, Domain.Events.Event Event)>> LoadOrganizerEventAsync(
         IApplicationDbContext dbContext,
         Guid userId,
@@ -32,7 +130,7 @@ internal static class EventAccess
             return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotFound);
         }
 
-        if (@event.OrganizerUserId != userId)
+        if (!await CanManageAsync(dbContext, @event, userId, cancellationToken))
         {
             return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotOrganizer);
         }
@@ -40,18 +138,16 @@ internal static class EventAccess
         return Result<(User, Domain.Events.Event)>.Success((user, @event));
     }
 
-    internal static async Task<Result<(User User, Domain.Events.Event Event)>> LoadCancellableEventAsync(
+    /// <summary>
+    /// Yalnızca oluşturan kişinin yapabildiği kişisel işler (ör. kendi oyuncu katılımını değiştirme).
+    /// Kulüp yöneticileri geçemez.
+    /// </summary>
+    internal static async Task<Result<(User User, Domain.Events.Event Event)>> LoadCreatorEventAsync(
         IApplicationDbContext dbContext,
         Guid userId,
         Guid eventId,
         CancellationToken cancellationToken)
     {
-        var organizerLoad = await LoadOrganizerEventAsync(dbContext, userId, eventId, cancellationToken);
-        if (organizerLoad.IsSuccess || organizerLoad.Errors.All(error => error.Code != EventErrors.NotOrganizer.Code))
-        {
-            return organizerLoad;
-        }
-
         var user = await dbContext.Users
             .FirstOrDefaultAsync(candidate => candidate.Id == userId, cancellationToken);
 
@@ -67,18 +163,7 @@ internal static class EventAccess
             return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotFound);
         }
 
-        if (@event.OrganizationId is not { } organizationId)
-        {
-            return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotOrganizer);
-        }
-
-        var membership = await OrganizationQueries.FindMembershipAsync(
-            dbContext,
-            organizationId,
-            userId,
-            cancellationToken);
-
-        if (membership is null || !membership.CanManageMembers)
+        if (@event.OrganizerUserId != userId)
         {
             return Result<(User, Domain.Events.Event)>.Failure(EventErrors.NotOrganizer);
         }

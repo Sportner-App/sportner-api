@@ -60,6 +60,52 @@ internal static class NotificationActor
         return FormatPrefix(username, language);
     }
 
+    /// <summary>
+    /// Etkinlik bildirimlerinde "kim yaptı" adı: kulüp etkinliğinde (silinmemiş kulüp) kulübün adı,
+    /// aksi halde eylemi yapan kişinin kullanıcı adı. Kulüp etkinliği kulübün markasıdır; yönetici
+    /// ya da oluşturan kişi bildirimde görünmez. Yalnızca organizatör/yönetici adına giden
+    /// bildirimlerde kullanılır — başvuran gibi sıradan katılımcı eylemlerinde kişi adı kalır.
+    /// </summary>
+    internal static async Task<EventActorName> ResolveEventActorNameAsync(
+        IApplicationDbContext dbContext,
+        Domain.Events.Event @event,
+        Guid actorUserId,
+        CancellationToken cancellationToken)
+    {
+        if (@event.OrganizationId is { } organizationId)
+        {
+            // Global query filter: silinmiş kulüp null döner, kişi adına düşülür.
+            var clubName = await dbContext.Organizations.AsNoTracking()
+                .Where(organization => organization.Id == organizationId)
+                .Select(organization => organization.Name)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (!string.IsNullOrWhiteSpace(clubName))
+            {
+                return new EventActorName(clubName, true);
+            }
+        }
+
+        return new EventActorName(
+            await ResolveUsernameAsync(dbContext, actorUserId, cancellationToken),
+            false);
+    }
+
+    /// <summary>Kulüp adı olduğu gibi (dolgu sözcüğü yok), kişi adı <see cref="FormatPrefix(string?, Language)"/> ile.</summary>
+    internal static string FormatPrefix(EventActorName actor, Language language) =>
+        actor.IsClub ? actor.Name! : FormatPrefix(actor.Name, language);
+
+    /// <summary>Tek alıcı için <see cref="ResolveEventActorNameAsync"/> + <see cref="FormatPrefix(EventActorName, Language)"/>.</summary>
+    internal static async Task<string> EventActorPrefixAsync(
+        IApplicationDbContext dbContext,
+        Domain.Events.Event @event,
+        Guid actorUserId,
+        Language language,
+        CancellationToken cancellationToken) =>
+        FormatPrefix(
+            await ResolveEventActorNameAsync(dbContext, @event, actorUserId, cancellationToken),
+            language);
+
     /// <summary>Single-recipient case: the language a notification for this user should render in.</summary>
     internal static Task<Language> ResolveRecipientLanguageAsync(
         IApplicationDbContext dbContext,
@@ -126,3 +172,6 @@ internal static class NotificationActor
         }
     }
 }
+
+/// <summary>Etkinlik bildiriminin eylemcisi; <see cref="IsClub"/> true ise <see cref="Name"/> kulüp adıdır.</summary>
+internal readonly record struct EventActorName(string? Name, bool IsClub);

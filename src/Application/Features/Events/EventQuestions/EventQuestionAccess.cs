@@ -21,7 +21,7 @@ internal static class EventQuestionAccess
             return false;
         }
 
-        if (@event.OrganizerUserId == userId)
+        if (await EventAccess.CanManageAsync(dbContext, @event, userId, cancellationToken))
         {
             return true;
         }
@@ -50,12 +50,61 @@ internal static class EventQuestionAccess
         return ids.ToHashSet();
     }
 
+    /// <summary>
+    /// Soru-cevapta "etkinlik sahibi" tarafı: oluşturan kişi ve (kulüp etkinliğinde) kulüp yöneticileri.
+    /// Kulüp silinmemişse bu kişilerin yazdığı yanıtlar kulüp adına gösterilir (<c>AnsweredByClub</c>).
+    /// </summary>
+    internal sealed record HostContext(
+        Guid OrganizerUserId,
+        string? ClubName,
+        string? ClubImageUrl,
+        IReadOnlySet<Guid> ManagerUserIds)
+    {
+        internal bool IsHost(Guid userId) =>
+            userId == OrganizerUserId || ManagerUserIds.Contains(userId);
+
+        internal bool IsAnsweredByClub(Guid userId) => ClubName is not null && IsHost(userId);
+    }
+
+    internal static async Task<HostContext> LoadHostContextAsync(
+        IApplicationDbContext dbContext,
+        Guid organizerUserId,
+        Guid? organizationId,
+        CancellationToken cancellationToken)
+    {
+        if (organizationId is not { } orgId)
+        {
+            return new HostContext(organizerUserId, null, null, new HashSet<Guid>());
+        }
+
+        // Global query filter: silinmiş kulüp null döner; o zaman yönetici de yok, kişi adı görünür.
+        var club = await dbContext.Organizations.AsNoTracking()
+            .Where(candidate => candidate.Id == orgId)
+            .Select(candidate => new { candidate.Name, candidate.ImageUrl })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (club is null)
+        {
+            return new HostContext(organizerUserId, null, null, new HashSet<Guid>());
+        }
+
+        var managers = await dbContext.OrganizationMembers.AsNoTracking()
+            .Where(member =>
+                member.OrganizationId == orgId
+                && member.Status == OrganizationMemberStatus.Approved
+                && (member.Role == OrganizationRole.Founder || member.Role == OrganizationRole.Admin))
+            .Select(member => member.UserId)
+            .ToListAsync(cancellationToken);
+
+        return new HostContext(organizerUserId, club.Name, club.ImageUrl, managers.ToHashSet());
+    }
+
     internal static EventQnAAuthorRole ResolveRole(
         Guid authorUserId,
-        Guid organizerUserId,
+        HostContext host,
         IReadOnlySet<Guid> participantUserIds)
     {
-        if (authorUserId == organizerUserId)
+        if (host.IsHost(authorUserId))
         {
             return EventQnAAuthorRole.Organizer;
         }
@@ -82,7 +131,7 @@ internal static class EventQuestionAccess
     internal static async Task<EventQuestionResponse> ToResponseAsync(
         IApplicationDbContext dbContext,
         EventQuestion question,
-        Guid organizerUserId,
+        HostContext host,
         IReadOnlySet<Guid> participantUserIds,
         IReadOnlyList<EventQuestionResponse>? replies,
         CancellationToken cancellationToken)
@@ -118,9 +167,12 @@ internal static class EventQuestionAccess
             replyToUsername,
             question.Content,
             question.ReplyCount,
-            (short)ResolveRole(question.AuthorUserId, organizerUserId, participantUserIds),
+            (short)ResolveRole(question.AuthorUserId, host, participantUserIds),
             question.CreatedAt,
             replies ?? [],
-            ToMentionResponses(question));
+            ToMentionResponses(question),
+            host.IsAnsweredByClub(question.AuthorUserId),
+            host.ClubName,
+            host.ClubImageUrl);
     }
 }

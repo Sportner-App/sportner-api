@@ -116,6 +116,18 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string OrganizationFounderTransferred_Title {
+            get {
+                return ResourceManager.GetString("OrganizationFounderTransferred_Title", resourceCulture);
+            }
+        }
+
+        public static string OrganizationFounderTransferred_Body {
+            get {
+                return ResourceManager.GetString("OrganizationFounderTransferred_Body", resourceCulture);
+            }
+        }
+
         public static string OrganizationRoleChangedFromAdmin_Text {
             get {
                 return ResourceManager.GetString("OrganizationRoleChangedFromAdmin_Text", resourceCulture);

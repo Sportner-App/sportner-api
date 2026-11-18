@@ -68,9 +68,25 @@ internal static class OrganizationErrors
         "Organization.FounderCannotLeave",
         ErrorMessagesResource.Organization_FounderCannotLeave);
 
+    internal static Error CannotTransferToSelf => Error.Validation(
+        "Organization.CannotTransferToSelf",
+        ErrorMessagesResource.Organization_CannotTransferToSelf);
+
+    internal static Error TransferTargetNotApproved => Error.Validation(
+        "Organization.TransferTargetNotApproved",
+        ErrorMessagesResource.Organization_TransferTargetNotApproved);
+
     internal static Error MemberNotFound => Error.NotFound(
         "Organization.MemberNotFound",
         ErrorMessagesResource.Organization_MemberNotFound);
+
+    internal static Error NotPublic => Error.Forbidden(
+        "Organization.NotPublic",
+        ErrorMessagesResource.Organization_NotPublic);
+
+    internal static Error InvalidMedia => Error.Validation(
+        "Organization.InvalidMedia",
+        ErrorMessagesResource.Organization_InvalidMedia);
 
     internal static Error InviteCodeUnavailable => Error.Conflict(
         "Organization.InviteCodeUnavailable",

@@ -14,11 +14,11 @@ namespace Sportner.API.IntegrationTests;
 /// ("could not be translated") even though it passes fine against the InMemory provider
 /// used by the unit test suite - hence a real-database regression test here.
 /// </summary>
-public class ReviewQueryTranslationTests : IClassFixture<WebApplicationFactory<Program>>
+public class ReviewQueryTranslationTests : IClassFixture<SportnerApiFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly SportnerApiFactory _factory;
 
-    public ReviewQueryTranslationTests(WebApplicationFactory<Program> factory)
+    public ReviewQueryTranslationTests(SportnerApiFactory factory)
     {
         _factory = factory;
     }

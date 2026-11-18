@@ -195,3 +195,8 @@ Bu da eksikliği sessizleştirdiği için `NotificationResourceTests` boşluğu
 kapatıyor: `EventUpdateField` enum'unun her değeri için her dilde etiket
 bulunduğunu doğruluyor. Bildirim metinlerine yeni bir dinamik anahtar ailesi
 eklerken oraya da bir kontrol ekle.
+
+## Entegrasyon testleri
+
+`tests/API.IntegrationTests` yerel bir Postgres ister (varsayılan `localhost:5432`, DB `sportner_test`); `SPORTNER_TEST_DB` ile değiştirilebilir.
+`SportnerApiFactory` yerel olmayan host'lara (özellikle Supabase) bağlanmayı reddeder, demo seed'i kapatır.

@@ -36,6 +36,7 @@ internal sealed class ListParticipantsQueryHandler
         }
 
         if (@event.OrganizationId is { } organizationId
+            && @event.IsOrganizationOnly
             && !await OrganizationQueries.IsApprovedMemberAsync(
                 _dbContext,
                 organizationId,
@@ -45,7 +46,8 @@ internal sealed class ListParticipantsQueryHandler
             return Result<IReadOnlyList<ParticipantResponse>>.Failure(EventErrors.NotFound);
         }
 
-        var isOrganizer = _currentUser.UserId == @event.OrganizerUserId;
+        var isOrganizer = await EventAccess.CanManageAsync(
+            _dbContext, @event, _currentUser.UserId, cancellationToken);
 
         // Cancelled / rejected are history — they are not current participants.
         var query =

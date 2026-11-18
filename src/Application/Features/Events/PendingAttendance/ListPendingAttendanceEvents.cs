@@ -45,9 +45,15 @@ internal sealed class ListPendingAttendanceEventsQueryHandler
             .Distinct()
             .ToListAsync(cancellationToken);
 
+        // Yoklamayı kulüp yöneticisi de alabildiği için yönettiği kulüp etkinlikleri de listelenir.
+        var managedOrganizationIds = await EventAccess.ListManagedOrganizationIdsAsync(
+            _dbContext, userId, cancellationToken);
+
         var events = await _dbContext.Events.AsNoTracking()
             .Where(candidate =>
-                candidate.OrganizerUserId == userId
+                (candidate.OrganizerUserId == userId
+                    || (candidate.OrganizationId != null
+                        && managedOrganizationIds.Contains(candidate.OrganizationId.Value)))
                 && candidate.Status == EventStatus.Completed
                 && pendingEventIds.Contains(candidate.Id))
             .OrderBy(candidate => candidate.EventDate)

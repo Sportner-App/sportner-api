@@ -6,7 +6,10 @@ public sealed record OrganizationListItemResponse(
     string? CityName,
     short Role,
     short Status,
-    int ApprovedMemberCount);
+    int ApprovedMemberCount,
+    string? ImageUrl = null,
+    bool IsPublic = false,
+    bool CanCreateEvents = false);
 
 public sealed record OrganizationDetailResponse(
     Guid Id,
@@ -15,8 +18,8 @@ public sealed record OrganizationDetailResponse(
     Guid? CityId,
     string? CityName,
     Guid FounderUserId,
-    short MyRole,
-    short MyStatus,
+    short? MyRole,
+    short? MyStatus,
     bool CanManageMembers,
     bool CanCreateEvents,
     bool CanRotateInviteCode,
@@ -25,7 +28,25 @@ public sealed record OrganizationDetailResponse(
     string? InviteCode,
     int ApprovedMemberCount,
     int PendingMemberCount,
-    int BlockedMemberCount = 0);
+    int BlockedMemberCount = 0,
+    bool IsPublic = false,
+    string? ImageUrl = null,
+    bool CanJoin = false,
+    short EventCreationPolicy = 0,
+    bool CanDelete = false,
+    bool CanTransferFounder = false,
+    int CompletedEventCount = 0);
+
+/// <summary>Herkese açık kulüp keşif listesi satırı.</summary>
+public sealed record OrganizationSummaryResponse(
+    Guid Id,
+    string Name,
+    string? Description,
+    string? ImageUrl,
+    string? CityName,
+    int ApprovedMemberCount,
+    bool IsPublic,
+    short? MyStatus);
 
 public sealed record OrganizationMemberResponse(
     Guid UserId,

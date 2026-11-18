@@ -19,6 +19,16 @@ public class Event : AggregateRoot
 
     public Guid? OrganizationId { get; private set; }
 
+    /// <summary>True ise yalnızca kulübün onaylı üyeleri görür ve katılır; yalnızca <see cref="OrganizationId"/> doluyken anlamlıdır.</summary>
+    public bool IsOrganizationOnly { get; private set; }
+
+    /// <summary>
+    /// Organizatör etkinliğe oyuncu olarak da katılıyor mu. Yalnızca kulüp etkinliğinde false olabilir:
+    /// etkinlik kulübündür, oluşturan kişi isterse oynamadan yönetir. False iken organizatör için
+    /// katılımcı satırı aktif değildir (kontenjan tüketmez, yoklama/değerlendirmeye girmez).
+    /// </summary>
+    public bool IsOrganizerParticipant { get; private set; } = true;
+
     public string Title { get; private set; } = null!;
 
     public string? Description { get; private set; }
@@ -105,7 +115,9 @@ public class Event : AggregateRoot
         bool isPaid = false,
         decimal? feeAmount = null,
         Guid? organizationId = null,
-        short? participantGender = null)
+        short? participantGender = null,
+        bool isOrganizationOnly = false,
+        bool organizerParticipates = true)
     {
         if (organizerUserId == Guid.Empty)
         {
@@ -122,12 +134,19 @@ public class Event : AggregateRoot
             throw new DomainException("Organization id is invalid.");
         }
 
+        if (!organizerParticipates && organizationId is null)
+        {
+            throw new DomainException("Only club events can opt the organizer out of participation.");
+        }
+
         var @event = new Event
         {
             Id = Guid.NewGuid(),
             OrganizerUserId = organizerUserId,
             SportId = sportId,
             OrganizationId = organizationId,
+            IsOrganizationOnly = organizationId is not null && isOrganizationOnly,
+            IsOrganizerParticipant = organizerParticipates,
             Title = NormalizeTitle(title),
             Description = NormalizeOptionalDescription(description),
             EventDate = NormalizeEventDate(eventDate, utcNow),
@@ -153,8 +172,11 @@ public class Event : AggregateRoot
             throw new DomainException("Minimum participant age cannot exceed maximum participant age.");
         }
 
-        @event._participants.Add(
-            EventParticipant.CreateOrganizer(@event.Id, organizerUserId, utcNow));
+        if (organizerParticipates)
+        {
+            @event._participants.Add(
+                EventParticipant.CreateOrganizer(@event.Id, organizerUserId, utcNow));
+        }
 
         return @event;
     }
@@ -336,7 +358,9 @@ public class Event : AggregateRoot
             IsPaid,
             FeeAmount,
             OrganizationId,
-            ParticipantGender);
+            ParticipantGender,
+            IsOrganizationOnly,
+            IsOrganizerParticipant);
 
         next.SeriesId = SeriesId;
         next.SeriesSequence = SeriesSequence!.Value + 1;
@@ -553,6 +577,73 @@ public class Event : AggregateRoot
         }
 
         Touch(utcNow);
+    }
+
+    /// <summary>
+    /// Kulüp etkinliğinde organizatörün oyuncu olarak katılıp katılmadığını değiştirir.
+    /// Bırakma, normal katılımcı iptali gibi yalnızca kontenjanı boşaltır (bekleme listesinden
+    /// otomatik terfi yoktur; organizatör ya da yönetici elle terfi ettirir).
+    /// Zaten istenen durumdaysa hiçbir şey yapmaz. Yeni satır eklendiyse döndürülür.
+    /// </summary>
+    public EventParticipant? SetOrganizerParticipation(bool participates, DateTimeOffset utcNow)
+    {
+        if (OrganizationId is null)
+        {
+            throw new DomainException("Only club events support changing organizer participation.");
+        }
+
+        if (HasEnded(utcNow))
+        {
+            throw new DomainException("Participation cannot be changed after the event has ended.");
+        }
+
+        if (IsOrganizerParticipant == participates)
+        {
+            return null;
+        }
+
+        var row = _participants.FirstOrDefault(participant => participant.UserId == OrganizerUserId);
+
+        if (!participates)
+        {
+            if (row is { Status: ParticipantStatus.Pending or ParticipantStatus.Approved or ParticipantStatus.Invited })
+            {
+                var occupiedCapacity = row.OccupiesCapacity();
+                row.Cancel(utcNow);
+
+                if (occupiedCapacity)
+                {
+                    RefreshCapacityStatus(utcNow);
+                }
+            }
+
+            IsOrganizerParticipant = false;
+            Touch(utcNow);
+            return null;
+        }
+
+        if (!HasAvailableCapacity())
+        {
+            throw new DomainException("Event capacity is full.");
+        }
+
+        EventParticipant? added = null;
+
+        if (row is null)
+        {
+            added = EventParticipant.CreateOrganizer(Id, OrganizerUserId, utcNow);
+            _participants.Add(added);
+        }
+        else if (row.Status is ParticipantStatus.Cancelled)
+        {
+            row.ReopenAsApproved(utcNow);
+        }
+
+        IsOrganizerParticipant = true;
+        RefreshCapacityStatus(utcNow);
+        Touch(utcNow);
+
+        return added;
     }
 
     public EventParticipant PromoteFromWaitlist(Guid userId, DateTimeOffset utcNow)

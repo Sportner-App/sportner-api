@@ -42,6 +42,9 @@
   <data name="Event_OrganizerCannotApply" xml:space="preserve">
     <value>Organizatör kendi etkinliğine başvuramaz.</value>
   </data>
+  <data name="Event_OrganizerParticipationClubOnly" xml:space="preserve">
+    <value>Yalnızca kulüp etkinliklerinde organizatör oynayıp oynamayacağını seçebilir.</value>
+  </data>
   <data name="Event_ParticipantNotFound" xml:space="preserve">
     <value>Katılımcı bulunamadı.</value>
   </data>
@@ -84,11 +87,14 @@
   <data name="Event_NotFriends" xml:space="preserve">
     <value>Etkinliğe yalnızca kabul edilmiş arkadaşlar eklenebilir.</value>
   </data>
+  <data name="Event_InviteeNotClubMember" xml:space="preserve">
+    <value>Yalnızca kulübün onaylı üyelerini davet edebilirsin.</value>
+  </data>
   <data name="Event_RelationshipBlocked" xml:space="preserve">
     <value>Bu ilişki engellenmiş durumda.</value>
   </data>
   <data name="Event_NotOrganizationMember" xml:space="preserve">
-    <value>Bu etkinliğe yalnızca onaylı organizasyon üyeleri katılabilir.</value>
+    <value>Bu etkinliğe yalnızca onaylı kulüp üyeleri katılabilir.</value>
   </data>
   <data name="Event_FriendAlreadyAssociated" xml:space="preserve">
     <value>Seçtiğin arkadaşlardan biri bu etkinlikle zaten ilişkili.</value>
@@ -103,7 +109,7 @@
     <value>Bu hesap içerik oluşturamaz.</value>
   </data>
   <data name="Organization_NotFound" xml:space="preserve">
-    <value>Organizasyon bulunamadı.</value>
+    <value>Kulüp bulunamadı.</value>
   </data>
   <data name="Organization_CityNotFound" xml:space="preserve">
     <value>Şehir bulunamadı.</value>
@@ -112,7 +118,7 @@
     <value>Davet kodu bulunamadı.</value>
   </data>
   <data name="Organization_AlreadyMember" xml:space="preserve">
-    <value>Bu organizasyonun zaten üyesisin.</value>
+    <value>Bu kulübün zaten üyesisin.</value>
   </data>
   <data name="Organization_AlreadyPending" xml:space="preserve">
     <value>Zaten bekleyen bir üyelik isteğin var.</value>
@@ -124,25 +130,37 @@
     <value>Üyeleri yalnızca kurucu veya yönetici yönetebilir.</value>
   </data>
   <data name="Organization_CannotCreateEvents" xml:space="preserve">
-    <value>Organizasyon etkinliği oluşturmak için onaylı üye olmalısın.</value>
+    <value>Kulüp etkinliği oluşturmak için onaylı üye olmalısın.</value>
   </data>
   <data name="Organization_CannotModerateMember" xml:space="preserve">
     <value>Bu üyeyi yönetemezsin.</value>
   </data>
   <data name="Organization_MemberBlocked" xml:space="preserve">
-    <value>Bu kullanıcı organizasyondan engellenmiş.</value>
+    <value>Bu kullanıcı kulüpten engellenmiş.</value>
   </data>
   <data name="Organization_NotFounder" xml:space="preserve">
     <value>Bu işlemi yalnızca kurucu yapabilir.</value>
   </data>
   <data name="Organization_FounderCannotLeave" xml:space="preserve">
-    <value>Kurucu organizasyondan ayrılamaz.</value>
+    <value>Kurucu kulüpten ayrılamaz. Önce kurucu rolünü devret ya da kulübü sil.</value>
+  </data>
+  <data name="Organization_CannotTransferToSelf" xml:space="preserve">
+    <value>Zaten kulübün kurucususun.</value>
+  </data>
+  <data name="Organization_TransferTargetNotApproved" xml:space="preserve">
+    <value>Yeni kurucu kulübün onaylı bir üyesi olmalı.</value>
   </data>
   <data name="Organization_MemberNotFound" xml:space="preserve">
     <value>Üyelik bulunamadı.</value>
   </data>
   <data name="Organization_InviteCodeUnavailable" xml:space="preserve">
     <value>Benzersiz bir davet kodu oluşturulamadı. Tekrar dene.</value>
+  </data>
+  <data name="Organization_NotPublic" xml:space="preserve">
+    <value>Bu kulüp özel. Katılmak için davet kodu gerekir.</value>
+  </data>
+  <data name="Organization_InvalidMedia" xml:space="preserve">
+    <value>Desteklenmeyen görsel türü. JPEG, PNG veya WebP yükle.</value>
   </data>
   <data name="Auth_InvalidCredentials" xml:space="preserve">
     <value>Kullanıcı adı veya şifre hatalı.</value>

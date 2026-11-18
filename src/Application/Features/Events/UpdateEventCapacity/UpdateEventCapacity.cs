@@ -51,6 +51,7 @@ internal sealed class UpdateEventCapacityCommandHandler
                     DbContext,
                     _notificationPublisher,
                     @event,
+                    CurrentUser.UserId!.Value,
                     NotificationType.EventCapacityUpdated,
                     nameof(NotificationsResource.EventCapacityUpdated_Title),
                     nameof(NotificationsResource.EventCapacityUpdated_Body),

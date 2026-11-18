@@ -119,7 +119,7 @@ The participant status changes throughout the event lifecycle, allowing the appl
 - The organizer may assign accepted friends as Approved participants (draft, published, or full when slots remain).
 - Cancelled users may apply again; the existing row returns to Pending (or waitlist if the event is full).
 - Organizer approval is required before a registered user joins by applying.
-- Organizer is automatically inserted as an approved registered participant.
+- Organizer is automatically inserted as an approved registered participant, except on club events created with the organizer opted out (`events.is_organizer_participant = false`): then no organizer row exists. Leaving later (`POST /api/events/{id}/organizer-participation`) cancels the organizer row (frees the slot, no automatic waitlist promotion); joining again reopens that cancelled row as Approved, or inserts a new Approved row when none exists. The organizer still cannot use the normal cancel-participation endpoint, and cannot be removed or re-assigned as a participant.
 - Rejected users cannot apply again unless the organizer reopens applications.
 - If the participant limit is reached, new applications are stored in the waiting list instead.
 - Only attendees can review other participants.

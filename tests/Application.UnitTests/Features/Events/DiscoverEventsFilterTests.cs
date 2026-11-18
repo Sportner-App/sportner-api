@@ -123,21 +123,23 @@ public sealed class DiscoverEventsFilterTests
         var organizer = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
 
         var myOrganization = Organization.Create(
-            viewer.Id, "Benim Kulübüm", null, null, "ABCD2345", time.GetUtcNow());
+            viewer.Id, "Benim Kulübüm", null, null, "ABCD2345", false, time.GetUtcNow());
         var myMembership = OrganizationMember.CreateFounder(
             myOrganization.Id, viewer.Id, time.GetUtcNow());
 
         var otherOrganization = Organization.Create(
-            organizer.Id, "Başka Kulüp", null, null, "WXYZ6789", time.GetUtcNow());
+            organizer.Id, "Başka Kulüp", null, null, "WXYZ6789", false, time.GetUtcNow());
         var otherMembership = OrganizationMember.CreateFounder(
             otherOrganization.Id, organizer.Id, time.GetUtcNow());
 
         var myOrgEvent = CreateEvent(
             viewer.Id, sport.Id, "Kulüp maçı", 18, 40, time,
-            organizationId: myOrganization.Id);
+            organizationId: myOrganization.Id,
+            isOrganizationOnly: true);
         var otherOrgEvent = CreateEvent(
             organizer.Id, sport.Id, "Başka kulüp maçı", 18, 40, time,
-            organizationId: otherOrganization.Id);
+            organizationId: otherOrganization.Id,
+            isOrganizationOnly: true);
         var personalEvent = CreateEvent(
             viewer.Id, sport.Id, "Kişisel etkinlik", 18, 40, time);
 
@@ -167,21 +169,23 @@ public sealed class DiscoverEventsFilterTests
         var viewer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
 
         var firstOrganization = Organization.Create(
-            viewer.Id, "Birinci Kulüp", null, null, "ABCD2345", time.GetUtcNow());
+            viewer.Id, "Birinci Kulüp", null, null, "ABCD2345", false, time.GetUtcNow());
         var firstMembership = OrganizationMember.CreateFounder(
             firstOrganization.Id, viewer.Id, time.GetUtcNow());
 
         var secondOrganization = Organization.Create(
-            viewer.Id, "Ikinci Kulüp", null, null, "WXYZ6789", time.GetUtcNow());
+            viewer.Id, "Ikinci Kulüp", null, null, "WXYZ6789", false, time.GetUtcNow());
         var secondMembership = OrganizationMember.CreateFounder(
             secondOrganization.Id, viewer.Id, time.GetUtcNow());
 
         var firstOrgEvent = CreateEvent(
             viewer.Id, sport.Id, "Birinci kulüp maçı", 18, 40, time,
-            organizationId: firstOrganization.Id);
+            organizationId: firstOrganization.Id,
+            isOrganizationOnly: true);
         var secondOrgEvent = CreateEvent(
             viewer.Id, sport.Id, "Ikinci kulüp maçı", 18, 40, time,
-            organizationId: secondOrganization.Id);
+            organizationId: secondOrganization.Id,
+            isOrganizationOnly: true);
 
         db.Users.Add(viewer);
         db.Sports.Add(sport);
@@ -211,12 +215,13 @@ public sealed class DiscoverEventsFilterTests
         var organizer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
 
         var organization = Organization.Create(
-            organizer.Id, "Kulüp", null, null, "ABCD2345", time.GetUtcNow());
+            organizer.Id, "Kulüp", null, null, "ABCD2345", false, time.GetUtcNow());
         var membership = OrganizationMember.CreateFounder(
             organization.Id, organizer.Id, time.GetUtcNow());
         var orgEvent = CreateEvent(
             organizer.Id, sport.Id, "Kulüp maçı", 18, 40, time,
-            organizationId: organization.Id);
+            organizationId: organization.Id,
+            isOrganizationOnly: true);
 
         db.Users.Add(organizer);
         db.Sports.Add(sport);
@@ -232,6 +237,44 @@ public sealed class DiscoverEventsFilterTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Items.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_Default_ShowsPublicClubEventsAndHidesMembersOnlyClubEvents()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(
+            new DateTimeOffset(2026, 8, 31, 12, 0, 0, TimeSpan.Zero));
+        var sport = Sport.Create("Futbol", 1, time.GetUtcNow(), "futbol");
+        var viewer = TestUsers.CreateActive("+905551111111", time.GetUtcNow());
+        var organizer = TestUsers.CreateActive("+905552222222", time.GetUtcNow());
+
+        var organization = Organization.Create(
+            organizer.Id, "Açık Kulüp", null, null, "ABCD2345", true, time.GetUtcNow());
+        var membership = OrganizationMember.CreateFounder(
+            organization.Id, organizer.Id, time.GetUtcNow());
+
+        var openEvent = CreateEvent(
+            organizer.Id, sport.Id, "Herkese açık kulüp etkinliği", 18, 40, time,
+            organizationId: organization.Id,
+            isOrganizationOnly: false);
+        var membersOnlyEvent = CreateEvent(
+            organizer.Id, sport.Id, "Üyelere özel etkinlik", 18, 40, time,
+            organizationId: organization.Id,
+            isOrganizationOnly: true);
+
+        db.Users.AddRange(viewer, organizer);
+        db.Sports.Add(sport);
+        db.Organizations.Add(organization);
+        db.OrganizationMembers.Add(membership);
+        db.Events.AddRange(openEvent, membersOnlyEvent);
+        await db.SaveChangesAsync();
+
+        var handler = new DiscoverEventsQueryHandler(db, new TestCurrentUser(viewer.Id), time);
+        var result = await handler.Handle(new DiscoverEventsQuery(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Items.Should().ContainSingle(item => item.Id == openEvent.Id);
     }
 
     private static UserProfile CreateProfile(
@@ -253,7 +296,8 @@ public sealed class DiscoverEventsFilterTests
         int maxAge,
         FakeTimeProvider time,
         SkillLevel? skillLevel = null,
-        Guid? organizationId = null)
+        Guid? organizationId = null,
+        bool isOrganizationOnly = false)
     {
         var @event = DomainEvent.Create(
             organizerId,
@@ -269,7 +313,8 @@ public sealed class DiscoverEventsFilterTests
             minParticipantAge: minAge,
             maxParticipantAge: maxAge,
             skillLevel: skillLevel,
-            organizationId: organizationId);
+            organizationId: organizationId,
+            isOrganizationOnly: isOrganizationOnly);
         @event.Publish(time.GetUtcNow());
         return @event;
     }

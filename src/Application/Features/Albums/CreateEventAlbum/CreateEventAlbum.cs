@@ -4,6 +4,7 @@ using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Events;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Social;
 
@@ -53,7 +54,7 @@ internal sealed class CreateEventAlbumCommandHandler
 
         var @event = await _dbContext.Events.AsNoTracking()
             .Where(candidate => candidate.Id == request.EventId)
-            .Select(candidate => new { candidate.Id, candidate.OrganizerUserId })
+            .Select(candidate => new { candidate.Id, candidate.OrganizerUserId, candidate.OrganizationId })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (@event is null)
@@ -61,7 +62,8 @@ internal sealed class CreateEventAlbumCommandHandler
             return Result<AlbumResponse>.Failure(AlbumErrors.EventNotFound);
         }
 
-        if (@event.OrganizerUserId != userId)
+        if (!await EventAccess.CanManageAsync(
+                _dbContext, @event.OrganizerUserId, @event.OrganizationId, userId, cancellationToken))
         {
             return Result<AlbumResponse>.Failure(AlbumErrors.NotOrganizer);
         }

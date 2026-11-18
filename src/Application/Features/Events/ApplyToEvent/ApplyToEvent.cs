@@ -64,6 +64,7 @@ internal sealed class ApplyToEventCommandHandler
         }
 
         if (@event.OrganizationId is { } organizationId
+            && @event.IsOrganizationOnly
             && !await OrganizationQueries.IsApprovedMemberAsync(
                 _dbContext,
                 organizationId,
@@ -146,25 +147,35 @@ internal sealed class ApplyToEventCommandHandler
         // kullanıcı için organizatörün yapacağı bir şey yok, ona bildirim yok.
         if (participant is { Status: ParticipantStatus.Pending })
         {
-            var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
-                _dbContext, @event.OrganizerUserId, cancellationToken);
+            // Kulüp etkinliğinde başvuru yalnızca oluşturana değil kulübün onaylı Kurucu/Yönetici'lerine de
+            // gider (tekilleştirilmiş, başvuranın kendisi hariç).
+            var recipients = await EventAccess.ResolveManagerRecipientsAsync(
+                _dbContext, @event, userId, cancellationToken);
+            var languages = await NotificationActor.ResolveRecipientLanguagesAsync(
+                _dbContext, recipients.ToList(), cancellationToken);
+            var applicantUsername = await NotificationActor.ResolveUsernameAsync(
+                _dbContext, userId, cancellationToken);
 
-            await _notificationPublisher.PublishAsync(
-                @event.OrganizerUserId,
-                NotificationType.EventJoinRequested,
-                NotificationActor.Format(
-                    recipientLanguage,
-                    nameof(NotificationsResource.EventJoinRequested_Title),
-                    await NotificationActor.PrefixAsync(
-                        _dbContext, userId, recipientLanguage, cancellationToken)),
-                NotificationActor.Format(
-                    recipientLanguage,
-                    nameof(NotificationsResource.EventJoinRequested_Body),
-                    @event.Title),
-                NotificationEntityType.Event,
-                @event.Id,
-                userId,
-                cancellationToken);
+            foreach (var recipientId in recipients)
+            {
+                var recipientLanguage = languages.GetValueOrDefault(recipientId);
+
+                await _notificationPublisher.PublishAsync(
+                    recipientId,
+                    NotificationType.EventJoinRequested,
+                    NotificationActor.Format(
+                        recipientLanguage,
+                        nameof(NotificationsResource.EventJoinRequested_Title),
+                        NotificationActor.FormatPrefix(applicantUsername, recipientLanguage)),
+                    NotificationActor.Format(
+                        recipientLanguage,
+                        nameof(NotificationsResource.EventJoinRequested_Body),
+                        @event.Title),
+                    NotificationEntityType.Event,
+                    @event.Id,
+                    userId,
+                    cancellationToken);
+            }
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

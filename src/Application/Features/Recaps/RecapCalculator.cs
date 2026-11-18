@@ -291,6 +291,7 @@ internal static class RecapCalculator
 
         var organized = await dbContext.Events.AsNoTracking()
             .Where(@event => @event.Status == EventStatus.Completed
+                && @event.IsOrganizerParticipant
                 && @event.EventDate >= windowStart
                 && @event.EventDate < windowEnd)
             .Select(@event => new { UserId = @event.OrganizerUserId, EventId = @event.Id })
@@ -326,6 +327,7 @@ internal static class RecapCalculator
 
         var organized = await dbContext.Events.AsNoTracking()
             .Where(@event => @event.OrganizerUserId == userId
+                && @event.IsOrganizerParticipant
                 && @event.Status == EventStatus.Completed
                 && @event.EventDate >= windowStart
                 && @event.EventDate < windowEnd)
@@ -371,7 +373,9 @@ internal static class RecapCalculator
             .ToListAsync(cancellationToken);
 
         var organizers = await dbContext.Events.AsNoTracking()
-            .Where(@event => eventIds.Contains(@event.Id) && @event.OrganizerUserId != userId)
+            .Where(@event => eventIds.Contains(@event.Id)
+                && @event.OrganizerUserId != userId
+                && @event.IsOrganizerParticipant)
             .Select(@event => new { UserId = @event.OrganizerUserId, EventId = @event.Id })
             .ToListAsync(cancellationToken);
 

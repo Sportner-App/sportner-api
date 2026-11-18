@@ -92,20 +92,47 @@ internal sealed class AssignEventParticipantsCommandHandler
                     return Result.Failure(EventErrors.FriendAlreadyAssociated);
                 }
 
-                var organizerUsername = await NotificationActor.ResolveUsernameAsync(
-                    DbContext, @event.OrganizerUserId, ct);
+                var organizerActor = await NotificationActor.ResolveEventActorNameAsync(
+                    DbContext, @event, @event.OrganizerUserId, ct);
 
                 if (friendIds.Count > 0)
                 {
-                    var acceptedFriendIds = await SocialQueries.AcceptedFriendIds(DbContext, @event.OrganizerUserId)
-                        .ToListAsync(ct);
+                    // Engel kontrolü işlemi yapan kişiye göre: kulüp yöneticisi oluşturanın
+                    // arkadaşlarını değil kendi engellerini kullanır (oluşturan için aynı şey).
+                    var actingUserId = CurrentUser.UserId!.Value;
 
-                    if (friendIds.Except(acceptedFriendIds).Any())
+                    if (@event.OrganizationId is { } organizationId)
                     {
-                        return Result.Failure(EventErrors.NotFriends);
+                        // Kulüp etkinliği: davet edilenler kulübün onaylı üyesi olmalı (arkadaşlık gerekmez).
+                        // Organizations soft-delete filtresine sahip, OrganizationMembers sahip değil.
+                        var approvedMemberIds = await (
+                                from member in DbContext.OrganizationMembers
+                                join organization in DbContext.Organizations
+                                    on member.OrganizationId equals organization.Id
+                                where member.OrganizationId == organizationId
+                                    && member.Status == OrganizationMemberStatus.Approved
+                                    && organization.DeletedAt == null
+                                    && friendIds.Contains(member.UserId)
+                                select member.UserId)
+                            .ToListAsync(ct);
+
+                        if (friendIds.Except(approvedMemberIds).Any())
+                        {
+                            return Result.Failure(EventErrors.InviteeNotClubMember);
+                        }
+                    }
+                    else
+                    {
+                        var acceptedFriendIds = await SocialQueries.AcceptedFriendIds(DbContext, actingUserId)
+                            .ToListAsync(ct);
+
+                        if (friendIds.Except(acceptedFriendIds).Any())
+                        {
+                            return Result.Failure(EventErrors.NotFriends);
+                        }
                     }
 
-                    var blockedFriendIds = await BlockQueries.BlockedUserIds(DbContext, @event.OrganizerUserId)
+                    var blockedFriendIds = await BlockQueries.BlockedUserIds(DbContext, actingUserId)
                         .ToListAsync(ct);
 
                     if (friendIds.Any(blockedFriendIds.Contains))
@@ -228,7 +255,7 @@ internal sealed class AssignEventParticipantsCommandHandler
                         NotificationActor.Format(
                             language,
                             nameof(NotificationsResource.EventInvitation_Title),
-                            NotificationActor.FormatPrefix(organizerUsername, language)),
+                            NotificationActor.FormatPrefix(organizerActor, language)),
                         NotificationActor.Format(
                             language,
                             nameof(NotificationsResource.EventInvitation_Body),

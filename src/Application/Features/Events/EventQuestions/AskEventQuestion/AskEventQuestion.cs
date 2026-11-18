@@ -79,7 +79,7 @@ internal sealed class AskEventQuestionCommandHandler
             return Result<EventQuestionResponse>.Failure(EventQuestionErrors.EventNotFound);
         }
 
-        if (@event.OrganizerUserId == userId)
+        if (await EventAccess.CanManageAsync(_dbContext, @event, userId, cancellationToken))
         {
             return Result<EventQuestionResponse>.Failure(EventQuestionErrors.OrganizerCannotAsk);
         }
@@ -141,27 +141,37 @@ internal sealed class AskEventQuestionCommandHandler
         question.SetMentions(mentions.Value!, utcNow);
         _dbContext.EventQuestions.Add(question);
 
-        var recipientLanguage = await NotificationActor.ResolveRecipientLanguageAsync(
-            _dbContext, @event.OrganizerUserId, cancellationToken);
+        // Soru yanıt bekliyor: oluşturan kişi ve kulüp etkinliğinde kulüp yöneticileri bilgilendirilir.
+        var managerRecipients = await EventAccess.ResolveManagerRecipientsAsync(
+            _dbContext, @event, userId, cancellationToken);
+        var managerLanguages = await NotificationActor.ResolveRecipientLanguagesAsync(
+            _dbContext, managerRecipients.ToList(), cancellationToken);
+        var askerPrefixUsername = await NotificationActor.ResolveUsernameAsync(
+            _dbContext, userId, cancellationToken);
 
-        await _notificationPublisher.PublishAsync(
-            @event.OrganizerUserId,
-            NotificationType.EventQuestionAsked,
-            NotificationActor.Format(
-                recipientLanguage,
-                nameof(NotificationsResource.EventQuestionAsked_Title),
-                await NotificationActor.PrefixAsync(_dbContext, userId, recipientLanguage, cancellationToken)),
-            EventQuestionAccess.Preview(question.Content),
-            NotificationEntityType.Event,
-            @event.Id,
-            userId,
-            cancellationToken);
+        foreach (var managerId in managerRecipients)
+        {
+            var recipientLanguage = managerLanguages.GetValueOrDefault(managerId);
+
+            await _notificationPublisher.PublishAsync(
+                managerId,
+                NotificationType.EventQuestionAsked,
+                NotificationActor.Format(
+                    recipientLanguage,
+                    nameof(NotificationsResource.EventQuestionAsked_Title),
+                    NotificationActor.FormatPrefix(askerPrefixUsername, recipientLanguage)),
+                EventQuestionAccess.Preview(question.Content),
+                NotificationEntityType.Event,
+                @event.Id,
+                userId,
+                cancellationToken);
+        }
 
         // Etiketlenenler ayrica bildirilir; organizator zaten soru bildirimini aldi.
 
         foreach (var mention in mentions.Value!.Where(
 
-            candidate => candidate.UserId != @event.OrganizerUserId))
+            candidate => !managerRecipients.Contains(candidate.UserId)))
 
         {
 
@@ -212,7 +222,11 @@ internal sealed class AskEventQuestionCommandHandler
             await EventQuestionAccess.ToResponseAsync(
                 _dbContext,
                 question,
-                @event.OrganizerUserId,
+                await EventQuestionAccess.LoadHostContextAsync(
+                    _dbContext,
+                    @event.OrganizerUserId,
+                    @event.OrganizationId,
+                    cancellationToken),
                 participants,
                 [],
                 cancellationToken));

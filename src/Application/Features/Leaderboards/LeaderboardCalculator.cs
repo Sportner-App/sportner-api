@@ -80,7 +80,7 @@ internal static class LeaderboardCalculator
             .ToListAsync(cancellationToken);
 
         var organized = await events
-            .Where(@event => @event.Status == EventStatus.Completed)
+            .Where(@event => @event.Status == EventStatus.Completed && @event.IsOrganizerParticipant)
             .Select(@event => new Row(
                 @event.OrganizerUserId, @event.City!, @event.District!, @event.Id, @event.EventDate))
             .ToListAsync(cancellationToken);

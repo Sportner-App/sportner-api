@@ -82,7 +82,8 @@ internal sealed class ListReviewablePeersQueryHandler
                     false))
             .ToListAsync(cancellationToken);
 
-        if (userId != @event.OrganizerUserId
+        if (@event.IsOrganizerParticipant
+            && userId != @event.OrganizerUserId
             && !alreadyReviewedIds.Contains(@event.OrganizerUserId))
         {
             var organizer = await _dbContext.UserProfiles.AsNoTracking()

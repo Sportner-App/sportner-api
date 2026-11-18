@@ -30,6 +30,7 @@ using Sportner.Application.Features.Events.PendingAttendance;
 using Sportner.Application.Features.Events.PendingJoinRequests;
 using Sportner.Application.Features.Events.PromoteFromWaitlist;
 using Sportner.Application.Features.Events.PublishEvent;
+using Sportner.Application.Features.Events.SetOrganizerParticipation;
 using Sportner.Application.Features.Events.RejectParticipant;
 using Sportner.Application.Features.Events.RemoveAssignedParticipant;
 using Sportner.Application.Features.Events.UpdateEventCapacity;
@@ -239,7 +240,9 @@ public sealed class EventsController : ApiControllerBase
             request.IsPaid,
             request.FeeAmount,
             request.OrganizationId,
-            request.ParticipantGender);
+            request.ParticipantGender,
+            request.IsOrganizationOnly,
+            request.OrganizerParticipates);
 
         var result = await Sender.Send(command, cancellationToken);
         return result.ToActionResult(StatusCodes.Status201Created);
@@ -347,6 +350,19 @@ public sealed class EventsController : ApiControllerBase
     public async Task<IActionResult> Publish(Guid eventId, CancellationToken cancellationToken)
     {
         var result = await Sender.Send(new PublishEventCommand(eventId), cancellationToken);
+        return result.ToActionResult();
+    }
+
+    /// <summary>Kulüp etkinliğinde oluşturanın oyuncu olarak katılıp katılmadığını değiştirir (yalnızca oluşturan).</summary>
+    [HttpPost("{eventId:guid}/organizer-participation")]
+    public async Task<IActionResult> SetOrganizerParticipation(
+        Guid eventId,
+        [FromBody] SetOrganizerParticipationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Sender.Send(
+            new SetOrganizerParticipationCommand(eventId, request.Participates),
+            cancellationToken);
         return result.ToActionResult();
     }
 
@@ -588,7 +604,9 @@ public sealed class EventsController : ApiControllerBase
         bool IsPaid = false,
         decimal? FeeAmount = null,
         Guid? OrganizationId = null,
-        short? ParticipantGender = null);
+        short? ParticipantGender = null,
+        bool? IsOrganizationOnly = null,
+        bool? OrganizerParticipates = null);
 
     public sealed record CreateRecurringEventsRequest(
         Guid SportId, string Title, string? Description, DateTimeOffset EventDate,
@@ -596,6 +614,8 @@ public sealed class EventsController : ApiControllerBase
         int? MaxParticipants, int? MinParticipantAge, int? MaxParticipantAge,
         int IntervalWeeks, int OccurrenceCount,
         bool IsPaid = false, decimal? FeeAmount = null, short? ParticipantGender = null);
+
+    public sealed record SetOrganizerParticipationRequest(bool Participates);
 
     public sealed record UpdateDetailsRequest(string Title, string? Description);
 

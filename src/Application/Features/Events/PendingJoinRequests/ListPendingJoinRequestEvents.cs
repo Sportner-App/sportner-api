@@ -46,9 +46,15 @@ internal sealed class ListPendingJoinRequestEventsQueryHandler
 
         var utcNow = _timeProvider.GetUtcNow();
 
+        // Kulüp etkinliklerinde yönetici de başvuruları görür (silinmiş kulüpte yönetici yetkisi yok).
+        var managedOrganizationIds = await EventAccess.ListManagedOrganizationIdsAsync(
+            _dbContext, userId, cancellationToken);
+
         var events = await _dbContext.Events.AsNoTracking()
             .Where(candidate =>
-                candidate.OrganizerUserId == userId
+                (candidate.OrganizerUserId == userId
+                    || (candidate.OrganizationId != null
+                        && managedOrganizationIds.Contains(candidate.OrganizationId.Value)))
                 && (candidate.Status == EventStatus.Published || candidate.Status == EventStatus.Full)
                 && candidate.EventDate > utcNow)
             .OrderBy(candidate => candidate.EventDate)

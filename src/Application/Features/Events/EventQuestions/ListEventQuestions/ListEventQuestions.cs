@@ -37,7 +37,8 @@ internal sealed class ListEventQuestionsQueryHandler
             {
                 candidate.Id,
                 candidate.OrganizerUserId,
-                candidate.OrganizationId
+                candidate.OrganizationId,
+                candidate.IsOrganizationOnly
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -47,6 +48,7 @@ internal sealed class ListEventQuestionsQueryHandler
         }
 
         if (@event.OrganizationId is { } organizationId
+            && @event.IsOrganizationOnly
             && !await OrganizationQueries.IsApprovedMemberAsync(
                 _dbContext,
                 organizationId,
@@ -104,6 +106,11 @@ internal sealed class ListEventQuestionsQueryHandler
             _dbContext,
             @event.Id,
             cancellationToken);
+        var host = await EventQuestionAccess.LoadHostContextAsync(
+            _dbContext,
+            @event.OrganizerUserId,
+            @event.OrganizationId,
+            cancellationToken);
 
         var authorIds = roots.Select(item => item.AuthorUserId)
             .Concat(replies.Select(item => item.AuthorUserId))
@@ -149,11 +156,14 @@ internal sealed class ListEventQuestionsQueryHandler
                 question.ReplyCount,
                 (short)EventQuestionAccess.ResolveRole(
                     question.AuthorUserId,
-                    @event.OrganizerUserId,
+                    host,
                     participants),
                 question.CreatedAt,
                 nested,
-                EventQuestionAccess.ToMentionResponses(question));
+                EventQuestionAccess.ToMentionResponses(question),
+                host.IsAnsweredByClub(question.AuthorUserId),
+                host.ClubName,
+                host.ClubImageUrl);
         }
 
         var repliesByRoot = replies

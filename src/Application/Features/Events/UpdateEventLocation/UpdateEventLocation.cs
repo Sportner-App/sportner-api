@@ -54,6 +54,7 @@ internal sealed class UpdateEventLocationCommandHandler
                     DbContext,
                     _notificationPublisher,
                     @event,
+                    CurrentUser.UserId!.Value,
                     NotificationType.EventLocationUpdated,
                     nameof(NotificationsResource.EventLocationUpdated_Title),
                     nameof(NotificationsResource.EventLocationUpdated_Body),

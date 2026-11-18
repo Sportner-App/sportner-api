@@ -3,9 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Sportner.Application.Abstractions.Notifications;
+using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Events;
 using Sportner.Application.Features.Events.AssignEventParticipants;
 using Sportner.Application.UnitTests.Infrastructure;
 using Sportner.Domain.Common.Enums;
+using Sportner.Domain.Organizations;
 using Sportner.Domain.Social;
 using Sportner.Domain.Sports;
 using Sportner.Domain.Users;
@@ -178,5 +181,102 @@ public sealed class AssignEventParticipantsCommandHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Errors.Should().Contain(error => error.Code == "Event.NotFriends");
+    }
+
+    public enum MemberState { Approved, Pending, Left, Blocked, None }
+
+    private static async Task<(Result<EventResponse> Result, User Invitee)> RunClubInviteAsync(
+        MemberState state,
+        bool befriend)
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero));
+        var now = time.GetUtcNow();
+
+        var organizer = TestUsers.CreateActive("+905551111111", now);
+        var invitee = TestUsers.CreateActive("+905552222222", now);
+        var profile = UserProfile.Create(invitee.Id, "invitee-user", "Invitee", now);
+        profile.UpdatePersonalDetails(1, new DateOnly(1995, 1, 1), now);
+        invitee.AttachUserProfile(profile);
+        var sport = Sport.Create("Futbol", 1, now, "futbol");
+        var club = Organization.Create(organizer.Id, "Kadıköy Spor Kulübü", null, null, "ABCD2345", true, now);
+
+        var @event = DomainEvent.Create(
+            organizer.Id, sport.Id, "Kulüp etkinliği", now.AddHours(4), 90, 41m, 29m, "Istanbul", now,
+            maxParticipants: 10, organizationId: club.Id, isOrganizationOnly: false);
+
+        db.Users.AddRange(organizer, invitee);
+        db.Sports.Add(sport);
+        db.Organizations.Add(club);
+        db.OrganizationMembers.Add(OrganizationMember.CreateFounder(club.Id, organizer.Id, now));
+
+        if (state != MemberState.None)
+        {
+            var member = state == MemberState.Pending
+                ? OrganizationMember.CreatePending(club.Id, invitee.Id, now)
+                : OrganizationMember.CreateApproved(club.Id, invitee.Id, now);
+            if (state == MemberState.Left)
+            {
+                member.Remove(now);
+            }
+            else if (state == MemberState.Blocked)
+            {
+                member.Block(now);
+            }
+
+            db.OrganizationMembers.Add(member);
+        }
+
+        if (befriend)
+        {
+            var friendship = Friendship.CreateRequest(organizer.Id, invitee.Id, now);
+            friendship.Accept(now);
+            db.Friendships.Add(friendship);
+        }
+
+        db.Events.Add(@event);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        var handler = new AssignEventParticipantsCommandHandler(
+            db,
+            new TestCurrentUser(organizer.Id),
+            time,
+            Mock.Of<INotificationPublisher>());
+
+        var result = await handler.Handle(
+            new AssignEventParticipantsCommand(@event.Id, [], [invitee.Id]),
+            CancellationToken.None);
+
+        return (result, invitee);
+    }
+
+    [Fact]
+    public async Task Handle_ClubEvent_InvitesApprovedMember_WithoutFriendship()
+    {
+        var (result, _) = await RunClubInviteAsync(MemberState.Approved, befriend: false);
+
+        result.IsSuccess.Should().BeTrue(because: string.Join("; ", result.Errors.Select(error => error.Message)));
+    }
+
+    [Fact]
+    public async Task Handle_ClubEvent_Fails_WhenFriendIsNotAMember()
+    {
+        var (result, _) = await RunClubInviteAsync(MemberState.None, befriend: true);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Code == "Event.InviteeNotClubMember");
+    }
+
+    [Theory]
+    [InlineData(MemberState.Pending)]
+    [InlineData(MemberState.Left)]
+    [InlineData(MemberState.Blocked)]
+    public async Task Handle_ClubEvent_Fails_WhenMembershipIsNotApproved(MemberState state)
+    {
+        var (result, _) = await RunClubInviteAsync(state, befriend: true);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Code == "Event.InviteeNotClubMember");
     }
 }

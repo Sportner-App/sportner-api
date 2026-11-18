@@ -1,12 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
-using Sportner.Application.Features.Notifications;
-using Sportner.Domain.Common.Enums;
-using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Events.CancelEvent;
 
@@ -15,12 +11,6 @@ public sealed record CancelEventCommand(Guid EventId) : ICommand<EventResponse>;
 internal sealed class CancelEventCommandHandler
     : OrganizerEventMutationHandlerBase, ICommandHandler<CancelEventCommand, EventResponse>
 {
-    protected override Task<Result<(Sportner.Domain.Users.User User, Domain.Events.Event Event)>> LoadEventAsync(
-        Guid userId,
-        Guid eventId,
-        CancellationToken cancellationToken) =>
-        EventAccess.LoadCancellableEventAsync(DbContext, userId, eventId, cancellationToken);
-
     private readonly INotificationPublisher _notificationPublisher;
 
     public CancelEventCommandHandler(
@@ -40,78 +30,8 @@ internal sealed class CancelEventCommandHandler
             request.EventId,
             async (@event, utcNow, ct) =>
             {
-                var wasAlreadyCancelled = @event.Status == EventStatus.Cancelled;
-
-                @event.Cancel(utcNow);
-
-                if (!wasAlreadyCancelled)
-                {
-                    await EventAccess.CloseEventConversationAsync(DbContext, @event.Id, utcNow, ct);
-
-                    var recipients = @event.Participants
-                        .Where(participant =>
-                            participant.UserId is { } userId
-                            && userId != @event.OrganizerUserId
-                            && participant.Status is ParticipantStatus.Pending
-                                or ParticipantStatus.Approved)
-                        .Select(participant => participant.UserId!.Value)
-                        .Distinct()
-                        .ToList();
-
-                    var organizerUsername = await NotificationActor.ResolveUsernameAsync(
-                        DbContext, @event.OrganizerUserId, ct);
-                    var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
-                        DbContext, recipients, ct);
-
-                    foreach (var recipientId in recipients)
-                    {
-                        var language = languagesByRecipient.GetValueOrDefault(recipientId);
-
-                        await _notificationPublisher.PublishAsync(
-                            recipientId,
-                            NotificationType.EventCancelled,
-                            NotificationActor.Format(
-                                language,
-                                nameof(NotificationsResource.EventCancelled_Title),
-                                NotificationActor.FormatPrefix(organizerUsername, language)),
-                            NotificationActor.Format(
-                                language,
-                                nameof(NotificationsResource.EventCancelled_Body),
-                                @event.Title),
-                            NotificationEntityType.Event,
-                            @event.Id,
-                            @event.OrganizerUserId,
-                            ct);
-                    }
-
-                    var organizerStatistics = await DbContext.UserStatistics
-                        .FirstOrDefaultAsync(
-                            candidate => candidate.UserId == @event.OrganizerUserId,
-                            ct);
-
-                    organizerStatistics?.IncreaseCancelledEvents(utcNow);
-
-                    // Approved attendees had EventsJoined bumped on approve/promote — reverse it.
-                    var approvedAttendeeIds = @event.Participants
-                        .Where(participant =>
-                            participant.UserId is { } userId
-                            && userId != @event.OrganizerUserId
-                            && participant.Status is ParticipantStatus.Approved)
-                        .Select(participant => participant.UserId!.Value)
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var attendeeId in approvedAttendeeIds)
-                    {
-                        var attendeeStatistics = await DbContext.UserStatistics
-                            .FirstOrDefaultAsync(candidate => candidate.UserId == attendeeId, ct);
-
-                        if (attendeeStatistics is not null && attendeeStatistics.EventsJoined > 0)
-                        {
-                            attendeeStatistics.DecreaseEventsJoined(utcNow);
-                        }
-                    }
-                }
+                await EventCancellation.CancelAsync(
+                    DbContext, _notificationPublisher, @event, CurrentUser.UserId!.Value, utcNow, ct);
 
                 return Result.Success();
             },

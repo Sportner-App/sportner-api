@@ -12,9 +12,10 @@ internal static class ReviewEligibility
             return false;
         }
 
+        // Oynamadan yöneten kulüp etkinliği oluşturanı değerlendirmeye girmez.
         if (reviewerUserId == @event.OrganizerUserId)
         {
-            return true;
+            return @event.IsOrganizerParticipant;
         }
 
         return reviewer is { Status: ParticipantStatus.Attended, CanReview: true };
@@ -24,7 +25,7 @@ internal static class ReviewEligibility
     {
         if (reviewedUserId == @event.OrganizerUserId)
         {
-            return true;
+            return @event.IsOrganizerParticipant;
         }
 
         return reviewed is { Status: ParticipantStatus.Attended };

@@ -47,6 +47,7 @@ internal static class StreakQueries
 
         var organized = await dbContext.Events.AsNoTracking()
             .Where(@event => @event.OrganizerUserId == userId
+                && @event.IsOrganizerParticipant
                 && @event.Status == EventStatus.Completed)
             .Select(@event => new { @event.Id, @event.EventDate })
             .ToListAsync(cancellationToken);

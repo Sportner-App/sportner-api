@@ -44,5 +44,13 @@ public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventC
         RuleFor(command => command.OrganizationId)
             .NotEmpty()
             .When(command => command.OrganizationId is not null);
+        RuleFor(command => command.OrganizationId)
+            .NotNull()
+            .When(command => command.IsOrganizationOnly == true)
+            .WithMessage("Organization id is required for organization-only events.");
+        RuleFor(command => command.OrganizationId)
+            .NotNull()
+            .When(command => command.OrganizerParticipates == false)
+            .WithMessage("Only club events can opt the organizer out of participation.");
     }
 }

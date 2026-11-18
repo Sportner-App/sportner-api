@@ -129,7 +129,8 @@ internal sealed class DiscoverEventsQueryHandler
         }
         else
         {
-            events = events.Where(@event => @event.OrganizationId == null);
+            events = events.Where(@event =>
+                @event.OrganizationId == null || !@event.IsOrganizationOnly);
         }
 
         if (_currentUser.UserId is { } viewerId)
@@ -208,7 +209,10 @@ internal sealed class DiscoverEventsQueryHandler
             join profile in _dbContext.UserProfiles.AsNoTracking()
                 on @event.OrganizerUserId equals profile.UserId into profiles
             from profile in profiles.DefaultIfEmpty()
-            select new { Event = @event, Sport = sport, Profile = profile };
+            join organization in _dbContext.Organizations.AsNoTracking()
+                on @event.OrganizationId equals organization.Id into organizations
+            from organization in organizations.DefaultIfEmpty()
+            select new { Event = @event, Sport = sport, Profile = profile, Organization = organization };
 
         var total = await joined.CountAsync(cancellationToken);
 
@@ -265,7 +269,14 @@ internal sealed class DiscoverEventsQueryHandler
                     participant.EventId == row.Event.Id
                     && (participant.Status == ParticipantStatus.Approved
                         || participant.Status == ParticipantStatus.Attended
-                        || participant.Status == ParticipantStatus.NoShow))))
+                        || participant.Status == ParticipantStatus.NoShow)),
+                null,
+                null,
+                row.Event.OrganizationId,
+                row.Organization != null ? row.Organization.Name : null,
+                row.Event.IsOrganizationOnly,
+                row.Organization != null ? row.Organization.ImageUrl : null,
+                row.Event.IsOrganizerParticipant))
             .ToListAsync(cancellationToken);
 
         var withAvatars = await EventQueries.AttachParticipantAvatarsAsync(

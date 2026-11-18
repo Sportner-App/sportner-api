@@ -60,7 +60,10 @@ public sealed record EventQuestionResponse(
     short AuthorRole,
     DateTimeOffset CreatedAt,
     IReadOnlyList<EventQuestionResponse> Replies,
-    IReadOnlyList<EventQuestionMentionResponse> Mentions);
+    IReadOnlyList<EventQuestionMentionResponse> Mentions,
+    bool AnsweredByClub = false,
+    string? ClubName = null,
+    string? ClubImageUrl = null);
 
 /// <summary>
 /// Soruda etiketlenen kullanıcı. İstemci metindeki "@kullanıcıadı" yazısını

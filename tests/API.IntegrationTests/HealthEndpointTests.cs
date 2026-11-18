@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Sportner.API.IntegrationTests;
 
-public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public class HealthEndpointTests : IClassFixture<SportnerApiFactory>
 {
     private readonly HttpClient _client;
 
-    public HealthEndpointTests(WebApplicationFactory<Program> factory)
+    public HealthEndpointTests(SportnerApiFactory factory)
     {
         _client = factory.CreateClient();
     }

@@ -97,7 +97,7 @@ Only users who actually attended the same event are allowed to review one anothe
 - Both users must have attended the same event.
 - Each participant may review another participant only once per event.
 - Users cannot review themselves.
-- Organizer and participants can review each other equally.
+- Organizer and participants can review each other equally. The organizer takes part only while `events.is_organizer_participant` is true; for a club event whose creator opted out of playing, the creator neither reviews nor can be reviewed and is not listed among reviewable peers.
 - Ratings must be between 1 and 5.
 - Comments are optional.
 - Reported reviews are hidden until moderation is completed.
