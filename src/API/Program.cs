@@ -79,8 +79,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-app.UseRateLimiter();
+// Kimlik doğrulamadan sonra: kullanıcı başına sayan politikalar (genel tavan,
+// şikâyet, geri bildirim, soru-cevap) "sub" claim'ini görebilsin. Önceden
+// burada boş kullanıcıyla çalışıp sessizce IP'ye düşüyorlardı.
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ConversationHub>("/hubs/event-chat");

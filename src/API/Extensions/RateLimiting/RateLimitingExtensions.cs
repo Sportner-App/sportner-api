@@ -17,6 +17,55 @@ public static class RateLimitingExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            // Her isteğe uygulanan genel tavan; uç noktaya özel politikalar bunun üstüne
+            // ayrıca uygulanır. Amaç toplu veri çekmeyi (ID'leri sırayla gezip etkinlik,
+            // katılımcı, profil toplamak) zorlaştırmak. Normal kullanım bu sınırlara yaklaşmaz.
+            // Girişli istekler kullanıcı başına, girişsizler IP başına sayılır. Bu yüzden
+            // UseRateLimiter, Program.cs'te UseAuthentication'dan sonra gelmeli.
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            {
+                var configuration = httpContext.RequestServices.GetRequiredService<IConfiguration>();
+                if (!configuration.GetValue("RateLimiting:GlobalEnabled", true)
+                    || httpContext.Request.Path.StartsWithSegments("/health"))
+                {
+                    return RateLimitPartition.GetNoLimiter("unlimited");
+                }
+
+                if (httpContext.User.FindFirst("sub")?.Value is { } userId)
+                {
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: $"user:{userId}",
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 300,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0
+                        });
+                }
+
+                // Mobil operatörlerde (CGNAT) çok kullanıcı tek IP'yi paylaşır; sınır bu
+                // yüzden geniş. Script'le toplu çekmeyi yine de dakikada birkaç yüz isteğe indirir.
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: $"ip:{ClientNetworkKey(httpContext)}",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 300,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    });
+            });
+
+            options.OnRejected = (context, _) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers.RetryAfter =
+                        ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                }
+
+                return ValueTask.CompletedTask;
+            };
+
             options.AddPolicy(AuthPolicy, httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -79,5 +128,33 @@ public static class RateLimitingExtensions
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// IPv4 adresini olduğu gibi, IPv6 adresini /64 ağına indirerek döndürür: bir IPv6
+    /// istemcisi /64 içinde istediği kadar adres üretebildiği için tam adresle sayılırsa
+    /// her istekte adres değiştirip sınırı aşabilir.
+    /// </summary>
+    private static string ClientNetworkKey(HttpContext httpContext)
+    {
+        var address = httpContext.Connection.RemoteIpAddress;
+        if (address is null)
+        {
+            return "unknown";
+        }
+
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
+        if (address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+        {
+            return address.ToString();
+        }
+
+        var bytes = address.GetAddressBytes();
+        Array.Clear(bytes, 8, 8);
+        return $"{new System.Net.IPAddress(bytes)}/64";
     }
 }

@@ -31,6 +31,9 @@ public sealed class SportnerApiFactory : WebApplicationFactory<Program>
     {
         builder.UseSetting("ConnectionStrings:SupabaseConnection", ResolvedConnection);
         builder.UseSetting("Seed:EnableDemoData", "false");
+        // Testlerin hepsi tek bir "IP"den (TestServer'da null) gelir; genel tavan onları
+        // birbirine karıştırıp 429'a düşürmesin. Uç noktaya özel politikalar açık kalır.
+        builder.UseSetting("RateLimiting:GlobalEnabled", "false");
     }
 
     private static string ResolveAndGuard()

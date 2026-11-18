@@ -402,8 +402,10 @@ public sealed class EventsController : ApiControllerBase
         return result.ToActionResult();
     }
 
+    // Girişsiz açık değil: başkalarının ad ve fotoğraflarını listeler, ID'leri gezip
+    // toplu kişi verisi çekmeye en elverişli uçtu. Etkinlik detayı paylaşım linkleri
+    // için anonim kalır.
     [HttpGet("{eventId:guid}/participants")]
-    [AllowAnonymous]
     public async Task<IActionResult> ListParticipants(
         Guid eventId,
         CancellationToken cancellationToken)

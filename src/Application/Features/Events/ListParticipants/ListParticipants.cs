@@ -49,6 +49,20 @@ internal sealed class ListParticipantsQueryHandler
         var isOrganizer = await EventAccess.CanManageAsync(
             _dbContext, @event, _currentUser.UserId, cancellationToken);
 
+        // Etkinlik detayıyla aynı kural: taslak yalnızca yöneticilere ve taslağa
+        // eklenmiş katılımcılara görünür.
+        if (@event.Status == EventStatus.Draft
+            && !isOrganizer
+            && !(_currentUser.UserId is { } draftViewerId
+                && await _dbContext.EventParticipants.AsNoTracking().AnyAsync(
+                    participant => participant.EventId == @event.Id
+                        && participant.UserId == draftViewerId
+                        && participant.Status != ParticipantStatus.Cancelled,
+                    cancellationToken)))
+        {
+            return Result<IReadOnlyList<ParticipantResponse>>.Failure(EventErrors.NotFound);
+        }
+
         // Cancelled / rejected are history — they are not current participants.
         var query =
             from participant in _dbContext.EventParticipants.AsNoTracking()
