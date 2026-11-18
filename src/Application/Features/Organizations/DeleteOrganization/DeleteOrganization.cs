@@ -4,7 +4,6 @@ using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Notifications;
 using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Common.Results;
-using Sportner.Application.Features.Events;
 using Sportner.Domain.Common.Enums;
 
 namespace Sportner.Application.Features.Organizations.DeleteOrganization;
@@ -59,26 +58,8 @@ internal sealed class DeleteOrganizationCommandHandler : ICommandHandler<DeleteO
         }
 
         var utcNow = _timeProvider.GetUtcNow();
-        organization.MarkDeleted(utcNow);
-
-        var upcomingEvents = await _dbContext.Events
-            .Include(candidate => candidate.Participants)
-            .Include(candidate => candidate.Waitlist)
-            .Where(candidate =>
-                candidate.OrganizationId == request.OrganizationId
-                // Başlamış etkinliği iptal etme: tamamlama worker'ı henüz Completed yapmamış olabilir
-                // (EventCompletionDispatcher da EventDate <= now ile başlar).
-                && candidate.EventDate > utcNow
-                && (candidate.Status == EventStatus.Draft
-                    || candidate.Status == EventStatus.Published
-                    || candidate.Status == EventStatus.Full))
-            .ToListAsync(cancellationToken);
-
-        foreach (var @event in upcomingEvents)
-        {
-            await EventCancellation.CancelAsync(
-                _dbContext, _notificationPublisher, @event, userId, utcNow, cancellationToken);
-        }
+        await OrganizationClosure.CloseAsync(
+            _dbContext, _notificationPublisher, organization, userId, utcNow, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();

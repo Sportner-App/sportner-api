@@ -6,6 +6,7 @@ using Sportner.Application.Abstractions.Persistence;
 using Sportner.Application.Abstractions.Storage;
 using Sportner.Application.Common.Models;
 using Sportner.Application.Common.Results;
+using Sportner.Application.Features.Admin.Reports;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
 
@@ -36,7 +37,10 @@ public sealed record AdminUserDetail(
     int ActiveSessions,
     int ReportsAgainst,
     int FeedbackCount,
-    bool IsTestAccount);
+    bool IsTestAccount,
+    int BlockedCount,
+    int BlockedByCount,
+    int ReportsByCount);
 
 public sealed record ListAdminUsersQuery(string? Search, UserStatus? Status, int? Page, int? PageSize)
     : IQuery<PagedResult<AdminUserListItem>>;
@@ -131,9 +135,15 @@ internal sealed class GetAdminUserQueryHandler : IQueryHandler<GetAdminUserQuery
             .CountAsync(session => session.UserId == user.Id
                 && session.RevokedAt == null
                 && session.ExpiresAt > utcNow, cancellationToken);
-        var reports = await _dbContext.Reports.AsNoTracking()
-            .CountAsync(report => report.EntityType == ReportEntityType.User
-                && report.EntityId == user.Id, cancellationToken);
+        // "Karşı" şikâyet: kullanıcının kendisi ya da ona ait içerik hakkında yapılanlar.
+        var reports = await AdminReportItems.Against(_dbContext, _dbContext.Reports.AsNoTracking(), user.Id)
+            .CountAsync(cancellationToken);
+        var reportsBy = await _dbContext.Reports.AsNoTracking()
+            .CountAsync(report => report.ReporterUserId == user.Id, cancellationToken);
+        var blocked = await _dbContext.UserBlocks.AsNoTracking()
+            .CountAsync(block => block.BlockerUserId == user.Id, cancellationToken);
+        var blockedBy = await _dbContext.UserBlocks.AsNoTracking()
+            .CountAsync(block => block.BlockedUserId == user.Id, cancellationToken);
         var feedback = await _dbContext.AppFeedbacks.AsNoTracking()
             .CountAsync(item => item.UserId == user.Id, cancellationToken);
 
@@ -163,7 +173,173 @@ internal sealed class GetAdminUserQueryHandler : IQueryHandler<GetAdminUserQuery
             activeSessions,
             reports,
             feedback,
-            user.IsTestAccount));
+            user.IsTestAccount,
+            blocked,
+            blockedBy,
+            reportsBy));
+    }
+}
+
+public sealed record ListAdminUserReportsQuery(Guid UserId, string? Direction, int? Page, int? PageSize)
+    : IQuery<PagedResult<AdminReportItem>>;
+
+internal sealed class ListAdminUserReportsQueryHandler
+    : IQueryHandler<ListAdminUserReportsQuery, PagedResult<AdminReportItem>>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly IFileStorage _fileStorage;
+
+    public ListAdminUserReportsQueryHandler(IApplicationDbContext dbContext, IFileStorage fileStorage)
+    {
+        _dbContext = dbContext;
+        _fileStorage = fileStorage;
+    }
+
+    public async Task<Result<PagedResult<AdminReportItem>>> Handle(
+        ListAdminUserReportsQuery request,
+        CancellationToken cancellationToken)
+    {
+        var direction = request.Direction?.Trim().ToLowerInvariant();
+        if (direction is not ("against" or "by"))
+        {
+            return Result<PagedResult<AdminReportItem>>.Failure(AdminErrors.InvalidReportDirection);
+        }
+
+        if (!await _dbContext.Users.AsNoTracking().AnyAsync(user => user.Id == request.UserId, cancellationToken))
+        {
+            return Result<PagedResult<AdminReportItem>>.Failure(AdminErrors.UserNotFound);
+        }
+
+        var (page, pageSize) = AdminPaging.Normalize(request.Page, request.PageSize);
+        var reports = _dbContext.Reports.AsNoTracking();
+        var query = direction == "by"
+            ? reports.Where(report => report.ReporterUserId == request.UserId)
+            : AdminReportItems.Against(_dbContext, reports, request.UserId);
+
+        return Result<PagedResult<AdminReportItem>>.Success(await AdminReportItems.LoadPageAsync(
+            _dbContext, _fileStorage, query, page, pageSize, cancellationToken));
+    }
+}
+
+public sealed record AdminUserSession(
+    Guid Id,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset ExpiresAt,
+    string? IpAddress,
+    string? UserAgent,
+    DateTimeOffset? LastRotatedAt);
+
+public sealed record ListAdminUserSessionsQuery(Guid UserId) : IQuery<IReadOnlyList<AdminUserSession>>;
+
+internal sealed class ListAdminUserSessionsQueryHandler
+    : IQueryHandler<ListAdminUserSessionsQuery, IReadOnlyList<AdminUserSession>>
+{
+    private const int MaxSessions = 50;
+
+    private readonly IApplicationDbContext _dbContext;
+    private readonly TimeProvider _timeProvider;
+
+    public ListAdminUserSessionsQueryHandler(IApplicationDbContext dbContext, TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<Result<IReadOnlyList<AdminUserSession>>> Handle(
+        ListAdminUserSessionsQuery request,
+        CancellationToken cancellationToken)
+    {
+        if (!await _dbContext.Users.AsNoTracking().AnyAsync(user => user.Id == request.UserId, cancellationToken))
+        {
+            return Result<IReadOnlyList<AdminUserSession>>.Failure(AdminErrors.UserNotFound);
+        }
+
+        var utcNow = _timeProvider.GetUtcNow();
+        var sessions = await _dbContext.UserSessions.AsNoTracking()
+            .Where(session => session.UserId == request.UserId
+                && session.RevokedAt == null
+                && session.ExpiresAt > utcNow)
+            .OrderByDescending(session => session.CreatedAt)
+            .Take(MaxSessions)
+            .Select(session => new AdminUserSession(
+                session.Id,
+                session.CreatedAt,
+                session.ExpiresAt,
+                session.IpAddress,
+                session.UserAgent,
+                session.RefreshTokenRotatedAt))
+            .ToListAsync(cancellationToken);
+
+        return Result<IReadOnlyList<AdminUserSession>>.Success(sessions);
+    }
+}
+
+public sealed record RevokeAdminUserSessionsResult(int RevokedCount);
+
+/// <summary>
+/// Kullanıcının tüm açık oturumlarını kapatır. Yenileme anahtarları geçersiz olur; eldeki erişim
+/// anahtarı ise süresi (JwtSettings:ExpirationMinutes) dolana kadar geçerli kalır.
+/// </summary>
+public sealed record RevokeAdminUserSessionsCommand(Guid UserId) : ICommand<RevokeAdminUserSessionsResult>;
+
+internal sealed class RevokeAdminUserSessionsCommandHandler
+    : ICommandHandler<RevokeAdminUserSessionsCommand, RevokeAdminUserSessionsResult>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentUser _currentUser;
+    private readonly TimeProvider _timeProvider;
+
+    public RevokeAdminUserSessionsCommandHandler(
+        IApplicationDbContext dbContext,
+        ICurrentUser currentUser,
+        TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _currentUser = currentUser;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<Result<RevokeAdminUserSessionsResult>> Handle(
+        RevokeAdminUserSessionsCommand request,
+        CancellationToken cancellationToken)
+    {
+        if (_currentUser.UserId is not { } adminId)
+        {
+            return Result<RevokeAdminUserSessionsResult>.Failure(AdminErrors.NotAuthenticated);
+        }
+
+        if (!await _dbContext.Users.AsNoTracking().AnyAsync(user => user.Id == request.UserId, cancellationToken))
+        {
+            return Result<RevokeAdminUserSessionsResult>.Failure(AdminErrors.UserNotFound);
+        }
+
+        var utcNow = _timeProvider.GetUtcNow();
+        var sessions = await _dbContext.UserSessions
+            .Where(session => session.UserId == request.UserId
+                && session.RevokedAt == null
+                && session.ExpiresAt > utcNow)
+            .ToListAsync(cancellationToken);
+
+        if (sessions.Count == 0)
+        {
+            return Result<RevokeAdminUserSessionsResult>.Success(new RevokeAdminUserSessionsResult(0));
+        }
+
+        foreach (var session in sessions)
+        {
+            session.Revoke(utcNow);
+        }
+
+        _dbContext.AdminAuditEntries.Add(AdminActions.Entry(
+            adminId,
+            AdminActions.UserRevokeSessions,
+            AdminActions.UserTarget,
+            request.UserId,
+            sessions.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            utcNow));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result<RevokeAdminUserSessionsResult>.Success(new RevokeAdminUserSessionsResult(sessions.Count));
     }
 }
 

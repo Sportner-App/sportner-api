@@ -54,11 +54,32 @@ internal static class AdminErrors
     internal static Error EventNotCancellable => Error.Conflict(
         "Admin.EventNotCancellable", ErrorMessagesResource.Admin_EventNotCancellable);
 
+    internal static Error ClubNotFound => Error.NotFound(
+        "Admin.ClubNotFound", ErrorMessagesResource.Admin_ClubNotFound);
+
+    internal static Error ClubDeleted => Error.Conflict(
+        "Admin.ClubDeleted", ErrorMessagesResource.Admin_ClubDeleted);
+
     internal static Error InvalidContentType => Error.Validation(
         "Admin.InvalidContentType", ErrorMessagesResource.Admin_InvalidContentType);
 
     internal static Error InvalidNote => Error.Validation(
         "Admin.InvalidNote", ErrorMessagesResource.Admin_InvalidNote);
+
+    internal static Error InvalidAnnouncement => Error.Validation(
+        "Admin.InvalidAnnouncement", ErrorMessagesResource.Admin_InvalidAnnouncement);
+
+    internal static Error InvalidReportDirection => Error.Validation(
+        "Admin.InvalidReportDirection", ErrorMessagesResource.Admin_InvalidReportDirection);
+
+    internal static Error AnnouncementAudienceChanged => Error.Conflict(
+        "Admin.AnnouncementAudienceChanged", ErrorMessagesResource.Admin_AnnouncementAudienceChanged);
+
+    internal static Error AnnouncementTooSoon => Error.Conflict(
+        "Admin.AnnouncementTooSoon", ErrorMessagesResource.Admin_AnnouncementTooSoon);
+
+    internal static Error AnnouncementNoRecipients => Error.Conflict(
+        "Admin.AnnouncementNoRecipients", ErrorMessagesResource.Admin_AnnouncementNoRecipients);
 }
 
 /// <summary>İşlem kaydındaki sabit adlar; panel bunları Türkçe etikete çevirir.</summary>
@@ -77,6 +98,10 @@ internal static class AdminActions
     public const string CommentUnhide = "comment.unhide";
     public const string EventCancel = "event.cancel";
     public const string UserTestAccount = "user.test_account";
+    public const string ClubVisibility = "club.visibility";
+    public const string ClubClose = "club.close";
+    public const string AnnouncementSend = "announcement.send";
+    public const string UserRevokeSessions = "user.revoke_sessions";
 
     public const string UserTarget = "user";
     public const string FeedbackTarget = "feedback";
@@ -84,6 +109,8 @@ internal static class AdminActions
     public const string PostTarget = "post";
     public const string CommentTarget = "comment";
     public const string EventTarget = "event";
+    public const string ClubTarget = "club";
+    public const string AnnouncementTarget = "announcement";
 
     public static AdminAuditEntry Entry(
         Guid actor, string action, string targetType, Guid targetId, string? details, DateTimeOffset utcNow) =>

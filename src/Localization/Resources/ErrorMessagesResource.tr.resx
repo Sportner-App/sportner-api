@@ -693,10 +693,31 @@
   <data name="Admin_EventNotCancellable" xml:space="preserve">
     <value>Bu etkinlik zaten iptal edilmiş ya da tamamlanmış.</value>
   </data>
+  <data name="Admin_ClubNotFound" xml:space="preserve">
+    <value>Kulüp bulunamadı.</value>
+  </data>
+  <data name="Admin_ClubDeleted" xml:space="preserve">
+    <value>Bu kulüp zaten kapatılmış.</value>
+  </data>
   <data name="Admin_InvalidContentType" xml:space="preserve">
     <value>İçerik türü posts, comments ya da events olmalı.</value>
   </data>
   <data name="Admin_InvalidNote" xml:space="preserve">
     <value>Not 1 ile 2000 karakter arasında olmalı.</value>
+  </data>
+  <data name="Admin_InvalidAnnouncement" xml:space="preserve">
+    <value>Başlık 1-65, mesaj 1-240 karakter olmalı.</value>
+  </data>
+  <data name="Admin_InvalidReportDirection" xml:space="preserve">
+    <value>Yön 'against' veya 'by' olmalı.</value>
+  </data>
+  <data name="Admin_AnnouncementAudienceChanged" xml:space="preserve">
+    <value>Alıcı sayısı önizlemeden sonra değişti. Önizlemeyi yenileyip tekrar dene.</value>
+  </data>
+  <data name="Admin_AnnouncementTooSoon" xml:space="preserve">
+    <value>Son 5 dakika içinde bir duyuru gönderildi. Yenisini göndermeden önce bekle.</value>
+  </data>
+  <data name="Admin_AnnouncementNoRecipients" xml:space="preserve">
+    <value>Bu kitleye uyan kullanıcı yok.</value>
   </data>
 </root>

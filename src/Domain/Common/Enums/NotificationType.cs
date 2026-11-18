@@ -51,5 +51,8 @@ public enum NotificationType : short
     DistrictLeaderTaken = 46,
     DistrictCrowned = 47,
     MonthlyRecapReady = 48,
-    YearlyRecapReady = 49
+    YearlyRecapReady = 49,
+
+    /// <summary>Yönetici duyurusu; tanıtım içerebildiği için varsayılan kapalıdır, yalnızca açıkça izin verenlere gider.</summary>
+    Announcement = 50
 }

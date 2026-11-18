@@ -10,6 +10,7 @@ using Sportner.Application.Common.Results;
 using Sportner.Application.Features.Moderation;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Common.Exceptions;
+using Sportner.Domain.Moderation;
 using Sportner.Localization.Resources;
 
 namespace Sportner.Application.Features.Admin.Reports;
@@ -63,10 +64,61 @@ internal sealed class ListAdminReportsQueryHandler
             query = query.Where(report => report.EntityType == typed);
         }
 
+        var paged = await AdminReportItems.LoadPageAsync(
+            _dbContext, _fileStorage, query, page, pageSize, cancellationToken);
+        return Result<PagedResult<AdminReportItem>>.Success(paged);
+    }
+}
+
+/// <summary>Şikâyet listesi ile kullanıcı detayındaki şikâyet listesinin ortak sayfa yükleyicisi.</summary>
+internal static class AdminReportItems
+{
+    /// <summary>
+    /// Kullanıcıya karşı yapılan şikâyetler: kullanıcının kendisi ya da ona ait içerik (gönderi, yorum,
+    /// etkinlik, değerlendirme, mesaj, profil albümü). Alt sorgularla tek sorguda kurulur.
+    /// </summary>
+    internal static IQueryable<Report> Against(
+        IApplicationDbContext dbContext,
+        IQueryable<Report> reports,
+        Guid userId)
+    {
+        var posts = dbContext.Posts;
+        var comments = dbContext.PostComments;
+        var events = dbContext.Events;
+        var reviews = dbContext.Reviews;
+        var messages = dbContext.Messages;
+        var albums = dbContext.Albums;
+
+        return reports.Where(report =>
+            (report.EntityType == ReportEntityType.User && report.EntityId == userId)
+            || (report.EntityType == ReportEntityType.Post
+                && posts.Any(post => post.Id == report.EntityId && post.UserId == userId))
+            || (report.EntityType == ReportEntityType.Comment
+                && comments.Any(comment => comment.Id == report.EntityId && comment.UserId == userId))
+            || (report.EntityType == ReportEntityType.Event
+                && events.Any(@event => @event.Id == report.EntityId && @event.OrganizerUserId == userId))
+            || (report.EntityType == ReportEntityType.Review
+                && reviews.Any(review => review.Id == report.EntityId && review.ReviewerUserId == userId))
+            || (report.EntityType == ReportEntityType.Message
+                && messages.Any(message => message.Id == report.EntityId && message.SenderUserId == userId))
+            || (report.EntityType == ReportEntityType.Album
+                && albums.Any(album => album.Id == report.EntityId
+                    && album.Kind == AlbumKind.Profile
+                    && album.OwnerUserId == userId)));
+    }
+
+    internal static async Task<PagedResult<AdminReportItem>> LoadPageAsync(
+        IApplicationDbContext dbContext,
+        IFileStorage fileStorage,
+        IQueryable<Report> query,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
         var total = await query.CountAsync(cancellationToken);
         var rows = await (
                 from report in query
-                join reason in _dbContext.ReportReasons.AsNoTracking()
+                join reason in dbContext.ReportReasons.AsNoTracking()
                     on report.ReportReasonId equals reason.Id into reasons
                 from reason in reasons.DefaultIfEmpty()
                 orderby report.CreatedAt descending, report.Id
@@ -89,15 +141,15 @@ internal sealed class ListAdminReportsQueryHandler
             .ToListAsync(cancellationToken);
 
         var keys = rows.Select(row => (row.EntityType, row.EntityId)).Distinct().ToList();
-        var targets = await AdminTargets.ResolveAsync(_dbContext, _fileStorage, keys, cancellationToken);
+        var targets = await AdminTargets.ResolveAsync(dbContext, fileStorage, keys, cancellationToken);
         var reporters = await AdminTargets.LoadUserRefsAsync(
-            _dbContext, rows.Select(row => row.ReporterUserId), cancellationToken);
+            dbContext, rows.Select(row => row.ReporterUserId), cancellationToken);
 
         // Aynı hedef için açık (bekleyen + incelemede) şikâyet sayısı; sayfadaki hedefler için tek sorgu.
         var entityIds = keys.Select(key => key.EntityId).Distinct().ToList();
         var openRows = entityIds.Count == 0
             ? []
-            : await _dbContext.Reports.AsNoTracking()
+            : await dbContext.Reports.AsNoTracking()
                 .Where(report => entityIds.Contains(report.EntityId)
                     && (report.Status == ReportStatus.Pending || report.Status == ReportStatus.UnderReview))
                 .GroupBy(report => new { report.EntityType, report.EntityId })
@@ -122,8 +174,7 @@ internal sealed class ListAdminReportsQueryHandler
                 openCounts.GetValueOrDefault((row.EntityType, row.EntityId))))
             .ToList();
 
-        return Result<PagedResult<AdminReportItem>>.Success(
-            PagedResult<AdminReportItem>.Create(items, page, pageSize, total));
+        return PagedResult<AdminReportItem>.Create(items, page, pageSize, total);
     }
 }
 

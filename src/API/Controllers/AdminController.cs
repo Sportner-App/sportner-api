@@ -4,11 +4,15 @@ using Microsoft.AspNetCore.RateLimiting;
 using Sportner.API.Authorization;
 using Sportner.API.Common;
 using Sportner.API.Extensions.RateLimiting;
+using Sportner.Application.Features.Admin.Announcements;
 using Sportner.Application.Features.Admin.Audit;
 using Sportner.Application.Features.Admin.Auth;
+using Sportner.Application.Features.Admin.Clubs;
 using Sportner.Application.Features.Admin.Content;
+using Sportner.Application.Features.Admin.Events;
 using Sportner.Application.Features.Admin.Feedback;
 using Sportner.Application.Features.Admin.Reports;
+using Sportner.Application.Features.Admin.Stats;
 using Sportner.Application.Features.Admin.Users;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Feedback;
@@ -96,6 +100,43 @@ public sealed class AdminController : ApiControllerBase
         (await Sender.Send(new ListAdminUserContentQuery(userId, type, page, pageSize), cancellationToken))
             .ToActionResult();
 
+    [HttpGet("users/{userId:guid}/reports")]
+    public async Task<IActionResult> ListUserReports(
+        Guid userId,
+        [FromQuery] string? direction,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new ListAdminUserReportsQuery(userId, direction, page, pageSize), cancellationToken))
+            .ToActionResult();
+
+    [HttpGet("users/{userId:guid}/sessions")]
+    public async Task<IActionResult> ListUserSessions(Guid userId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new ListAdminUserSessionsQuery(userId), cancellationToken)).ToActionResult();
+
+    [HttpPost("users/{userId:guid}/revoke-sessions")]
+    public async Task<IActionResult> RevokeUserSessions(Guid userId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new RevokeAdminUserSessionsCommand(userId), cancellationToken)).ToActionResult();
+
+    [HttpGet("announcements/options")]
+    public async Task<IActionResult> GetAnnouncementOptions(CancellationToken cancellationToken) =>
+        (await Sender.Send(new GetAnnouncementOptionsQuery(), cancellationToken)).ToActionResult();
+
+    [HttpPost("announcements/preview")]
+    public async Task<IActionResult> PreviewAnnouncement(
+        [FromBody] AnnouncementBody body,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new PreviewAnnouncementQuery(body.Title, body.Body, body.City, body.SportId), cancellationToken))
+            .ToActionResult();
+
+    [HttpPost("announcements")]
+    public async Task<IActionResult> SendAnnouncement(
+        [FromBody] SendAnnouncementBody body,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(
+            new SendAnnouncementCommand(body.Title, body.Body, body.City, body.SportId, body.ExpectedRecipientCount),
+            cancellationToken)).ToActionResult();
+
     [HttpGet("reports")]
     public async Task<IActionResult> ListReports(
         [FromQuery] short? status,
@@ -147,6 +188,53 @@ public sealed class AdminController : ApiControllerBase
         (await Sender.Send(new AdminCancelEventCommand(eventId), cancellationToken))
             .ToActionResult(StatusCodes.Status204NoContent);
 
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats(CancellationToken cancellationToken) =>
+        (await Sender.Send(new GetAdminStatsQuery(), cancellationToken)).ToActionResult();
+
+    [HttpGet("events")]
+    public async Task<IActionResult> ListEvents(
+        [FromQuery] string? search,
+        [FromQuery] short? status,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new ListAdminEventsQuery(search, status, page, pageSize), cancellationToken))
+            .ToActionResult();
+
+    [HttpGet("events/{eventId:guid}")]
+    public async Task<IActionResult> GetEvent(Guid eventId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new GetAdminEventQuery(eventId), cancellationToken)).ToActionResult();
+
+    [HttpGet("clubs")]
+    public async Task<IActionResult> ListClubs(
+        [FromQuery] string? search,
+        [FromQuery] string? visibility,
+        [FromQuery] bool? includeDeleted,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(
+            new ListAdminClubsQuery(search, visibility, includeDeleted, page, pageSize), cancellationToken))
+            .ToActionResult();
+
+    [HttpGet("clubs/{clubId:guid}")]
+    public async Task<IActionResult> GetClub(Guid clubId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new GetAdminClubQuery(clubId), cancellationToken)).ToActionResult();
+
+    [HttpPost("clubs/{clubId:guid}/visibility")]
+    public async Task<IActionResult> SetClubVisibility(
+        Guid clubId,
+        [FromBody] ClubVisibilityBody body,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new SetClubVisibilityCommand(clubId, body.IsPublic), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("clubs/{clubId:guid}/close")]
+    public async Task<IActionResult> CloseClub(Guid clubId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new CloseClubCommand(clubId), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
     [HttpGet("feedback")]
     public async Task<IActionResult> ListFeedback(
         [FromQuery] AppFeedbackStatus? status,
@@ -196,4 +284,11 @@ public sealed class AdminController : ApiControllerBase
     public sealed record NoteBody(string Note);
 
     public sealed record TestAccountBody(bool IsTestAccount);
+
+    public sealed record ClubVisibilityBody(bool IsPublic);
+
+    public sealed record AnnouncementBody(string Title, string Body, string? City, Guid? SportId);
+
+    public sealed record SendAnnouncementBody(
+        string Title, string Body, string? City, Guid? SportId, int ExpectedRecipientCount);
 }

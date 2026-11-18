@@ -230,6 +230,8 @@ public class NotificationSetting : AggregateRoot
             NotificationType.DistrictCrowned => (true, true, false),
             NotificationType.MonthlyRecapReady => (true, true, false),
             NotificationType.YearlyRecapReady => (true, true, false),
+            // Duyuru tanıtım içerebilir: kullanıcı açıkça izin vermedikçe hiçbir kanaldan gitmez.
+            NotificationType.Announcement => (false, false, false),
             _ => throw new DomainException("Notification type is unsupported.")
         };
     }

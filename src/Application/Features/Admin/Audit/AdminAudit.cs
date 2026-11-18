@@ -44,13 +44,37 @@ internal sealed class ListAdminAuditQueryHandler : IQueryHandler<ListAdminAuditQ
             .Where(profile => ids.Contains(profile.UserId))
             .ToDictionaryAsync(profile => profile.UserId, profile => profile.Username, cancellationToken);
 
+        // Etkinlik ve kulüp hedefleri için başlık / ad, sayfa başına birer sorguyla.
+        var eventIds = rows.Where(row => row.TargetType == AdminActions.EventTarget).Select(row => row.TargetId).Distinct().ToList();
+        var clubIds = rows.Where(row => row.TargetType == AdminActions.ClubTarget).Select(row => row.TargetId).Distinct().ToList();
+        var eventTitles = eventIds.Count == 0
+            ? []
+            : await _dbContext.Events.AsNoTracking()
+                .Where(@event => eventIds.Contains(@event.Id))
+                .Select(@event => new { @event.Id, @event.Title })
+                .ToDictionaryAsync(@event => @event.Id, @event => @event.Title, cancellationToken);
+        var clubNames = clubIds.Count == 0
+            ? []
+            : await _dbContext.Organizations.AsNoTracking().IgnoreQueryFilters()
+                .Where(club => clubIds.Contains(club.Id))
+                .Select(club => new { club.Id, club.Name })
+                .ToDictionaryAsync(club => club.Id, club => club.Name, cancellationToken);
+
+        string? LabelOf(string targetType, Guid targetId) => targetType switch
+        {
+            AdminActions.UserTarget => names.GetValueOrDefault(targetId),
+            AdminActions.EventTarget => eventTitles.GetValueOrDefault(targetId),
+            AdminActions.ClubTarget => clubNames.GetValueOrDefault(targetId),
+            _ => null
+        };
+
         var items = rows.Select(row => new AdminAuditItem(
                 row.Id,
                 row.CreatedAt,
                 row.Action,
                 row.TargetType,
                 row.TargetId,
-                row.TargetType == AdminActions.UserTarget ? names.GetValueOrDefault(row.TargetId) : null,
+                LabelOf(row.TargetType, row.TargetId),
                 row.Details,
                 row.ActorUserId,
                 names.GetValueOrDefault(row.ActorUserId)))

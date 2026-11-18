@@ -1417,6 +1417,18 @@ namespace Sportner.Localization.Resources {
             }
         }
 
+        public static string Admin_ClubNotFound {
+            get {
+                return ResourceManager.GetString("Admin_ClubNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_ClubDeleted {
+            get {
+                return ResourceManager.GetString("Admin_ClubDeleted", resourceCulture);
+            }
+        }
+
         public static string Admin_InvalidContentType {
             get {
                 return ResourceManager.GetString("Admin_InvalidContentType", resourceCulture);
@@ -1426,6 +1438,36 @@ namespace Sportner.Localization.Resources {
         public static string Admin_InvalidNote {
             get {
                 return ResourceManager.GetString("Admin_InvalidNote", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidAnnouncement {
+            get {
+                return ResourceManager.GetString("Admin_InvalidAnnouncement", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidReportDirection {
+            get {
+                return ResourceManager.GetString("Admin_InvalidReportDirection", resourceCulture);
+            }
+        }
+
+        public static string Admin_AnnouncementAudienceChanged {
+            get {
+                return ResourceManager.GetString("Admin_AnnouncementAudienceChanged", resourceCulture);
+            }
+        }
+
+        public static string Admin_AnnouncementTooSoon {
+            get {
+                return ResourceManager.GetString("Admin_AnnouncementTooSoon", resourceCulture);
+            }
+        }
+
+        public static string Admin_AnnouncementNoRecipients {
+            get {
+                return ResourceManager.GetString("Admin_AnnouncementNoRecipients", resourceCulture);
             }
         }
     }
