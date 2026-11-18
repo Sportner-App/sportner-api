@@ -583,5 +583,11 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("YearlyRecapReady_Body", resourceCulture);
             }
         }
+
+        public static string EventCancelledByAdmin_Title {
+            get {
+                return ResourceManager.GetString("EventCancelledByAdmin_Title", resourceCulture);
+            }
+        }
     }
 }

@@ -35,7 +35,8 @@ public sealed record AdminUserDetail(
     int FriendsCount,
     int ActiveSessions,
     int ReportsAgainst,
-    int FeedbackCount);
+    int FeedbackCount,
+    bool IsTestAccount);
 
 public sealed record ListAdminUsersQuery(string? Search, UserStatus? Status, int? Page, int? PageSize)
     : IQuery<PagedResult<AdminUserListItem>>;
@@ -161,7 +162,8 @@ internal sealed class GetAdminUserQueryHandler : IQueryHandler<GetAdminUserQuery
             stats?.FriendsCount ?? 0,
             activeSessions,
             reports,
-            feedback));
+            feedback,
+            user.IsTestAccount));
     }
 }
 
@@ -311,6 +313,61 @@ internal sealed class UnbanUserCommandHandler : ICommandHandler<UnbanUserCommand
 
         _dbContext.AdminAuditEntries.Add(AdminActions.Entry(
             adminId, AdminActions.UnbanUser, AdminActions.UserTarget, user.Id, null, utcNow));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+}
+
+public sealed record SetTestAccountCommand(Guid UserId, bool IsTestAccount) : ICommand;
+
+internal sealed class SetTestAccountCommandHandler : ICommandHandler<SetTestAccountCommand>
+{
+    private readonly IApplicationDbContext _dbContext;
+    private readonly ICurrentUser _currentUser;
+    private readonly TimeProvider _timeProvider;
+
+    public SetTestAccountCommandHandler(IApplicationDbContext dbContext, ICurrentUser currentUser, TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _currentUser = currentUser;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<Result> Handle(SetTestAccountCommand request, CancellationToken cancellationToken)
+    {
+        if (_currentUser.UserId is not { } adminId)
+        {
+            return Result.Failure(AdminErrors.NotAuthenticated);
+        }
+
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(candidate => candidate.Id == request.UserId, cancellationToken);
+        if (user is null)
+        {
+            return Result.Failure(AdminErrors.UserNotFound);
+        }
+
+        if (user.IsTestAccount == request.IsTestAccount)
+        {
+            return Result.Success();
+        }
+
+        if (request.IsTestAccount)
+        {
+            user.MarkAsTestAccount();
+        }
+        else
+        {
+            user.UnmarkAsTestAccount();
+        }
+
+        _dbContext.AdminAuditEntries.Add(AdminActions.Entry(
+            adminId,
+            AdminActions.UserTestAccount,
+            AdminActions.UserTarget,
+            user.Id,
+            request.IsTestAccount ? "on" : "off",
+            _timeProvider.GetUtcNow()));
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

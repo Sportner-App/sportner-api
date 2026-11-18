@@ -71,8 +71,11 @@ public class User : AggregateRoot
     /// </summary>
     public bool IsTestAccount { get; private set; }
 
-    /// <summary>Üretimde işaretleme SQL ile yapılır; bu metot yalnızca testler içindir.</summary>
+    /// <summary>İşaretleme yönetici panelinden (ve testlerden) yapılır.</summary>
     public void MarkAsTestAccount() => IsTestAccount = true;
+
+    /// <summary>Yönetici panelinden test hesabı işaretini kaldırır.</summary>
+    public void UnmarkAsTestAccount() => IsTestAccount = false;
 
     public UserProfile? UserProfile { get; private set; }
 

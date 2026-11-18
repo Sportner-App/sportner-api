@@ -675,4 +675,28 @@
   <data name="Admin_EmailFailed" xml:space="preserve">
     <value>E-posta gönderilemedi, tekrar dene.</value>
   </data>
+  <data name="Admin_ReportNotFound" xml:space="preserve">
+    <value>Şikâyet bulunamadı.</value>
+  </data>
+  <data name="Admin_InvalidReportState" xml:space="preserve">
+    <value>Bu şikâyet mevcut durumunda kapatılamaz.</value>
+  </data>
+  <data name="Admin_PostNotFound" xml:space="preserve">
+    <value>Gönderi bulunamadı.</value>
+  </data>
+  <data name="Admin_CommentNotFound" xml:space="preserve">
+    <value>Yorum bulunamadı.</value>
+  </data>
+  <data name="Admin_EventNotFound" xml:space="preserve">
+    <value>Etkinlik bulunamadı.</value>
+  </data>
+  <data name="Admin_EventNotCancellable" xml:space="preserve">
+    <value>Bu etkinlik zaten iptal edilmiş ya da tamamlanmış.</value>
+  </data>
+  <data name="Admin_InvalidContentType" xml:space="preserve">
+    <value>İçerik türü posts, comments ya da events olmalı.</value>
+  </data>
+  <data name="Admin_InvalidNote" xml:space="preserve">
+    <value>Not 1 ile 2000 karakter arasında olmalı.</value>
+  </data>
 </root>

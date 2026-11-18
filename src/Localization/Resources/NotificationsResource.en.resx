@@ -284,4 +284,7 @@
   <data name="YearlyRecapReady_Body" xml:space="preserve">
     <value>{0} events, {1} hours. Open your year and share it.</value>
   </data>
+  <data name="EventCancelledByAdmin_Title" xml:space="preserve">
+    <value>Event cancelled</value>
+  </data>
 </root>

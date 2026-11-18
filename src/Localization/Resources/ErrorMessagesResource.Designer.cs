@@ -1380,5 +1380,53 @@ namespace Sportner.Localization.Resources {
                 return ResourceManager.GetString("Recap_InvalidYear", resourceCulture);
             }
         }
+
+        public static string Admin_ReportNotFound {
+            get {
+                return ResourceManager.GetString("Admin_ReportNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidReportState {
+            get {
+                return ResourceManager.GetString("Admin_InvalidReportState", resourceCulture);
+            }
+        }
+
+        public static string Admin_PostNotFound {
+            get {
+                return ResourceManager.GetString("Admin_PostNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_CommentNotFound {
+            get {
+                return ResourceManager.GetString("Admin_CommentNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_EventNotFound {
+            get {
+                return ResourceManager.GetString("Admin_EventNotFound", resourceCulture);
+            }
+        }
+
+        public static string Admin_EventNotCancellable {
+            get {
+                return ResourceManager.GetString("Admin_EventNotCancellable", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidContentType {
+            get {
+                return ResourceManager.GetString("Admin_InvalidContentType", resourceCulture);
+            }
+        }
+
+        public static string Admin_InvalidNote {
+            get {
+                return ResourceManager.GetString("Admin_InvalidNote", resourceCulture);
+            }
+        }
     }
 }

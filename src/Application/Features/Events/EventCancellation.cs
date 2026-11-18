@@ -19,7 +19,8 @@ internal static class EventCancellation
         Domain.Events.Event @event,
         Guid actorUserId,
         DateTimeOffset utcNow,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool cancelledByAdmin = false)
     {
         var wasAlreadyCancelled = @event.Status == EventStatus.Cancelled;
 
@@ -36,8 +37,11 @@ internal static class EventCancellation
         // oluşturan da katılımcı olmasa bile bilgilendirilir.
         var recipients = EventRosterNotifier.ResolveRecipients(@event, actorUserId);
 
-        var organizerActor = await NotificationActor.ResolveEventActorNameAsync(
-            dbContext, @event, actorUserId, cancellationToken);
+        // Yönetici iptalinde ad/kimlik katılımcılara gösterilmez; başlık nötr, aktör boş.
+        var organizerActor = cancelledByAdmin
+            ? default
+            : await NotificationActor.ResolveEventActorNameAsync(
+                dbContext, @event, actorUserId, cancellationToken);
         var languagesByRecipient = await NotificationActor.ResolveRecipientLanguagesAsync(
             dbContext, recipients, cancellationToken);
 
@@ -48,17 +52,21 @@ internal static class EventCancellation
             await notificationPublisher.PublishAsync(
                 recipientId,
                 NotificationType.EventCancelled,
-                NotificationActor.Format(
-                    language,
-                    nameof(NotificationsResource.EventCancelled_Title),
-                    NotificationActor.FormatPrefix(organizerActor, language)),
+                cancelledByAdmin
+                    ? NotificationActor.Format(
+                        language,
+                        nameof(NotificationsResource.EventCancelledByAdmin_Title))
+                    : NotificationActor.Format(
+                        language,
+                        nameof(NotificationsResource.EventCancelled_Title),
+                        NotificationActor.FormatPrefix(organizerActor, language)),
                 NotificationActor.Format(
                     language,
                     nameof(NotificationsResource.EventCancelled_Body),
                     @event.Title),
                 NotificationEntityType.Event,
                 @event.Id,
-                actorUserId,
+                cancelledByAdmin ? null : actorUserId,
                 cancellationToken);
         }
 

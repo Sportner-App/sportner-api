@@ -6,7 +6,9 @@ using Sportner.API.Common;
 using Sportner.API.Extensions.RateLimiting;
 using Sportner.Application.Features.Admin.Audit;
 using Sportner.Application.Features.Admin.Auth;
+using Sportner.Application.Features.Admin.Content;
 using Sportner.Application.Features.Admin.Feedback;
+using Sportner.Application.Features.Admin.Reports;
 using Sportner.Application.Features.Admin.Users;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Feedback;
@@ -76,6 +78,75 @@ public sealed class AdminController : ApiControllerBase
         (await Sender.Send(new UnbanUserCommand(userId), cancellationToken))
             .ToActionResult(StatusCodes.Status204NoContent);
 
+    [HttpPost("users/{userId:guid}/test-account")]
+    public async Task<IActionResult> SetTestAccount(
+        Guid userId,
+        [FromBody] TestAccountBody body,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new SetTestAccountCommand(userId, body.IsTestAccount), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpGet("users/{userId:guid}/content")]
+    public async Task<IActionResult> ListUserContent(
+        Guid userId,
+        [FromQuery] string? type,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new ListAdminUserContentQuery(userId, type, page, pageSize), cancellationToken))
+            .ToActionResult();
+
+    [HttpGet("reports")]
+    public async Task<IActionResult> ListReports(
+        [FromQuery] short? status,
+        [FromQuery] short? entityType,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new ListAdminReportsQuery(status, entityType, page, pageSize), cancellationToken))
+            .ToActionResult();
+
+    [HttpPost("reports/{reportId:guid}/resolve")]
+    public async Task<IActionResult> ResolveReport(
+        Guid reportId,
+        [FromBody] NoteBody body,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new AdminResolveReportCommand(reportId, body.Note), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("reports/{reportId:guid}/reject")]
+    public async Task<IActionResult> RejectReport(
+        Guid reportId,
+        [FromBody] NoteBody body,
+        CancellationToken cancellationToken) =>
+        (await Sender.Send(new AdminRejectReportCommand(reportId, body.Note), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("posts/{postId:guid}/hide")]
+    public async Task<IActionResult> HidePost(Guid postId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new SetPostHiddenCommand(postId, true), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("posts/{postId:guid}/unhide")]
+    public async Task<IActionResult> UnhidePost(Guid postId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new SetPostHiddenCommand(postId, false), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("comments/{commentId:guid}/hide")]
+    public async Task<IActionResult> HideComment(Guid commentId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new SetCommentHiddenCommand(commentId, true), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("comments/{commentId:guid}/unhide")]
+    public async Task<IActionResult> UnhideComment(Guid commentId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new SetCommentHiddenCommand(commentId, false), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
+    [HttpPost("events/{eventId:guid}/cancel")]
+    public async Task<IActionResult> CancelEvent(Guid eventId, CancellationToken cancellationToken) =>
+        (await Sender.Send(new AdminCancelEventCommand(eventId), cancellationToken))
+            .ToActionResult(StatusCodes.Status204NoContent);
+
     [HttpGet("feedback")]
     public async Task<IActionResult> ListFeedback(
         [FromQuery] AppFeedbackStatus? status,
@@ -121,4 +192,8 @@ public sealed class AdminController : ApiControllerBase
     public sealed record FeedbackStatusBody(AppFeedbackStatus Status);
 
     public sealed record ReplyBody(string Message);
+
+    public sealed record NoteBody(string Note);
+
+    public sealed record TestAccountBody(bool IsTestAccount);
 }
