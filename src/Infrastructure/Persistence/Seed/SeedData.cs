@@ -98,7 +98,8 @@ internal static class SeedData
         new("Su Sporları", "su-sporlari", 6, NameEn: "Water Sports"),
         new("Kış Sporları", "kis-sporlari", 7, NameEn: "Winter Sports"),
         new("Hedef Sporları", "hedef-sporlari", 8, NameEn: "Target Sports"),
-        new("Diğer", "diger", 9, NameEn: "Other")
+        new("E-spor", "e-spor", 9, NameEn: "Esports"),
+        new("Diğer", "diger", 10, NameEn: "Other")
     };
 
     internal static readonly IReadOnlyList<SportSeed> Sports = new SportSeed[]
@@ -138,6 +139,8 @@ internal static class SeedData
         new("Yelken", "yelken", 33, "su-sporlari", NameEn: "Sailing"),
         new("Rugby", "rugby", 34, "takim-sporlari", NameEn: "Rugby"),
         new("Kürek", "kurek", 35, "su-sporlari", NameEn: "Rowing"),
+        // Oyun ve platform ayrımı yok; organizatör hangi oyunu oynanacağını açıklamaya yazar.
+        new("E-spor", "e-spor", 36, "e-spor", NameEn: "Esports"),
         // Katalogda olmayan bir spor için etkinlik açmak isteyenlere kaçış yolu;
         // her zaman listenin sonunda görünsün diye yüksek bir sıralama numarası.
         new("Diğer", "diger", 999, "diger", NameEn: "Other")
