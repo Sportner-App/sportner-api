@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Sportner.Infrastructure;
 
 namespace Sportner.API.IntegrationTests;
@@ -75,6 +76,9 @@ public class SharedCompositionTests
     private static IHost BuildHost(Action<IServiceCollection> configure)
     {
         var builder = Host.CreateApplicationBuilder();
+        // Fail-fast testi host'un açılışta hata vermesini bekliyor; host bu hatayı
+        // ayrıca loglayınca CI çıktısında gerçek bir arıza gibi görünüyordu.
+        builder.Logging.ClearProviders();
         configure(builder.Services);
         return builder.Build();
     }
