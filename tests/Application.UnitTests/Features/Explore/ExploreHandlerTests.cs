@@ -219,6 +219,129 @@ public sealed class ExploreHandlerTests
         result.Value.Should().NotContain(item => item.Id == strangerPost.Id);
     }
 
+    [Fact]
+    public async Task ExplorePosts_Before_ReturnsNextPageWithoutOverlapOrGap()
+    {
+        await using var db = InMemoryDb.Create();
+        var now = new FakeTimeProvider(new DateTimeOffset(2026, 8, 13, 12, 0, 0, TimeSpan.Zero))
+            .GetUtcNow();
+        var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
+        var author = CreateUserWithProfile(db, "author", "Author", now);
+
+        var posts = Enumerable.Range(0, 5)
+            .Select(index => Post.Create(author.Id, $"p{index}", now.AddMinutes(-index)))
+            .ToList();
+        db.Posts.AddRange(posts);
+        await db.SaveChangesAsync();
+
+        var handler = CreatePostsHandler(db, viewer.Id);
+
+        var first = await handler.Handle(new ExplorePostsQuery(2), CancellationToken.None);
+        var second = await handler.Handle(
+            new ExplorePostsQuery(2, Before: first.Value![^1].Id.ToString("D")),
+            CancellationToken.None);
+        var third = await handler.Handle(
+            new ExplorePostsQuery(2, Before: second.Value![^1].Id.ToString("D")),
+            CancellationToken.None);
+
+        first.Value.Select(item => item.Id).Should().Equal(posts[0].Id, posts[1].Id);
+        second.Value.Select(item => item.Id).Should().Equal(posts[2].Id, posts[3].Id);
+        third.Value!.Select(item => item.Id).Should().Equal(posts[4].Id);
+    }
+
+    [Fact]
+    public async Task ExplorePosts_Before_WithSameCreatedAt_DoesNotRepeatOrSkip()
+    {
+        await using var db = InMemoryDb.Create();
+        var now = new FakeTimeProvider(new DateTimeOffset(2026, 8, 13, 12, 0, 0, TimeSpan.Zero))
+            .GetUtcNow();
+        var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
+        var author = CreateUserWithProfile(db, "author", "Author", now);
+
+        // InMemory Guid'leri Guid.CompareTo ile, imleç filtresi ise string olarak karşılaştırır;
+        // iki sıra yalnızca ilk 4 bayt farklıysa örtüşür. Bu yüzden id'ler öyle üretilir
+        // (PostgreSQL uuid sıralaması hex string sırasıyla aynıdır).
+        var posts = Enumerable.Range(1, 5)
+            .Select(index =>
+            {
+                var post = Post.Create(author.Id, $"p{index}", now);
+                typeof(Post).GetProperty(nameof(Post.Id))!.SetValue(
+                    post,
+                    new Guid($"{index:x8}-0000-0000-0000-000000000000"));
+                return post;
+            })
+            .ToList();
+        db.Posts.AddRange(posts);
+        await db.SaveChangesAsync();
+
+        var handler = CreatePostsHandler(db, viewer.Id);
+        var seen = new List<Guid>();
+        string? before = null;
+        for (var page = 0; page < 5; page++)
+        {
+            var result = await handler.Handle(
+                new ExplorePostsQuery(2, Before: before),
+                CancellationToken.None);
+            result.IsSuccess.Should().BeTrue();
+            if (result.Value!.Count == 0)
+            {
+                break;
+            }
+
+            seen.AddRange(result.Value.Select(item => item.Id));
+            before = result.Value[^1].Id.ToString("D");
+        }
+
+        seen.Should().Equal(posts.OrderByDescending(post => post.Id).Select(post => post.Id));
+    }
+
+    [Theory]
+    [InlineData("not-a-guid")]
+    [InlineData("11111111-1111-1111-1111-111111111111")]
+    public async Task ExplorePosts_Before_InvalidOrUnknown_ReturnsInvalidCursor(string before)
+    {
+        await using var db = InMemoryDb.Create();
+        var now = DateTimeOffset.UtcNow;
+        var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
+        await db.SaveChangesAsync();
+
+        var result = await CreatePostsHandler(db, viewer.Id).Handle(
+            new ExplorePostsQuery(20, Before: before),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().ContainSingle(error => error.Code == "Post.InvalidCursor");
+    }
+
+    [Fact]
+    public async Task ExplorePosts_Before_WithFriendsOnly_PagesOnlyFriendPosts()
+    {
+        await using var db = InMemoryDb.Create();
+        var now = new FakeTimeProvider(new DateTimeOffset(2026, 8, 13, 12, 0, 0, TimeSpan.Zero))
+            .GetUtcNow();
+        var viewer = CreateUserWithProfile(db, "viewer", "Viewer", now);
+        var friend = CreateUserWithProfile(db, "friend", "Friend", now);
+        var stranger = CreateUserWithProfile(db, "stranger", "Stranger", now);
+        Accept(db, viewer.Id, friend.Id, now);
+
+        var newest = Post.Create(friend.Id, "a", now.AddMinutes(-1));
+        var strangerPost = Post.Create(stranger.Id, "b", now.AddMinutes(-2));
+        var older = Post.Create(friend.Id, "c", now.AddMinutes(-3));
+        var oldest = Post.Create(friend.Id, "d", now.AddMinutes(-4));
+        db.Posts.AddRange(newest, strangerPost, older, oldest);
+        await db.SaveChangesAsync();
+
+        var result = await CreatePostsHandler(db, viewer.Id).Handle(
+            new ExplorePostsQuery(20, FriendsOnly: true, Before: newest.Id.ToString("D")),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Select(item => item.Id).Should().Equal(older.Id, oldest.Id);
+    }
+
+    private static ExplorePostsQueryHandler CreatePostsHandler(AppDbContext db, Guid viewerId) =>
+        new(db, new TestCurrentUser(viewerId), new Mock<IFileStorage>().Object);
+
     private static RecommendationService CreateRecommendationService(
         AppDbContext db,
         TimeProvider time) =>

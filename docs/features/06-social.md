@@ -94,7 +94,7 @@ There is **no Feed entity** — feed is a read model over posts + friendships + 
 | [x] | `GetHomeFeed` | Query | `GET /api/feed` | Self + accepted friends; exclude blocks; cursor. |
 | [x] | `GetExploreFeed` | Query | `GET /api/feed/explore` | Recency; exclude blocks (V1 compat). |
 | [x] | `ExplorePeople` | Query | `GET /api/explore/people` | Ranked via recommendation engine; optional `sportId`/`city`; `limit`. |
-| [x] | `ExplorePosts` | Query | `GET /api/explore/posts` | Ranked For You; authenticated; `limit`. |
+| [x] | `ExplorePosts` | Query | `GET /api/explore/posts` | Ranked For You; authenticated; `limit`; optional `friendsOnly`; optional `before` (last seen post id, CreatedAt desc/Id desc cursor; plain array response; invalid id -> `Post.InvalidCursor`). |
 
 ---
 
