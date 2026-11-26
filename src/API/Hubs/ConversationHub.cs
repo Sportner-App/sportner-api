@@ -30,6 +30,18 @@ public sealed class ConversationHub : Hub
 
     public static string GroupName(Guid conversationId) => $"conversation:{conversationId:D}";
 
+    public static string UserGroupName(Guid userId) => $"user:{userId:D}";
+
+    public override async Task OnConnectedAsync()
+    {
+        if (_currentUser.UserId is { } userId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, UserGroupName(userId));
+        }
+
+        await base.OnConnectedAsync();
+    }
+
     public async Task JoinConversation(Guid conversationId)
     {
         if (_currentUser.UserId is not { } userId)

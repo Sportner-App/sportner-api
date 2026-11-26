@@ -36,6 +36,31 @@ public sealed class SignalRChatRealtimeNotifier : IChatRealtimeNotifier
         CancellationToken cancellationToken = default) =>
         TrySendAsync(conversationId, "MessageRedacted", message, cancellationToken);
 
+    public async Task NotifyConversationUpdatedAsync(
+        Guid conversationId,
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (userIds.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await _hubContext.Clients
+                .Groups(userIds.Select(ConversationHub.UserGroupName).ToList())
+                .SendAsync("ConversationUpdated", new { conversationId }, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to push ConversationUpdated for conversation {ConversationId}.",
+                conversationId);
+        }
+    }
+
     private async Task TrySendAsync(
         Guid conversationId,
         string eventName,

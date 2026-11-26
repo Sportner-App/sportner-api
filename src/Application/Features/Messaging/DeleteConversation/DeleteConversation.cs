@@ -1,6 +1,7 @@
 using Sportner.Application.Abstractions.Authentication;
 using Sportner.Application.Abstractions.Messaging;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Abstractions.Realtime;
 using Sportner.Application.Common.Results;
 
 namespace Sportner.Application.Features.Messaging.DeleteConversation;
@@ -13,15 +14,18 @@ internal sealed class DeleteConversationCommandHandler
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
 
     public DeleteConversationCommandHandler(
         IApplicationDbContext dbContext,
         ICurrentUser currentUser,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IChatRealtimeNotifier chatRealtimeNotifier)
     {
         _dbContext = dbContext;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _chatRealtimeNotifier = chatRealtimeNotifier;
     }
 
     public async Task<Result> Handle(
@@ -48,6 +52,11 @@ internal sealed class DeleteConversationCommandHandler
             candidate.UserId == userId && candidate.IsActive());
         member.ClearHistory(_timeProvider.GetUtcNow());
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        await _chatRealtimeNotifier.NotifyConversationUpdatedAsync(
+            request.ConversationId,
+            [userId],
+            cancellationToken);
 
         return Result.Success();
     }

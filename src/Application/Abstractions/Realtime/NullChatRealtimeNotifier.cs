@@ -26,4 +26,10 @@ public sealed class NullChatRealtimeNotifier : IChatRealtimeNotifier
         MessageResponse message,
         CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
+
+    public Task NotifyConversationUpdatedAsync(
+        Guid conversationId,
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
 }

@@ -12,6 +12,13 @@ namespace Sportner.Application.Features.Messaging;
 
 internal static class MessagingAccess
 {
+    internal static IReadOnlyCollection<Guid> ActiveMemberIds(Conversation conversation) =>
+        conversation.Members
+            .Where(member => member.IsActive())
+            .Select(member => member.UserId)
+            .Distinct()
+            .ToList();
+
     internal static async Task<Result<Conversation>> RequireActiveMembershipAsync(
         IApplicationDbContext dbContext,
         Guid conversationId,

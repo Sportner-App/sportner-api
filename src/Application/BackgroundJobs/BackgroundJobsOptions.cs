@@ -50,7 +50,7 @@ public sealed class BackgroundJobsOptions
     /// How often the worker polls the push delivery outbox. Fixed interval rather than cron
     /// so it can run sub-minute without a 6-field cron expression.
     /// </summary>
-    public int NotificationDeliveryIntervalSeconds { get; set; } = 10;
+    public int NotificationDeliveryIntervalSeconds { get; set; } = 2;
 
     public int NotificationDeliveryBatchSize { get; set; } = 100;
 

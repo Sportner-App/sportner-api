@@ -86,6 +86,10 @@ internal sealed class EditMessageCommandHandler : ICommandHandler<EditMessageCom
             request.ConversationId,
             response,
             cancellationToken);
+        await _chatRealtimeNotifier.NotifyConversationUpdatedAsync(
+            request.ConversationId,
+            MessagingAccess.ActiveMemberIds(membership.Value!),
+            cancellationToken);
 
         return Result<MessageResponse>.Success(response);
     }

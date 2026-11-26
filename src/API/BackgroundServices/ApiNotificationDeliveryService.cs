@@ -8,7 +8,7 @@ namespace Sportner.API.BackgroundServices;
 /// </summary>
 internal sealed class ApiNotificationDeliveryService : BackgroundService
 {
-    private static readonly TimeSpan Interval = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan Interval = TimeSpan.FromSeconds(2);
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;

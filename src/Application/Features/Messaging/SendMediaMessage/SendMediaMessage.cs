@@ -198,6 +198,10 @@ internal sealed class SendMediaMessageCommandHandler
             conversation.Id,
             response,
             cancellationToken);
+        await _chatRealtimeNotifier.NotifyConversationUpdatedAsync(
+            conversation.Id,
+            MessagingAccess.ActiveMemberIds(conversation),
+            cancellationToken);
 
         return Result<MessageResponse>.Success(response);
     }

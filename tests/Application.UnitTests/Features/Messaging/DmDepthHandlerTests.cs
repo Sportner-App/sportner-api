@@ -122,7 +122,8 @@ public sealed class DmDepthHandlerTests
         var markRead = new MarkConversationReadCommandHandler(
             db,
             new TestCurrentUser(peer.Id),
-            time);
+            time,
+            realtime.Object);
 
         (await markRead.Handle(
             new MarkConversationReadCommand(conversation.Id, sent.Value!.Id),
@@ -131,6 +132,63 @@ public sealed class DmDepthHandlerTests
         var member = db.ConversationMembers.Single(candidate =>
             candidate.ConversationId == conversation.Id && candidate.UserId == peer.Id);
         member.LastReadMessageId.Should().Be(sent.Value.Id);
+
+        // Muted peer still gets the list refresh on send; mark-read only pings the reader.
+        realtime.Verify(
+            notifier => notifier.NotifyConversationUpdatedAsync(
+                conversation.Id,
+                It.Is<IReadOnlyCollection<Guid>>(ids =>
+                    ids.Count == 2 && ids.Contains(me.Id) && ids.Contains(peer.Id)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        realtime.Verify(
+            notifier => notifier.NotifyConversationUpdatedAsync(
+                conversation.Id,
+                It.Is<IReadOnlyCollection<Guid>>(ids =>
+                    ids.Count == 1 && ids.Contains(peer.Id)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SendText_NotifiesActiveMembersIncludingSender_ButNotLeftMember()
+    {
+        await using var db = InMemoryDb.Create();
+        var time = new FakeTimeProvider(new DateTimeOffset(2026, 8, 14, 12, 0, 0, TimeSpan.Zero));
+        var now = time.GetUtcNow();
+
+        var me = CreateUser(db, "me", now);
+        var peer = CreateUser(db, "peer", now);
+        var gone = CreateUser(db, "gone", now);
+        var conversation = Conversation.CreateGroupConversation(
+            me.Id, "Group", [peer.Id, gone.Id], now);
+        conversation.Leave(gone.Id, now);
+        db.Conversations.Add(conversation);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        var realtime = new Mock<IChatRealtimeNotifier>();
+        var handler = new SendTextMessageCommandHandler(
+            db,
+            new TestCurrentUser(me.Id),
+            time,
+            Mock.Of<INotificationPublisher>(),
+            realtime.Object);
+
+        (await handler.Handle(
+            new SendTextMessageCommand(conversation.Id, "hi"),
+            CancellationToken.None)).IsSuccess.Should().BeTrue();
+
+        realtime.Verify(
+            notifier => notifier.NotifyConversationUpdatedAsync(
+                conversation.Id,
+                It.Is<IReadOnlyCollection<Guid>>(ids =>
+                    ids.Count == 2
+                    && ids.Contains(me.Id)
+                    && ids.Contains(peer.Id)
+                    && !ids.Contains(gone.Id)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]

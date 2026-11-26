@@ -22,4 +22,13 @@ public interface IChatRealtimeNotifier
         Guid conversationId,
         MessageResponse message,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Tells the given users' connections (group <c>user:{id}</c>) that a conversation changed,
+    /// so conversation lists can refetch. Payload carries only the conversation id.
+    /// </summary>
+    Task NotifyConversationUpdatedAsync(
+        Guid conversationId,
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken cancellationToken = default);
 }
