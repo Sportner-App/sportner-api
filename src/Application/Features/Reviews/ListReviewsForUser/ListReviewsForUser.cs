@@ -38,14 +38,18 @@ internal sealed class ListReviewsForUserQueryHandler
 
         var query = ReviewQueries.Project(_dbContext, reviews =>
         {
-            reviews = reviews.Where(review => review.ReviewedUserId == request.UserId);
+            // Project already excluded reported reviews; only the latest review per reviewer counts.
+            reviews = ReviewQueries.LatestPerReviewer(
+                reviews.Where(review => review.ReviewedUserId == request.UserId));
 
             var blockedIds = BlockQueries.HiddenUserIds(_dbContext, _currentUser.UserId);
             reviews = reviews.Where(review =>
                 !blockedIds.Contains(review.ReviewerUserId)
                 && !blockedIds.Contains(review.ReviewedUserId));
 
-            return reviews.OrderByDescending(review => review.CreatedAt);
+            return reviews
+                .OrderByDescending(review => review.CreatedAt)
+                .ThenByDescending(review => review.Id);
         });
 
         var total = await query.CountAsync(cancellationToken);

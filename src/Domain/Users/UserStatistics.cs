@@ -86,12 +86,6 @@ public class UserStatistics : AuditableEntity
         Touch(utcNow);
     }
 
-    public void IncreaseReviewCount(DateTimeOffset utcNow)
-    {
-        TotalReviews = Increment(TotalReviews);
-        Touch(utcNow);
-    }
-
     public void IncreaseFriendsCount(DateTimeOffset utcNow)
     {
         FriendsCount = Increment(FriendsCount);
@@ -130,6 +124,23 @@ public class UserStatistics : AuditableEntity
         }
 
         AverageRating = decimal.Round(averageRating, 2, MidpointRounding.AwayFromZero);
+        Touch(utcNow);
+    }
+
+    public void UpdateReviewSummary(decimal averageRating, int totalReviews, DateTimeOffset utcNow)
+    {
+        if (averageRating is < 0m or > 5m)
+        {
+            throw new DomainException("Average rating must be between 0 and 5.");
+        }
+
+        if (totalReviews < 0)
+        {
+            throw new DomainException("Total reviews cannot be negative.");
+        }
+
+        AverageRating = decimal.Round(averageRating, 2, MidpointRounding.AwayFromZero);
+        TotalReviews = totalReviews;
         Touch(utcNow);
     }
 

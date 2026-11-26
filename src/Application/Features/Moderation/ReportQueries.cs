@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sportner.Application.Abstractions.Persistence;
+using Sportner.Application.Features.Reviews;
 using Sportner.Domain.Common.Enums;
 using Sportner.Domain.Moderation;
 using Sportner.Domain.Social;
@@ -150,6 +151,16 @@ internal static class ReportQueries
         {
             review.ClearReportedStatus(utcNow);
         }
+
+        // The sync reads reviews from the DB where the flag change is not saved yet, so pass the
+        // changed review as an override. The caller's single SaveChangesAsync persists everything.
+        await ReviewRatingSync.SyncReviewedUserAsync(
+            dbContext,
+            review.ReviewedUserId,
+            utcNow,
+            cancellationToken,
+            excludeReviewId: markReported ? review.Id : null,
+            includeReviewId: markReported ? null : review.Id);
     }
 
     /// <summary>

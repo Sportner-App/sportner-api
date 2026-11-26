@@ -140,13 +140,6 @@ internal sealed class CreateReviewCommandHandler : ICommandHandler<CreateReviewC
 
         _dbContext.Reviews.Add(review);
 
-        var statistics = await _dbContext.UserStatistics
-            .FirstOrDefaultAsync(
-                candidate => candidate.UserId == request.ReviewedUserId,
-                cancellationToken);
-
-        statistics?.IncreaseReviewCount(utcNow);
-
         if (priorReviewCount == 0)
         {
             await _badgeAwarder.TryAwardAsync(

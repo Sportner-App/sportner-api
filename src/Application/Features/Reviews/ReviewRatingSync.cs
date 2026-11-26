@@ -7,16 +7,32 @@ namespace Sportner.Application.Features.Reviews;
 internal static class ReviewRatingSync
 {
     /// <summary>
-    /// Recomputes the reviewed user's profile and statistics rating caches from non-reported reviews.
+    /// Recomputes the reviewed user's profile and statistics rating/review-count caches from
+    /// non-reported reviews, counting only the latest review per reviewer (<see cref="ReviewQueries.LatestPerReviewer"/>).
+    /// <para>
+    /// <paramref name="excludeReviewId"/> / <paramref name="includeReviewId"/> let callers account for a
+    /// review whose IsReported flag was just changed but not saved yet (the query reads the DB):
+    /// the excluded review is treated as reported, the included one as not reported.
+    /// </para>
     /// </summary>
     internal static async Task SyncReviewedUserAsync(
         IApplicationDbContext dbContext,
         Guid reviewedUserId,
         DateTimeOffset utcNow,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Guid? excludeReviewId = null,
+        Guid? includeReviewId = null)
     {
-        var aggregates = await dbContext.Reviews.AsNoTracking()
-            .Where(review => review.ReviewedUserId == reviewedUserId && !review.IsReported)
+        // Guid.Empty never matches a real review id, so it works as "no override".
+        var excludeId = excludeReviewId ?? Guid.Empty;
+        var includeId = includeReviewId ?? Guid.Empty;
+
+        var eligibleReviews = ReviewQueries.LatestPerReviewer(
+            dbContext.Reviews.AsNoTracking()
+                .Where(review => review.ReviewedUserId == reviewedUserId
+                    && ((!review.IsReported && review.Id != excludeId) || review.Id == includeId)));
+
+        var aggregates = await eligibleReviews
             .GroupBy(_ => 1)
             .Select(group => new
             {
@@ -38,12 +54,28 @@ internal static class ReviewRatingSync
         var statistics = await dbContext.UserStatistics
             .FirstOrDefaultAsync(candidate => candidate.UserId == reviewedUserId, cancellationToken);
 
-        statistics?.UpdateAverageRating(average, utcNow);
+        statistics?.UpdateReviewSummary(average, count, utcNow);
     }
 }
 
 internal static class ReviewQueries
 {
+    /// <summary>
+    /// Keeps only the latest review of each (reviewer, reviewed) pair within <paramref name="reviews"/>.
+    /// The same person can review the same user once per completed event; without this, repeat
+    /// reviews from one reviewer would inflate the reviewed user's rating and review count.
+    /// The caller must pass an already filtered set (e.g. non-reported only): the NOT EXISTS
+    /// subquery looks at that same set, so a reported latest review does not hide an older valid one.
+    /// Tie-break: "latest" is the greatest CreatedAt only (no Id comparison, to keep the SQL
+    /// translation trivial); rows with an identical CreatedAt for the same pair are practically
+    /// impossible because each belongs to a different event created at a different time.
+    /// </summary>
+    internal static IQueryable<Review> LatestPerReviewer(IQueryable<Review> reviews) =>
+        reviews.Where(review => !reviews.Any(other =>
+            other.ReviewerUserId == review.ReviewerUserId
+            && other.ReviewedUserId == review.ReviewedUserId
+            && other.CreatedAt > review.CreatedAt));
+
     /// <summary>
     /// Projects reviews (+ reviewer/reviewed profile) into <see cref="ReviewResponse"/>.
     /// Apply all filtering/ordering via <paramref name="configureReviews"/> on the raw
