@@ -83,16 +83,12 @@ internal sealed class GetHomeFeedQueryHandler
         var hasMore = page.Count > limit;
         var window = hasMore ? page.Take(limit).ToList() : page;
 
-        var items = new List<PostResponse>(window.Count);
-        foreach (var post in window)
-        {
-            items.Add(await SocialQueries.ToPostResponseAsync(
-                _dbContext,
-                _fileStorage,
-                post,
-                userId,
-                cancellationToken));
-        }
+        var items = await SocialQueries.ToPostResponsesAsync(
+            _dbContext,
+            _fileStorage,
+            window,
+            userId,
+            cancellationToken);
 
         var nextCursor = hasMore && items.Count > 0 ? items[^1].Id.ToString("D") : null;
 

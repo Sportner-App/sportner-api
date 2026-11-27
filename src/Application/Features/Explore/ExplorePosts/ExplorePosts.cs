@@ -104,16 +104,12 @@ internal sealed class ExplorePostsQueryHandler
             .Take(request.Limit)
             .ToListAsync(cancellationToken);
 
-        var items = new List<PostResponse>(posts.Count);
-        foreach (var post in posts)
-        {
-            items.Add(await SocialQueries.ToPostResponseAsync(
-                _dbContext,
-                _fileStorage,
-                post,
-                viewerId,
-                cancellationToken));
-        }
+        var items = await SocialQueries.ToPostResponsesAsync(
+            _dbContext,
+            _fileStorage,
+            posts,
+            viewerId,
+            cancellationToken);
 
         return Result<IReadOnlyList<PostResponse>>.Success(items);
     }

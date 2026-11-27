@@ -215,62 +215,110 @@ internal static class SocialQueries
         IFileStorage fileStorage,
         Post post,
         Guid? viewerUserId,
+        CancellationToken cancellationToken) =>
+        (await ToPostResponsesAsync(
+            dbContext,
+            fileStorage,
+            new[] { post },
+            viewerUserId,
+            cancellationToken))[0];
+
+    internal static async Task<IReadOnlyList<PostResponse>> ToPostResponsesAsync(
+        IApplicationDbContext dbContext,
+        IFileStorage fileStorage,
+        IReadOnlyList<Post> posts,
+        Guid? viewerUserId,
         CancellationToken cancellationToken)
     {
-        var profile = await dbContext.UserProfiles.AsNoTracking()
-            .Where(candidate => candidate.UserId == post.UserId)
+        if (posts.Count == 0)
+        {
+            return Array.Empty<PostResponse>();
+        }
+
+        var userIds = posts.Select(post => post.UserId).Distinct().ToList();
+        var profileRows = await dbContext.UserProfiles.AsNoTracking()
+            .Where(candidate => userIds.Contains(candidate.UserId))
             .Select(candidate => new
             {
+                candidate.UserId,
                 candidate.Username,
                 candidate.FirstName,
                 candidate.ProfileImageUrl
             })
-            .FirstOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
+        var profiles = new Dictionary<Guid, (string? Username, string? FirstName, string? ProfileImageUrl)>();
+        foreach (var row in profileRows)
+        {
+            profiles.TryAdd(row.UserId, (row.Username, row.FirstName, row.ProfileImageUrl));
+        }
 
-        var likedByMe = viewerUserId is not null
-            && await dbContext.PostLikes.AsNoTracking()
-                .AnyAsync(
-                    like => like.PostId == post.Id && like.UserId == viewerUserId,
-                    cancellationToken);
+        var likedPostIds = new HashSet<Guid>();
+        if (viewerUserId is { } viewerId)
+        {
+            var postIds = posts.Select(post => post.Id).Distinct().ToList();
+            var liked = await dbContext.PostLikes.AsNoTracking()
+                .Where(like => like.UserId == viewerId && postIds.Contains(like.PostId))
+                .Select(like => like.PostId)
+                .ToListAsync(cancellationToken);
+            likedPostIds.UnionWith(liked);
+        }
 
-        var media = post.Media
-            .OrderBy(item => item.DisplayOrder)
-            .Select(item => ToPostMediaResponse(fileStorage, item))
+        // When media wasn't loaded on the aggregate, fall back to a single query.
+        var mediaFallbackIds = posts
+            .Where(post => post.Media.Count == 0 && post.MediaCount > 0)
+            .Select(post => post.Id)
+            .Distinct()
             .ToList();
-
-        // When media wasn't loaded on the aggregate, fall back to a query.
-        if (media.Count == 0 && post.MediaCount > 0)
+        var fallbackMedia = new Dictionary<Guid, List<PostMediaResponse>>();
+        if (mediaFallbackIds.Count > 0)
         {
             var stored = await dbContext.PostMedia.AsNoTracking()
-                .Where(item => item.PostId == post.Id)
+                .Where(item => mediaFallbackIds.Contains(item.PostId))
                 .OrderBy(item => item.DisplayOrder)
                 .ToListAsync(cancellationToken);
 
-            media = stored
-                .Select(item => ToPostMediaResponse(fileStorage, item))
-                .ToList();
+            foreach (var group in stored.GroupBy(item => item.PostId))
+            {
+                fallbackMedia[group.Key] = group
+                    .Select(item => ToPostMediaResponse(fileStorage, item))
+                    .ToList();
+            }
         }
-
-        var mentions = post.Mentions
-            .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
-            .ToList();
 
         // Gonderi etiketler Include edilmeden yuklendiyse koleksiyon bos gelir;
-        // Media'daki ayni durum gibi burada da ayrica cekiliyor.
-        if (mentions.Count == 0)
+        // Media'daki ayni durum gibi burada da toplu cekiliyor.
+        var mentionFallbackIds = posts
+            .Where(post => post.Mentions.Count == 0)
+            .Select(post => post.Id)
+            .Distinct()
+            .ToList();
+        var fallbackMentions = new Dictionary<Guid, List<PostMentionResponse>>();
+        if (mentionFallbackIds.Count > 0)
         {
-            mentions = await dbContext.PostMentions.AsNoTracking()
-                .Where(mention => mention.PostId == post.Id)
-                .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
+            var rows = await dbContext.PostMentions.AsNoTracking()
+                .Where(mention => mentionFallbackIds.Contains(mention.PostId))
+                .Select(mention => new { mention.PostId, mention.UserId, mention.Username })
                 .ToListAsync(cancellationToken);
+
+            foreach (var group in rows.GroupBy(row => row.PostId))
+            {
+                fallbackMentions[group.Key] = group
+                    .Select(row => new PostMentionResponse(row.UserId, row.Username))
+                    .ToList();
+            }
         }
 
-        PostEventResponse? eventSnippet = null;
-        if (post.EventId is { } eventId)
+        var eventIds = posts
+            .Where(post => post.EventId is not null)
+            .Select(post => post.EventId!.Value)
+            .Distinct()
+            .ToList();
+        var eventSnippets = new Dictionary<Guid, PostEventResponse>();
+        if (eventIds.Count > 0)
         {
-            eventSnippet = await (
+            var snippets = await (
                     from @event in dbContext.Events.AsNoTracking()
-                    where @event.Id == eventId
+                    where eventIds.Contains(@event.Id)
                     join sport in dbContext.Sports.AsNoTracking()
                         on @event.SportId equals sport.Id
                     select new PostEventResponse(
@@ -280,24 +328,61 @@ internal static class SocialQueries
                         sport.Slug,
                         @event.EventDate,
                         @event.Address))
-                .FirstOrDefaultAsync(cancellationToken);
+                .ToListAsync(cancellationToken);
+
+            foreach (var snippet in snippets)
+            {
+                eventSnippets.TryAdd(snippet.Id, snippet);
+            }
         }
 
-        return new PostResponse(
-            post.Id,
-            post.UserId,
-            profile?.Username,
-            profile?.FirstName,
-            profile?.ProfileImageUrl,
-            post.Content,
-            post.LikeCount,
-            post.CommentCount,
-            post.MediaCount,
-            likedByMe,
-            post.CreatedAt,
-            media,
-            mentions,
-            eventSnippet);
+        var responses = new List<PostResponse>(posts.Count);
+        foreach (var post in posts)
+        {
+            profiles.TryGetValue(post.UserId, out var profile);
+
+            var media = post.Media
+                .OrderBy(item => item.DisplayOrder)
+                .Select(item => ToPostMediaResponse(fileStorage, item))
+                .ToList();
+            if (media.Count == 0 && post.MediaCount > 0
+                && fallbackMedia.TryGetValue(post.Id, out var storedMedia))
+            {
+                media = storedMedia;
+            }
+
+            var mentions = post.Mentions
+                .Select(mention => new PostMentionResponse(mention.UserId, mention.Username))
+                .ToList();
+            if (mentions.Count == 0 && fallbackMentions.TryGetValue(post.Id, out var storedMentions))
+            {
+                mentions = storedMentions;
+            }
+
+            PostEventResponse? eventSnippet = null;
+            if (post.EventId is { } eventId)
+            {
+                eventSnippets.TryGetValue(eventId, out eventSnippet);
+            }
+
+            responses.Add(new PostResponse(
+                post.Id,
+                post.UserId,
+                profile.Username,
+                profile.FirstName,
+                profile.ProfileImageUrl,
+                post.Content,
+                post.LikeCount,
+                post.CommentCount,
+                post.MediaCount,
+                likedPostIds.Contains(post.Id),
+                post.CreatedAt,
+                media,
+                mentions,
+                eventSnippet));
+        }
+
+        return responses;
     }
 
     private static PostMediaResponse ToPostMediaResponse(IFileStorage fileStorage, PostMedia item) =>
